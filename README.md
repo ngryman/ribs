@@ -1,4 +1,134 @@
-ribs
-====
+# ribs
 
-Responsive Image Backend Server
+**R**esponsive **I**mages **B**acked **S**erver-side, yummy!
+
+<p align="center">
+  <img width="703" height="404" src="http://usecases.responsiveimages.org/images/devices.png" alt="Responsive image example">
+</p>
+
+## Motivations
+
+Responsive images is the next big challenge.
+
+Some [client-side patterns] already exist along with [build tasks] in order to **procude**, **optimize**, **manage** and
+**pick** the right image for the right screen size.
+
+In the wild, the fact is that this is not as much used as it should be. AFAIK this is probably because it asks a certain
+amount of time to choose and apply a technique and it needs too much tools in the process. The fact is, developpers
+don't take enough time for this and tend to neglect this part of an application.
+
+I believe in the *on-the-fly* way of thinking that the Web offers. So, for this problem, just ask the image you want,
+and you will receive it processed, point.
+This also have to garanty that you:
+- do not **load more than your are going to show**.
+- do not **scale the image in CSS**.
+- do not **load important images with javascript**.
+
+From [RESS slides].
+
+This is pretty much what [Sencha.io Src] provides. It needs to be available in the wild, with a good level of
+customization.
+
+[client-side patterns]: http://css-tricks.com/which-responsive-images-solution-should-you-use
+[build tasks]: https://github.com/gruntjs/grunt-contrib-imagemin
+[Sencha.io Src]: http://www.sencha.com/learn/how-to-use-src-sencha-io
+[RESS slides]: http://fr.slideshare.net/4nd3rsen/ress-responsive-design-server-side-components-10084972
+
+## It must and it will
+
+- Provide **on-the-fly** resized / croped and optimized images (no build phase required).
+- Fit **web app** and also **native apps** needs.
+- **Proxy** existing servers.
+- Be **super easy** to deploy and use.
+- Propose **different points of customization** to be as interop as it can be.
+- Support [art direction] (automatically?).
+
+[art direction]: http://usecases.responsiveimages.org/#art-direction
+
+## Concretely
+
+**RIBS** will have 3 layers:
+- a **node** library that manipulates images to:
+  - resize them.
+  - convert them on the fly.
+  - crop them.
+  - ... doing image suff.
+- a **connect** / **express** middleware that:
+  - parses URL following an **API** and call the library accordingly.
+  - is able to proxy an image request.
+- a client library to:
+  - automatically set some URL parameters.
+  - load images src.
+  - apply `data-` attributes to customize URL fragments.
+
+## Roadmap
+
+### First
+
+- Develop basic **node** library with modularity in mind.
+- Develop basic middleware.
+
+### Then
+
+- Delop clien library.
+- Support sharding.
+- Adjust API and existing stuff.
+  - Support `Stream2` API.
+
+### Next
+
+- Implement a good solution to art direction.
+- Propose other middlewares for other servers: **Apache**, **Nginx**, **IIS**, ...
+
+## API
+
+The **API** would be very similar to **Sencha.io Src**:
+
+```
+http://yourdomain.tld
+	[/data]
+	[/format[quality]]
+	[/orientation]
+	[/width[/height]]
+	[/art]
+	/url
+```
+Where:
+
+- `data` *(optional)*. If data then Sencha.io Src returns a data URL. Also takes a callback suffix and arguments for JSON-P use.
+- `format` *(optional)*. This is either jpg or png. Defaults to the original image format.
+- `quality` *(optional)*. When the format is jpg, a compression value from 1 to 100. Defaults to 85.
+- `orientation` *(optional)*. If 'landscape' or 'portrait', this will swap X/Y constraints if required. Defaults to no effect. 'detect' is experimental to use window.orientation if present.
+- `width` *(optional)*. A width in pixels (which overrides the adaptive- or family-sizing). Can also contain formulaic adjustment.
+- `height` *(optional)*. A height in pixels, if width is also present. Can also contain formulaic adjustment.
+- `art` *(optional)*. A focus point or area in pixels. *To specify*.
+- `url` *(required)*. The absolute path of the original image. It must start with http://
+
+**Formulaic adjustments use the following operators:**
+
+- `-`	deduct value
+- `x`	multiply by percentage
+- `a`	add value
+- `r`	round down to the nearest...
+- `m`	maximum for mobile browser
+- `n`	maximum for non-mobile browser
+
+When using the client library, the following client-side measurements (or their abbreviations) are available at the
+start of the width of height parameters:
+
+**Measurement Abbreviation:**
+
+- screen.width:			`sw`
+- screen.height:		`sh`
+- screen.availWidth:		`saw`
+- screen.availHeight:		`sah`
+- window.outerWidth:		`wow`
+- window.outerHeight:		`woh`
+- window.innerWidth:		`wiw`
+- window.innerHeight:		`wih`
+- document.body.clientWidth:	`bcw`
+- document.body.clientHeight:	`bch`
+- document.body.offsetHeight:	`boh`
+- document.body.offsetWidth:	`bow`
+
+*To specify...*

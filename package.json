@@ -1,0 +1,33 @@
+{
+	"name": "ribs",
+	"version": "0.0.0",
+	"description": "Responsive Images Backed Server-side.",
+	"main": "index.js",
+	"scripts": {
+		"test": "grunt test"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ngryman/ribs.git"
+	},
+	"keywords": [
+		"responsive",
+		"image",
+		"responsive images",
+		"art direction",
+		"resize",
+		"crop",
+		"optimize",
+		"canvas"
+	],
+	"author": "Nicolas Gryman <ngryman@gmail.com>",
+	"license": "MIT",
+	"devDependencies": {
+		"grunt": "~0.4.1",
+		"grunt-contrib-jshint": "~0.6.2",
+		"grunt-mocha-cli": "~1.0.6",
+		"matchdep": "~0.1.2",
+		"curry": "~1.0.2",
+		"chai": "~1.7.2"
+	}
+}
