@@ -27,12 +27,11 @@ bindings.shrink = function(hookChain, filename, callback) {
 	// this should be called into the native part in order to compute the final size
 	var size = hookChain(this.width, this.height);
 
-	setImmediate(callback, {
+	setImmediate(callback, null, {
 		width: size.width,
 		height: size.height,
 		data: new Buffer(256)
 	});
-	return new Stream();
 };
 
 /**
