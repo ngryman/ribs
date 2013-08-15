@@ -31,6 +31,15 @@ describe('open operation', function() {
 		}).should.not.throw();
 	});
 
+	it('should throw an error for invalid arguments', function() {
+		(function() {
+			ribs.open(0);
+		}).should.throw('filename should be a string');
+		(function() {
+			ribs.open();
+		}).should.throw('filename should not be null nor undefined');
+	});
+
 	it('should return ribs for chaining', function() {
 		var ret = ribs.open(FILENAME_SRC);
 		ret.should.equal(ribs);
