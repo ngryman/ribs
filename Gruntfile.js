@@ -7,8 +7,8 @@
 'use strict';
 
 module.exports = function(grunt) {
-	// automatically load npm tasks
-	require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+	// loads npm tasks
+	require('load-grunt-tasks')(grunt);
 
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),

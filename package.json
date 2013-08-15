@@ -24,9 +24,9 @@
 	"license": "MIT",
 	"devDependencies": {
 		"grunt": "~0.4.1",
+		"load-grunt-tasks": "~0.1.0",
 		"grunt-contrib-jshint": "~0.6.2",
 		"grunt-mocha-cli": "~1.0.6",
-		"matchdep": "~0.1.2",
 		"curry": "~1.0.2",
 		"async": "~0.2.9",
 		"chai": "~1.7.2"
