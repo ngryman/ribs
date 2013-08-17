@@ -25,7 +25,7 @@ var FILENAME_SRC = __dirname + '/../fixtures/in.png',
  * Test suite.
  */
 
-describe('save operation', function() {
+xdescribe('save operation', function() {
 	it('should open and save to the given filename with open was not previously called', function() {
 		(function() {
 			ribs.save(FILENAME_DST);

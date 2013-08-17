@@ -64,7 +64,7 @@ ribs.impl = mock;
  * Test suite.
  */
 
-describe('shrink operation', function() {
+xdescribe('shrink operation', function() {
 	var checkValidCallback = checkCallback(null);
 	var checkCallbackSize_2 = checkValidCallback(WIDTH_2, HEIGHT_2);
 
