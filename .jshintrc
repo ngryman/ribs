@@ -20,7 +20,7 @@
 	"boss": true,
 	"curly": false,
 	"eqeqeq": false,
-	"eqnull": false,
+	"eqnull": true,
 	"evil": false,
 	"expr": false,
 	"forin": false,

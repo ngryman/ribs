@@ -47,6 +47,6 @@ module.exports = function(grunt) {
 		}
 	});
 
-	// aliases
-	grunt.registerTask('test', ['mochacli']);
+	// front tasks
+	grunt.registerTask('test', [/*'jshint', */'mochacli']);
 };
