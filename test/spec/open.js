@@ -5,12 +5,14 @@
  */
 
 'use strict';
+process.env.NODE_ENV = 'test';
 
 /**
  * Module dependencies.
  */
 
 var ribs = require('../..'),
+	Image = ribs.Image,
 	Pipeline = require('../../lib/pipeline'),
 	curry = require('curry'),
 	chai = require('chai'),
@@ -21,6 +23,7 @@ var ribs = require('../..'),
  */
 
 var FILENAME_SRC = __dirname + '/../fixtures/in.png';
+console.log(process.env.NODE_ENV);
 
 /**
  * Tests helper functions.
@@ -28,7 +31,7 @@ var FILENAME_SRC = __dirname + '/../fixtures/in.png';
 
 var checkDone = curry(function(done, err, res) {
 	should.not.exist(err);
-	res.should.be.instanceof(Buffer);
+	res.should.be.instanceof(Image);
 	done();
 });
 
@@ -47,7 +50,7 @@ describe('open operation', function() {
 		ribs.open(FILENAME_SRC).done(checkDone(done));
 	});
 
-	it('should return a Pipeline for chaining', function() {
+	it('should return a Pipeline', function() {
 		var ret = ribs.open(FILENAME_SRC);
 		ret.should.be.instanceof(Pipeline);
 	});
@@ -60,11 +63,19 @@ describe('open operation', function() {
 		ribs.open().done(checkDoneErr('filename should not be null nor undefined', done));
 	});
 
+	it('should open jpg files', function(done) {
+
+	});
+
+	it('should open png files', function(done) {
+
+	});
+
+	it('should open gif files', function(done) {
+
+	});
+
 	it('should be aliased to ribs', function(done) {
-		ribs(FILENAME_SRC).done(function(err, res) {
-			should.not.exist(err);
-			res.should.be.instanceof(Buffer);
-			done();
-		});
+		ribs(FILENAME_SRC).done(checkDone(done));
 	});
 });

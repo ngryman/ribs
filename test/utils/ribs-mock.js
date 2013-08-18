@@ -9,13 +9,28 @@
 /**
  * Module dependencies.
  */
-var Stream = require('stream').Duplex;
+var fs = require('fs');
 
 /**
  * Bindings mock.
  */
 
 var bindings = {};
+
+/**
+ *
+ * @param filename
+ * @param callback
+ */
+bindings.readFile = function(filename, callback) {
+	fs.readFile(filename, function(err, data) {
+		if (err) {
+			callback(err);
+			return;
+		}
+		callback(null, new Image(this.width, this.height, data));
+	}.bind(this));
+};
 
 /**
  *
@@ -55,7 +70,17 @@ bindings.configure = function(width, height) {
 };
 
 /**
+ * Image.
+ */
+
+function Image(width, height) {
+	this.width = width;
+	this.height = height;
+}
+
+/**
  * Export.
  */
 
+bindings.Image = Image;
 module.exports = bindings;

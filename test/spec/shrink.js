@@ -5,13 +5,14 @@
  */
 
 'use strict';
+process.env.NODE_ENV = 'test';
 
 /**
  * Module dependencies.
  */
 
 var ribs = require('../..'),
-	mock = require('../utils/bindings-mock'),
+	mock = require('../utils/ribs-mock'),
 	chai = require('chai'),
 	should = chai.should(),
 	fs = require('fs'),
