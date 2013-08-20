@@ -7,12 +7,37 @@
 #ifndef __RIBS_IMAGE_H__
 #define __RIBS_IMAGE_H__
 
-#include <cairo/cairo.h>
+#include "common.h"
 
-class Image {
+class Image : public node::ObjectWrap {
 public:
+	static void Init(v8::Handle<v8::Object> target);
+	static v8::Persistent<v8::Function> constructor;
+
+	static NAN_METHOD(New);
+	static NAN_GETTER(GetWidth);
+	static NAN_GETTER(GetHeight);
+
+	static NAN_METHOD(FromFile);
+
+	typedef enum {
+		UNKNOWN,
+		JPEG,
+		PNG,
+		GIF
+    } Type;
+
+private:
 	Image();
-	~Image();
-}
+    ~Image();
+
+    static Type typeOf(const std::string& filename);
+    static v8::Local<v8::Object> loadFromJPG(const std::string& filename);
+    static v8::Local<v8::Object> loadFromPNG(const std::string& filename);
+    static v8::Local<v8::Object> loadFromGIF(const std::string& filename);
+
+	std::string filename;
+	int width, height;
+};
 
 #endif
