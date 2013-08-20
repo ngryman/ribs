@@ -70,7 +70,7 @@ NAN_METHOD(Image::FromFile) {
 		case Image::GIF:
 			NanReturnValue(Image::loadFromGIF(filename));
 		case Image::UNKNOWN:
-            NanThrowError((filename + " is not a valid image.").c_str());
+			NanThrowError((filename + " is not a valid image.").c_str());
 	}
 
 	// makes the compiler happy
@@ -91,17 +91,21 @@ Image::Type Image::typeOf(const string& filename) {
 Local<Object> Image::loadFromJPG(const std::string& filename) {
 	// instanciates the new image
 	Local<Object> instance = constructor->NewInstance();
-    Image* image = ObjectWrap::Unwrap<Image>(instance);
+	Image* image = ObjectWrap::Unwrap<Image>(instance);
 
-    // TODO
+	// JPEG setup
+	jpeg_decompress_struct args;
+	jpeg_error_mgr err;
+	args.err = jpeg_std_error(&err);
+//	jpeg_create_decompress(&args);
 
 	return instance;
 }
 
 Local<Object> Image::loadFromPNG(const std::string& filename) {
 	// instanciates the new image
-    Local<Object> instance = constructor->NewInstance();
-    Image* image = ObjectWrap::Unwrap<Image>(instance);
+	Local<Object> instance = constructor->NewInstance();
+	Image* image = ObjectWrap::Unwrap<Image>(instance);
 
     // TODO
 
@@ -110,8 +114,8 @@ Local<Object> Image::loadFromPNG(const std::string& filename) {
 
 Local<Object> Image::loadFromGIF(const std::string& filename) {
 	// instanciates the new image
-    Local<Object> instance = constructor->NewInstance();
-    Image* image = ObjectWrap::Unwrap<Image>(instance);
+	Local<Object> instance = constructor->NewInstance();
+	Image* image = ObjectWrap::Unwrap<Image>(instance);
 
     // TODO
 
