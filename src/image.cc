@@ -68,7 +68,7 @@ NAN_GETTER(Image::GetHeight) {
 NAN_METHOD(Image::FromFile) {
 	NanScope();
 
-	// creates our closure that will be passed over different uv calls
+	// create our closure that will be passed over different uv calls
     read_closure_t* closure = new read_closure_t();
 
 	// get filename & callback
@@ -78,13 +78,13 @@ NAN_METHOD(Image::FromFile) {
 	// set request data pointer to closure
 	closure->req.data = closure;
 
-	// opens the file async
+	// open the file async
 	uv_fs_open(uv_default_loop(), &closure->req, closure->filename.c_str(), O_RDONLY, 0, on_open);
 
 //	// which type of image?
 //	Type type = typeOf(filename);
 
-//	// loads image data by type
+//	// load image data by type
 //	switch (type) {
 //		case Image::JPEG:
 //			NanReturnValue(Image::loadFromJPG(filename));
@@ -96,7 +96,7 @@ NAN_METHOD(Image::FromFile) {
 //			NanThrowError((filename + " is not a valid image.").c_str());
 //	}
 
-	// makes the compiler happy
+	// make the compiler happy
 	NanReturnUndefined();
 }
 
@@ -112,7 +112,7 @@ Image::Type Image::typeOf(const string& filename) {
 }
 
 Local<Object> Image::loadFromJPG(const std::string& filename) {
-	// instanciates the new image
+	// instanciate the new image
 	Local<Object> instance = constructor->NewInstance();
 	Image* image = ObjectWrap::Unwrap<Image>(instance);
 
@@ -120,7 +120,7 @@ Local<Object> Image::loadFromJPG(const std::string& filename) {
 }
 
 Local<Object> Image::loadFromPNG(const std::string& filename) {
-	// instanciates the new image
+	// instanciate the new image
 	Local<Object> instance = constructor->NewInstance();
 	Image* image = ObjectWrap::Unwrap<Image>(instance);
 
@@ -130,7 +130,7 @@ Local<Object> Image::loadFromPNG(const std::string& filename) {
 }
 
 Local<Object> Image::loadFromGIF(const std::string& filename) {
-	// instanciates the new image
+	// instanciate the new image
 	Local<Object> instance = constructor->NewInstance();
 	Image* image = ObjectWrap::Unwrap<Image>(instance);
 
@@ -146,10 +146,10 @@ void on_open(uv_fs_t* req) {
 		fprintf(stderr, "Error at opening file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 
 		// TODO: factorize
-		// disposes the Persistent handle so the callback
+		// dispose the Persistent handle so the callback
         // function can be garbage-collected
         closure->callback.Dispose();
-        // cleans up any memory we allocated
+        // clean up any memory we allocated
         delete closure;
 	}
 
@@ -167,10 +167,10 @@ void on_read(uv_fs_t* req) {
 		fprintf(stderr, "Error at reading file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 
 		// TODO: factorize
-		// disposes the Persistent handle so the callback
+		// dispose the Persistent handle so the callback
         // function can be garbage-collected
         closure->callback.Dispose();
-        // cleans up any memory we allocated
+        // clean up any memory we allocated
         delete closure->buf;
         delete closure;
 	}
@@ -206,15 +206,15 @@ void on_close(uv_fs_t* req) {
 //			Number::New(asyncData->estimate)
 //		};
 //
-//		// executes the callback function
+//		// execute the callback function
 //		closure->callback->Call(Context::GetCurrent()->Global(), 2, argv);
 	}
 
 	// TODO: factorize
-	// disposes the Persistent handle so the callback
+	// dispose the Persistent handle so the callback
 	// function can be garbage-collected
 	closure->callback.Dispose();
-	// cleans up any memory we allocated
+	// clean up any memory we allocated
 	delete closure->buf;
 	delete closure;
 
