@@ -3,8 +3,17 @@
 **R**esponsive **I**mages **B**acked **S**erver-side, yummy!
 
 <p align="center">
-  <img width="703" height="404" src="http://usecases.responsiveimages.org/images/devices.png" alt="Responsive image example">
+  <img width="703" height="404" src="http://farm8.staticflickr.com/7347/9538576837_488e0d89db_o.jpg" alt="Responsive image example">
+  <br>
+  <sup>Photo borrowed from talented <a href="http://500px.com/Sphaax">Kevin Racape</a>.</sup>
 </p>
+
+<h2 align="center">
+<a name="----give-a-feedback-on-the-api-proposal--" class="anchor" href="#----give-a-feedback-on-the-api-proposal--"><span class="octicon octicon-link"></span></a>
+  &gt;&gt;
+  <a href="https://github.com/ngryman/ribs/wiki/API">Give a feedback on the API proposal</a>
+  &lt;&lt;
+</h2>
 
 ## Motivations
 
