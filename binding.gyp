@@ -14,7 +14,7 @@
 		"conditions": [
 			["OS=='win'", {
 				"libraries": [
-					"-l../deps/lib/jpeg.lib"
+					#"-l../deps/lib/jpeg.lib"
 				],
 				"include_dirs": [
 					"deps/include",

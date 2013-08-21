@@ -12,6 +12,7 @@
 #include <node_object_wrap.h>
 #include <node_version.h>
 
+#include <fcntl.h>
 #include <jpeglib.h>
 #include <string>
 
