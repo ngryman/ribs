@@ -46,8 +46,8 @@ NAN_METHOD(Image::New) {
 	NanScope();
 
 	Image* image = new Image();
-	image->width = args[0]->IsUndefined() ? 0 : args[0]->IntegerValue();
-	image->height = args[1]->IsUndefined() ? 0 : args[1]->IntegerValue();
+	image->data.width = args[0]->IsUndefined() ? 0 : args[0]->IntegerValue();
+	image->data.height = args[1]->IsUndefined() ? 0 : args[1]->IntegerValue();
 
 	image->Wrap(args.This());
 	NanReturnValue(args.This());
@@ -56,13 +56,13 @@ NAN_METHOD(Image::New) {
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
 	Image* image = ObjectWrap::Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->width));
+	NanReturnValue(Number::New(image->data.width));
 }
 
 NAN_GETTER(Image::GetHeight) {
 	NanScope();
 	Image* image = ObjectWrap::Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->height));
+	NanReturnValue(Number::New(image->data.height));
 }
 
 NAN_METHOD(Image::FromFile) {
@@ -142,6 +142,9 @@ Local<Object> Image::loadFromGIF(const std::string& filename) {
 void on_open(uv_fs_t* req) {
 	int result = req->result;
 
+	// fetch our closure
+	read_closure_t* closure = (read_closure_t*)req->data;
+
 	if (-1 == result) {
 		fprintf(stderr, "Error at opening file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 
@@ -153,15 +156,15 @@ void on_open(uv_fs_t* req) {
         delete closure;
 	}
 
-	// fetch our closure
-	read_closure_t* closure = (read_closure_t*)req->data;
-
 	uv_fs_req_cleanup(req);
 	uv_fs_read(uv_default_loop(), &closure->req, result, closure->buf, sizeof(closure->buf), -1, on_read);
 }
 
 void on_read(uv_fs_t* req) {
 	int result = req->result;
+
+	// fetch our closure
+	read_closure_t* closure = (read_closure_t*)req->data;
 
 	if (-1 == result) {
 		fprintf(stderr, "Error at reading file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
@@ -175,9 +178,6 @@ void on_read(uv_fs_t* req) {
         delete closure;
 	}
 
-	// fetch our closure
-	read_closure_t* closure = (read_closure_t*)req->data;
-
 	uv_fs_req_cleanup(req);
 	uv_fs_close(uv_default_loop(), &closure->req, result, on_close);
 }
@@ -186,12 +186,15 @@ void on_close(uv_fs_t* req) {
 	NanScope();
 
 	int result = req->result;
+
+	// fetch our closure
+	read_closure_t* closure = (read_closure_t*)req->data;
+
 	if (-1 == result) {
 		fprintf(stderr, "Error at closing file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 	}
 	else {
-		// fetch our closure
-		read_closure_t* closure = (read_closure_t*)req->data;
+//		Codec::Decode(closure);
 
 		// assign pixel data
 		// image->pixels = closure->buf;
