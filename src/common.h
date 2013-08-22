@@ -13,7 +13,6 @@
 #include <node_version.h>
 
 #include <fcntl.h>
-#include <jpeglib.h>
 #include <string>
 
 #include "nan.h"

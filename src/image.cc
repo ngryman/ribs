@@ -5,7 +5,8 @@
  */
 
 #include "image.h"
-#include "codec.h"
+//#include "codec.h"
+#include <leptonica/allheaders.h>
 
 using namespace v8;
 using namespace std;
@@ -144,9 +145,8 @@ void OnClose(uv_fs_t* req) {
 		fprintf(stderr, "Error at closing file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 	}
 	else {
-//		Codec::Decode(closure);
-
-		Codec::decode(closure, OnDecoded);
+		pixReadMem(closure->buf, sizeof(closure->buf));
+//		Codec::decode(closure, OnDecoded);
 
 		// assign pixel data
 		// image->pixels = closure->buf;

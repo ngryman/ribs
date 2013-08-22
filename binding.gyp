@@ -8,18 +8,16 @@
 	"targets": [{
 		"target_name": "ribs",
 		"sources": [
-			"src/codec.cc",
-			"src/codec/jpeg.cc",
 			"src/image.cc",
 			"src/init.cc"
 		],
 		"conditions": [
 			["OS=='win'", {
 				"libraries": [
-					#"-l../deps/lib/jpeg.lib"
+					"-l../deps/leptonica/lib/liblept168.lib"
 				],
 				"include_dirs": [
-					"deps/include",
+					"deps/leptonica/include",
 					"<!(node -p -e \"require('path').dirname(require.resolve('nan'))\")"
 				],
 				"msvs_settings": {
