@@ -41,8 +41,8 @@ NAN_METHOD(Image::New) {
 	NanScope();
 
 	Image* image = new Image();
-	image->data.width = args[0]->IsUndefined() ? 0 : args[0]->IntegerValue();
-	image->data.height = args[1]->IsUndefined() ? 0 : args[1]->IntegerValue();
+	image->width = args[0]->IsUndefined() ? 0 : args[0]->IntegerValue();
+	image->height = args[1]->IsUndefined() ? 0 : args[1]->IntegerValue();
 
 	image->Wrap(args.This());
 	NanReturnValue(args.This());
@@ -51,13 +51,13 @@ NAN_METHOD(Image::New) {
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
 	Image* image = ObjectWrap::Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->data.width));
+	NanReturnValue(Number::New(image->width));
 }
 
 NAN_GETTER(Image::GetHeight) {
 	NanScope();
 	Image* image = ObjectWrap::Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->data.height));
+	NanReturnValue(Number::New(image->height));
 }
 
 NAN_METHOD(Image::FromFile) {
@@ -96,12 +96,10 @@ NAN_METHOD(Image::FromFile) {
 }
 
 void OnOpen(uv_fs_t* req) {
-	int result = req->result;
-
 	// fetch our closure
 	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
-	if (-1 == result) {
+	if (-1 == req->result) {
 		fprintf(stderr, "Error at opening file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 
 		// TODO: factorize
@@ -113,16 +111,14 @@ void OnOpen(uv_fs_t* req) {
 	}
 
 	uv_fs_req_cleanup(req);
-	uv_fs_read(uv_default_loop(), &closure->req, result, closure->buf, sizeof(closure->buf), -1, OnRead);
+	uv_fs_read(uv_default_loop(), &closure->req, req->result, closure->buf, sizeof(closure->buf), -1, OnRead);
 }
 
 void OnRead(uv_fs_t* req) {
-	int result = req->result;
-
 	// fetch our closure
 	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
-	if (-1 == result) {
+	if (-1 == req->result) {
 		fprintf(stderr, "Error at reading file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 
 		// TODO: factorize
@@ -135,18 +131,16 @@ void OnRead(uv_fs_t* req) {
 	}
 
 	uv_fs_req_cleanup(req);
-	uv_fs_close(uv_default_loop(), &closure->req, result, OnClose);
+	uv_fs_close(uv_default_loop(), &closure->req, req->result, OnClose);
 }
 
 void OnClose(uv_fs_t* req) {
 	NanScope();
 
-	int result = req->result;
-
 	// fetch our closure
 	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
-	if (-1 == result) {
+	if (-1 == req->result) {
 		fprintf(stderr, "Error at closing file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 	}
 	else {

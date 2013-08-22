@@ -4,7 +4,7 @@
  * MIT Licensed
  */
 
-#include "codec.h";
+#include "codec.h"
 
 void Codec::encode(const ReadClosure* closure, CodecCallback callback) {
 

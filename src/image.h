@@ -32,8 +32,8 @@ private:
     ~Image();
 
 	std::string filename;
-	int width;
-	int height;
+	int64_t width;
+	int64_t height;
 };
 
 #endif
