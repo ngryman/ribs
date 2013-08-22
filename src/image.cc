@@ -21,6 +21,8 @@ Persistent<Function> Image::constructor;
 Image::Image() {};
 Image::~Image() {};
 
+static const int BUFFER_SIZE = 4096;
+
 void Image::Init(Handle<Object> target) {
 	// constructor
 	Local<FunctionTemplate> ctor = FunctionTemplate::New(New);
@@ -97,6 +99,8 @@ NAN_METHOD(Image::FromFile) {
 }
 
 void OnOpen(uv_fs_t* req) {
+	uv_fs_req_cleanup(req);
+
 	// fetch our closure
 	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
@@ -109,13 +113,18 @@ void OnOpen(uv_fs_t* req) {
         closure->callback.Dispose();
         // clean up any memory we allocated
         delete closure;
+        return;
 	}
 
-	uv_fs_req_cleanup(req);
-	uv_fs_read(uv_default_loop(), &closure->req, req->result, closure->buf, sizeof(closure->buf), -1, OnRead);
+	// allocate buffer now
+	closure->buf = new uint8_t[BUFFER_SIZE];
+
+	uv_fs_read(uv_default_loop(), &closure->req, req->result, closure->buf, BUFFER_SIZE, 0, OnRead);
 }
 
 void OnRead(uv_fs_t* req) {
+	uv_fs_req_cleanup(req);
+
 	// fetch our closure
 	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
@@ -127,15 +136,24 @@ void OnRead(uv_fs_t* req) {
         // function can be garbage-collected
         closure->callback.Dispose();
         // clean up any memory we allocated
-        delete closure->buf;
+        delete[] closure->buf;
         delete closure;
+        return;
 	}
 
-	uv_fs_req_cleanup(req);
-	uv_fs_close(uv_default_loop(), &closure->req, req->result, OnClose);
+	// schedule a new read all the buffer was read
+	if (req->result == BUFFER_SIZE) {
+		closure->offset += BUFFER_SIZE;
+		uv_fs_read(uv_default_loop(), &closure->req, req->result, closure->buf, BUFFER_SIZE, closure->offset, OnRead);
+	}
+	else {
+		uv_fs_close(uv_default_loop(), &closure->req, req->result, OnClose);
+	}
 }
 
 void OnClose(uv_fs_t* req) {
+	uv_fs_req_cleanup(req);
+
 	NanScope();
 
 	// fetch our closure
@@ -170,10 +188,8 @@ void OnClose(uv_fs_t* req) {
 	// function can be garbage-collected
 	closure->callback.Dispose();
 	// clean up any memory we allocated
-	delete closure->buf;
+	delete[] closure->buf;
 	delete closure;
-
-	uv_fs_req_cleanup(req);
 }
 
 void OnDecoded(const string& error, const ReadClosure* closure) {

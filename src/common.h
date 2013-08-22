@@ -20,6 +20,7 @@
 struct ReadClosure {
 	std::string filename;
 	uint8_t* buf;
+	int offset;
 	uint8_t* pixels;
 	int width;
 	int height;
