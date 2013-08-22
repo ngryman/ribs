@@ -8,6 +8,8 @@
 	"targets": [{
 		"target_name": "ribs",
 		"sources": [
+			"src/codec.cc",
+			"src/codec/jpeg.cc",
 			"src/image.cc",
 			"src/init.cc"
 		],

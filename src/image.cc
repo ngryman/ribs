@@ -5,20 +5,15 @@
  */
 
 #include "image.h"
+#include "codec.h"
 
 using namespace v8;
 using namespace std;
 
-typedef struct {
-	string filename;
-	uint8_t* buf;
-	uv_fs_t req;
-	Persistent<Function> callback;
-} read_closure_t;
-
-static void on_open(uv_fs_t* req);
-static void on_read(uv_fs_t* req);
-static void on_close(uv_fs_t* req);
+static void OnOpen(uv_fs_t* req);
+static void OnRead(uv_fs_t* req);
+static void OnClose(uv_fs_t* req);
+static void OnDecoded(const string& error, const ReadClosure* data);
 
 Persistent<Function> Image::constructor;
 
@@ -69,7 +64,7 @@ NAN_METHOD(Image::FromFile) {
 	NanScope();
 
 	// create our closure that will be passed over different uv calls
-    read_closure_t* closure = new read_closure_t();
+    ReadClosure* closure = new ReadClosure();
 
 	// get filename & callback
 	closure->filename = FromV8String(args[0]);
@@ -79,7 +74,7 @@ NAN_METHOD(Image::FromFile) {
 	closure->req.data = closure;
 
 	// open the file async
-	uv_fs_open(uv_default_loop(), &closure->req, closure->filename.c_str(), O_RDONLY, 0, on_open);
+	uv_fs_open(uv_default_loop(), &closure->req, closure->filename.c_str(), O_RDONLY, 0, OnOpen);
 
 //	// which type of image?
 //	Type type = typeOf(filename);
@@ -100,50 +95,11 @@ NAN_METHOD(Image::FromFile) {
 	NanReturnUndefined();
 }
 
-Image::Type Image::typeOf(const string& filename) {
-	size_t pos = filename.find_last_of(".");
-	if (string::npos == pos) return Image::UNKNOWN;
-
-	string ext = filename.substr(pos + 1);
-	if ("jpeg" == ext || "jpg" == ext) return Image::JPEG;
-	if ("png" == ext) return Image::PNG;
-	if ("gif" == ext) return Image::GIF;
-	return Image::UNKNOWN;
-}
-
-Local<Object> Image::loadFromJPG(const std::string& filename) {
-	// instanciate the new image
-	Local<Object> instance = constructor->NewInstance();
-	Image* image = ObjectWrap::Unwrap<Image>(instance);
-
-	return instance;
-}
-
-Local<Object> Image::loadFromPNG(const std::string& filename) {
-	// instanciate the new image
-	Local<Object> instance = constructor->NewInstance();
-	Image* image = ObjectWrap::Unwrap<Image>(instance);
-
-    // TODO
-
-	return instance;
-}
-
-Local<Object> Image::loadFromGIF(const std::string& filename) {
-	// instanciate the new image
-	Local<Object> instance = constructor->NewInstance();
-	Image* image = ObjectWrap::Unwrap<Image>(instance);
-
-    // TODO
-
-	return instance;
-}
-
-void on_open(uv_fs_t* req) {
+void OnOpen(uv_fs_t* req) {
 	int result = req->result;
 
 	// fetch our closure
-	read_closure_t* closure = (read_closure_t*)req->data;
+	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
 	if (-1 == result) {
 		fprintf(stderr, "Error at opening file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
@@ -157,14 +113,14 @@ void on_open(uv_fs_t* req) {
 	}
 
 	uv_fs_req_cleanup(req);
-	uv_fs_read(uv_default_loop(), &closure->req, result, closure->buf, sizeof(closure->buf), -1, on_read);
+	uv_fs_read(uv_default_loop(), &closure->req, result, closure->buf, sizeof(closure->buf), -1, OnRead);
 }
 
-void on_read(uv_fs_t* req) {
+void OnRead(uv_fs_t* req) {
 	int result = req->result;
 
 	// fetch our closure
-	read_closure_t* closure = (read_closure_t*)req->data;
+	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
 	if (-1 == result) {
 		fprintf(stderr, "Error at reading file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
@@ -179,22 +135,24 @@ void on_read(uv_fs_t* req) {
 	}
 
 	uv_fs_req_cleanup(req);
-	uv_fs_close(uv_default_loop(), &closure->req, result, on_close);
+	uv_fs_close(uv_default_loop(), &closure->req, result, OnClose);
 }
 
-void on_close(uv_fs_t* req) {
+void OnClose(uv_fs_t* req) {
 	NanScope();
 
 	int result = req->result;
 
 	// fetch our closure
-	read_closure_t* closure = (read_closure_t*)req->data;
+	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
 	if (-1 == result) {
 		fprintf(stderr, "Error at closing file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 	}
 	else {
 //		Codec::Decode(closure);
+
+		Codec::decode(closure, OnDecoded);
 
 		// assign pixel data
 		// image->pixels = closure->buf;
@@ -223,3 +181,16 @@ void on_close(uv_fs_t* req) {
 
 	uv_fs_req_cleanup(req);
 }
+
+void OnDecoded(const string& error, const ReadClosure* closure) {
+	NanScope();
+
+	const int argc = 2;
+	Handle<Value> argv[argc] = {
+		Number::New(closure->width),
+		Number::New(closure->height)
+	};
+	Local<Object> instance = Image::constructor->NewInstance(argc, argv);
+
+	// TODO callback
+};

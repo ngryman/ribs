@@ -9,12 +9,6 @@
 
 #include "common.h"
 
-struct ImageData {
-	std::string filename;
-	int width;
-	int height;
-};
-
 class Image : public node::ObjectWrap {
 public:
 	static void Init(v8::Handle<v8::Object> target);
@@ -37,12 +31,9 @@ private:
 	Image();
     ~Image();
 
-    static Type typeOf(const std::string& filename);
-    static v8::Local<v8::Object> loadFromJPG(const std::string& filename);
-    static v8::Local<v8::Object> loadFromPNG(const std::string& filename);
-    static v8::Local<v8::Object> loadFromGIF(const std::string& filename);
-
-	ImageData data;
+	std::string filename;
+	int width;
+	int height;
 };
 
 #endif

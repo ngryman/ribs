@@ -18,6 +18,16 @@
 
 #include "nan.h"
 
+struct ReadClosure {
+	std::string filename;
+	uint8_t* buf;
+	uint8_t* pixels;
+	int width;
+	int height;
+	uv_fs_t req;
+	v8::Persistent<v8::Function> callback;
+};
+
 inline static std::string FromV8String(v8::Local<v8::Value> v8Str) {
 	char* cstr = NanFromV8String(v8Str);
 	std::string cppstr(cstr);
