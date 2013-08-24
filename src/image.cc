@@ -39,9 +39,6 @@ NAN_METHOD(Image::New) {
 	NanScope();
 
 	Image* image = new Image();
-	if (NULL == image) {
-		return NanThrowError("Not enough memory.");
-	}
 
 	image->Wrap(args.This());
 	NanReturnValue(args.This());

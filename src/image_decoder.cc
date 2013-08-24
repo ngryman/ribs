@@ -17,6 +17,7 @@ struct Baton {
 	// fs stuff
 	uv_fs_t fsReq;
 	uint8_t* buf;
+	// TODO: dynamic buffer
 	int offset;
 	// decoder stuff
 	uv_work_t workReq;
@@ -58,6 +59,10 @@ void OnOpen(uv_fs_t* req) {
 
 	// allocate temporary buffer
 	baton->buf = new uint8_t[BUFFER_SIZE];
+	if (NULL == baton->buf) {
+		baton->error = "Not enough memory.";
+		return Done(baton);
+	}
 
 	uv_fs_read(uv_default_loop(), &baton->fsReq, req->result, baton->buf, BUFFER_SIZE, 0, OnRead);
 }
@@ -75,7 +80,12 @@ void OnRead(uv_fs_t* req) {
 	if (req->result == BUFFER_SIZE) {
 		baton->offset += BUFFER_SIZE;
 		uv_fs_read(uv_default_loop(), &baton->fsReq, req->result, baton->buf, BUFFER_SIZE, baton->offset, OnRead);
+
 		// TODO: copy to our final buffer
+//		if (NULL == baton->buf) {
+//        		baton->error = "Not enough memory.";
+//        		return Done(baton);
+//        	}
 	}
 	else {
 		uv_fs_close(uv_default_loop(), &baton->fsReq, req->result, OnClose);
@@ -105,19 +115,17 @@ void OnClose(uv_fs_t* req) {
 }
 
 void DecodeAsync(uv_work_t* req) {
-	// fetch our baton
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	// let leptonica fetch image data for us
 	baton->result->imageData = pixReadMem(baton->buf, sizeof(baton->buf));
-	// TODO: handle error
 };
 
 void OnDecoded(uv_work_t* req) {
 	NanScope();
-
-	// fetch our baton
 	Baton* baton = static_cast<Baton*>(req->data);
+	// TODO: handle error of image not decompressed
+
 	// and call Done directly
 	Done(baton);
 };
@@ -127,6 +135,7 @@ void Done(Baton* baton) {
 
 	// free baton allocated memory
 	if(baton->buf) delete[] baton->buf;
+	// TODO: deallocate
 	delete baton;
 
 	// and forward it to the callback
