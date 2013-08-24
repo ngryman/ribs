@@ -10,7 +10,7 @@
 using namespace v8;
 using namespace std;
 
-struct Closure {
+struct Baton {
 	std::string filename;
 	uint8_t* buf;
 	int offset;
@@ -30,25 +30,25 @@ static void DecodeAsync(uv_work_t* req);
 static void OnDecoded(uv_work_t* req);
 
 void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callback, Persistent<Function> jsCallback) {
-	// create our closure that will be passed over different uv calls
-	Closure* closure = new Closure();
+	// create our Baton that will be passed over different uv calls
+	Baton* baton = new Baton();
 	// assign request variables
-	closure->filename = filename;
-	closure->callback = callback;
-	closure->jsCallback = jsCallback;
+	baton->filename = filename;
+	baton->callback = callback;
+	baton->jsCallback = jsCallback;
 
-	// set request data pointer to closure
-	closure->fsReq.data = static_cast<void*>(closure);
+	// set request data pointer to Baton
+	baton->fsReq.data = static_cast<void*>(baton);
 
 	// open the file async
-	uv_fs_open(uv_default_loop(), &closure->fsReq, closure->filename.c_str(), O_RDONLY, 0, OnOpen);
+	uv_fs_open(uv_default_loop(), &baton->fsReq, baton->filename.c_str(), O_RDONLY, 0, OnOpen);
 };
 
 void OnOpen(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
 
-	// fetch our closure
-	Closure* closure = reinterpret_cast<Closure*>(req->data);
+	// fetch our Baton
+	Baton* baton = reinterpret_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
 		fprintf(stderr, "Error at opening file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
@@ -56,23 +56,23 @@ void OnOpen(uv_fs_t* req) {
 		// TODO: factorize
 		// dispose the Persistent handle so the callback
 		// function can be garbage-collected
-		closure->jsCallback.Dispose();
+		baton->jsCallback.Dispose();
 		// clean up any memory we allocated
-		delete closure;
+		delete baton;
 		return;
 	}
 
 	// allocate buffer now
-	closure->buf = new uint8_t[BUFFER_SIZE];
+	baton->buf = new uint8_t[BUFFER_SIZE];
 
-	uv_fs_read(uv_default_loop(), &closure->fsReq, req->result, closure->buf, BUFFER_SIZE, 0, OnRead);
+	uv_fs_read(uv_default_loop(), &baton->fsReq, req->result, baton->buf, BUFFER_SIZE, 0, OnRead);
 }
 
 void OnRead(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
 
-	// fetch our closure
-	Closure* closure = reinterpret_cast<Closure*>(req->data);
+	// fetch our Baton
+	Baton* baton = reinterpret_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
 		fprintf(stderr, "Error at reading file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
@@ -80,39 +80,39 @@ void OnRead(uv_fs_t* req) {
 		// TODO: factorize
 		// dispose the Persistent handle so the callback
 		// function can be garbage-collected
-		closure->jsCallback.Dispose();
+		baton->jsCallback.Dispose();
 		// clean up any memory we allocated
-		delete[] closure->buf;
-		delete closure;
+		delete[] baton->buf;
+		delete baton;
 		return;
 	}
 
 	// schedule a new read all the buffer was read
 	if (req->result == BUFFER_SIZE) {
-		closure->offset += BUFFER_SIZE;
-		uv_fs_read(uv_default_loop(), &closure->fsReq, req->result, closure->buf, BUFFER_SIZE, closure->offset, OnRead);
+		baton->offset += BUFFER_SIZE;
+		uv_fs_read(uv_default_loop(), &baton->fsReq, req->result, baton->buf, BUFFER_SIZE, baton->offset, OnRead);
 	}
 	else {
-		uv_fs_close(uv_default_loop(), &closure->fsReq, req->result, OnClose);
+		uv_fs_close(uv_default_loop(), &baton->fsReq, req->result, OnClose);
 	}
 }
 
 void OnClose(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
 
-	// fetch our closure
-	Closure* closure = reinterpret_cast<Closure*>(req->data);
+	// fetch our Baton
+	Baton* baton = reinterpret_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
 		fprintf(stderr, "Error at closing file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 	}
 	else {
-		closure->workReq.data = static_cast<void*>(closure);
+		baton->workReq.data = static_cast<void*>(baton);
 
 		// pass the request to libuv to be run when a worker-thread is available to
 		uv_queue_work(
 			uv_default_loop(),
-			&closure->workReq,
+			&baton->workReq,
 			DecodeAsync,
 			(uv_after_work_cb)OnDecoded
 		);
@@ -120,26 +120,26 @@ void OnClose(uv_fs_t* req) {
 }
 
 void DecodeAsync(uv_work_t* req) {
-	// fetch our closure
-	Closure* closure = reinterpret_cast<Closure*>(req->data);
+	// fetch our Baton
+	Baton* baton = reinterpret_cast<Baton*>(req->data);
 	// let leptonica fetch image data for us
-	closure->imageData = pixReadMem(closure->buf, sizeof(closure->buf));
+	baton->imageData = pixReadMem(baton->buf, sizeof(baton->buf));
 };
 
 void OnDecoded(uv_work_t* req) {
 	NanScope();
 
-	// fetch our closure
-	Closure* closure = reinterpret_cast<Closure*>(req->data);
+	// fetch our Baton
+	Baton* baton = reinterpret_cast<Baton*>(req->data);
 
 	// build up our result
 	ImageDecoder::Result* result = new ImageDecoder::Result();
-	result->filename = closure->filename;
-	result->imageData = closure->imageData;
-	result->jsCallback = closure->jsCallback;
+	result->filename = baton->filename;
+	result->imageData = baton->imageData;
+	result->jsCallback = baton->jsCallback;
 
 	// TODO: free memory
 
 	// and forward it to the callback
-	closure->callback(result);
+	baton->callback(result);
 };
