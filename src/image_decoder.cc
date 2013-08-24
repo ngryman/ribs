@@ -22,7 +22,9 @@ struct Baton {
 	uv_work_t workReq;
 };
 
-static const int BUFFER_SIZE = 4096;
+// TODO: benchmark this size
+// TODO: when custom allocator will be available, perhaps a big increase would be possible in the working area
+static const int BUFFER_SIZE = 32 * 1024;
 
 static void OnOpen(uv_fs_t* req);
 static void OnRead(uv_fs_t* req);
@@ -47,8 +49,6 @@ void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callbac
 
 void OnOpen(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
-
-	// fetch our Baton
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
@@ -56,7 +56,7 @@ void OnOpen(uv_fs_t* req) {
 		return Done(baton);
 	}
 
-	// allocate buffer now
+	// allocate temporary buffer
 	baton->buf = new uint8_t[BUFFER_SIZE];
 
 	uv_fs_read(uv_default_loop(), &baton->fsReq, req->result, baton->buf, BUFFER_SIZE, 0, OnRead);
@@ -64,8 +64,6 @@ void OnOpen(uv_fs_t* req) {
 
 void OnRead(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
-
-	// fetch our Baton
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
@@ -77,6 +75,7 @@ void OnRead(uv_fs_t* req) {
 	if (req->result == BUFFER_SIZE) {
 		baton->offset += BUFFER_SIZE;
 		uv_fs_read(uv_default_loop(), &baton->fsReq, req->result, baton->buf, BUFFER_SIZE, baton->offset, OnRead);
+		// TODO: copy to our final buffer
 	}
 	else {
 		uv_fs_close(uv_default_loop(), &baton->fsReq, req->result, OnClose);
@@ -85,8 +84,6 @@ void OnRead(uv_fs_t* req) {
 
 void OnClose(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
-
-	// fetch our baton
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
