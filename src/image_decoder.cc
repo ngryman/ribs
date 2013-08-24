@@ -60,7 +60,7 @@ void OnOpen(uv_fs_t* req) {
 	// allocate temporary buffer
 	baton->buf = new uint8_t[BUFFER_SIZE];
 	if (NULL == baton->buf) {
-		baton->error = "Not enough memory.";
+		baton->result->error = "Not enough memory.";
 		return Done(baton);
 	}
 

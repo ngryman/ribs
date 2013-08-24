@@ -13,36 +13,38 @@ using namespace std;
 
 static void OnDecoded(ImageDecoder::Result* result);
 
-Persistent<Function> Image::constructor;
+Persistent<FunctionTemplate> Image::constructorTemplate;
 
-Image::Image() {};
+Image::Image(Handle<Object> wrapper) {
+	Wrap(wrapper);
+};
+
 Image::~Image() {};
-
-void Image::Init(Handle<Object> target) {
-	// constructor
-	Local<FunctionTemplate> ctor = FunctionTemplate::New(New);
-	ctor->SetClassName(NanSymbol("Image"));
-	ctor->InstanceTemplate()->SetInternalFieldCount(1);
-	NODE_SET_METHOD(ctor, "fromFile", FromFile);
-
-	// prototype
-	Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-	proto->SetAccessor(NanSymbol("width"), GetWidth);
-	proto->SetAccessor(NanSymbol("height"), GetHeight);
-
-	// export
-	NanAssignPersistent(Function, constructor, ctor->GetFunction());
-	target->Set(NanSymbol("Image"), constructor);
-}
 
 NAN_METHOD(Image::New) {
 	NanScope();
 
-	Image* image = new Image();
+	// Image() instead of new Image()
+	if (!args.IsConstructCall()) {
+		Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
+		NanReturnValue(instance);
+	}
 
-	image->Wrap(args.This());
+	Image* image = new Image(args.This());
 	NanReturnValue(args.This());
 }
+
+Local<Object> Image::New(const string& filename, Pix* imageData) {
+	NanScope();
+
+	// create a new instance an feed it
+	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
+	Image* image = Unwrap<Image>(instance);
+	image->filename = filename;
+	image->imageData = imageData;
+
+	NanReturnValue(instance);
+};
 
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
@@ -70,21 +72,38 @@ NAN_METHOD(Image::FromFile) {
 	NanReturnUndefined();
 }
 
+void Image::Initialize(Handle<Object> target) {
+	NanScope();
+
+	// constructor
+	Local<FunctionTemplate> t = FunctionTemplate::New(New);
+	NanAssignPersistent(FunctionTemplate, constructorTemplate, t);
+	constructorTemplate->InstanceTemplate()->SetInternalFieldCount(1);
+	constructorTemplate->SetClassName(NanSymbol("Image"));
+
+	// prototype
+	Local<ObjectTemplate> prototype = constructorTemplate->PrototypeTemplate();
+	prototype->SetAccessor(NanSymbol("width"), GetWidth);
+	prototype->SetAccessor(NanSymbol("height"), GetHeight);
+
+	// object
+	NODE_SET_METHOD(constructorTemplate->GetFunction(), "fromFile", FromFile);
+
+	// export
+	target->Set(NanSymbol("Image"), constructorTemplate->GetFunction());
+}
+
 void OnDecoded(ImageDecoder::Result* result) {
+	NanScope();
+
+	// execute callback with error
 	if (!result->error.empty()) {
-		// execute callback with error
-		Local<Value> args[] = {
-			Exception::Error(String::New(result->error.c_str()))
-		};
-		return result->callback->Call(sizeof(args), args);
+		Local<Value> arg = Exception::Error(String::New(result->error.c_str()));
+		return result->callback->Call(1, &arg);
 	}
 
-	// create the image instance
-	Local<Object> instance = Image::constructor->NewInstance();
-	// link with image data
-	Image* image = ObjectWrap::Unwrap<Image>(instance);
-	image->filename = result->filename;
-	image->imageData = result->imageData;
+	// create the image instance with data
+	Local<Object> instance = Image::New(result->filename, result->imageData);
 
 	// execute callback with newly created image
 	Local<Value> args[] = {
