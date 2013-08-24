@@ -20,13 +20,6 @@ public:
 
 	static NAN_METHOD(FromFile);
 
-	typedef enum {
-		UNKNOWN,
-		JPEG,
-		PNG,
-		GIF
-    } Type;
-
 private:
 	Image();
     ~Image();

@@ -9,6 +9,7 @@
 		"target_name": "ribs",
 		"sources": [
 			"src/image.cc",
+			"src/image_decoder.cc",
 			"src/init.cc"
 		],
 		"conditions": [
