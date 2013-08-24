@@ -22,7 +22,7 @@
 				],
 				"msvs_settings": {
 					"VCCLCompilerTool": {
-						"DisableSpecificWarnings": [ "4244", "4267", "4506", "4530" ],
+						"DisableSpecificWarnings": [ "4244", "4267", "4305", "4506", "4530" ],
 
 						# warning: C4530
 						# can't ovveride default exception handling, we have to modify %USERPROFILE%\.node-gyp\__NODE_RELASE__\common.gypi

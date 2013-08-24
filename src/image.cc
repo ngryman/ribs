@@ -14,7 +14,8 @@ using namespace std;
 static void OnOpen(uv_fs_t* req);
 static void OnRead(uv_fs_t* req);
 static void OnClose(uv_fs_t* req);
-static void OnDecoded(const string& error, const ReadClosure* data);
+static void DecodeAsync(uv_work_t* req);
+static void OnDecoded(uv_work_t* req);
 
 Persistent<Function> Image::constructor;
 
@@ -67,32 +68,17 @@ NAN_METHOD(Image::FromFile) {
 	NanScope();
 
 	// create our closure that will be passed over different uv calls
-    ReadClosure* closure = new ReadClosure();
+	ReadClosure* closure = new ReadClosure();
 
 	// get filename & callback
 	closure->filename = FromV8String(args[0]);
 	NanAssignPersistent(Function, closure->callback, Local<Function>::Cast(args[1]));
 
 	// set request data pointer to closure
-	closure->req.data = closure;
+	closure->fsReq.data = static_cast<void*>(closure);
 
 	// open the file async
-	uv_fs_open(uv_default_loop(), &closure->req, closure->filename.c_str(), O_RDONLY, 0, OnOpen);
-
-//	// which type of image?
-//	Type type = typeOf(filename);
-
-//	// load image data by type
-//	switch (type) {
-//		case Image::JPEG:
-//			NanReturnValue(Image::loadFromJPG(filename));
-//		case Image::PNG:
-//			NanReturnValue(Image::loadFromPNG(filename));
-//		case Image::GIF:
-//			NanReturnValue(Image::loadFromGIF(filename));
-//		case Image::UNKNOWN:
-//			NanThrowError((filename + " is not a valid image.").c_str());
-//	}
+	uv_fs_open(uv_default_loop(), &closure->fsReq, closure->filename.c_str(), O_RDONLY, 0, OnOpen);
 
 	// make the compiler happy
 	NanReturnUndefined();
@@ -109,17 +95,17 @@ void OnOpen(uv_fs_t* req) {
 
 		// TODO: factorize
 		// dispose the Persistent handle so the callback
-        // function can be garbage-collected
-        closure->callback.Dispose();
-        // clean up any memory we allocated
-        delete closure;
-        return;
+		// function can be garbage-collected
+		closure->callback.Dispose();
+		// clean up any memory we allocated
+		delete closure;
+		return;
 	}
 
 	// allocate buffer now
 	closure->buf = new uint8_t[BUFFER_SIZE];
 
-	uv_fs_read(uv_default_loop(), &closure->req, req->result, closure->buf, BUFFER_SIZE, 0, OnRead);
+	uv_fs_read(uv_default_loop(), &closure->fsReq, req->result, closure->buf, BUFFER_SIZE, 0, OnRead);
 }
 
 void OnRead(uv_fs_t* req) {
@@ -133,28 +119,26 @@ void OnRead(uv_fs_t* req) {
 
 		// TODO: factorize
 		// dispose the Persistent handle so the callback
-        // function can be garbage-collected
-        closure->callback.Dispose();
-        // clean up any memory we allocated
-        delete[] closure->buf;
-        delete closure;
-        return;
+		// function can be garbage-collected
+		closure->callback.Dispose();
+		// clean up any memory we allocated
+		delete[] closure->buf;
+		delete closure;
+		return;
 	}
 
 	// schedule a new read all the buffer was read
 	if (req->result == BUFFER_SIZE) {
 		closure->offset += BUFFER_SIZE;
-		uv_fs_read(uv_default_loop(), &closure->req, req->result, closure->buf, BUFFER_SIZE, closure->offset, OnRead);
+		uv_fs_read(uv_default_loop(), &closure->fsReq, req->result, closure->buf, BUFFER_SIZE, closure->offset, OnRead);
 	}
 	else {
-		uv_fs_close(uv_default_loop(), &closure->req, req->result, OnClose);
+		uv_fs_close(uv_default_loop(), &closure->fsReq, req->result, OnClose);
 	}
 }
 
 void OnClose(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
-
-	NanScope();
 
 	// fetch our closure
 	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
@@ -163,44 +147,45 @@ void OnClose(uv_fs_t* req) {
 		fprintf(stderr, "Error at closing file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
 	}
 	else {
-		pixReadMem(closure->buf, sizeof(closure->buf));
-//		Codec::decode(closure, OnDecoded);
+		closure->workReq.data = static_cast<void*>(closure);
 
-		// assign pixel data
-		// image->pixels = closure->buf;
-
-		// TODO: launch an sync task to decode image
-		// - 1 sniff for magic numbers
-		// - 2 call async work pointing to the right decoder
-
-//		// create an arguments array for the callback
-//		Handle<Value> argv[] = {
-//			Null(),
-//			Number::New(asyncData->estimate)
-//		};
-//
-//		// execute the callback function
-//		closure->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+		// pass the request to libuv to be run when a worker-thread is available to
+		uv_queue_work(
+			uv_default_loop(),
+			&closure->workReq,
+			DecodeAsync,
+			(uv_after_work_cb)OnDecoded
+		);
 	}
-
-	// TODO: factorize
-	// dispose the Persistent handle so the callback
-	// function can be garbage-collected
-	closure->callback.Dispose();
-	// clean up any memory we allocated
-	delete[] closure->buf;
-	delete closure;
 }
 
-void OnDecoded(const string& error, const ReadClosure* closure) {
+void DecodeAsync(uv_work_t* req) {
+	// fetch our closure
+	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
+	// let leptonica fetch image data for us
+	closure->imageData = pixReadMem(closure->buf, sizeof(closure->buf));
+};
+
+void OnDecoded(uv_work_t* req) {
 	NanScope();
 
-	const int argc = 2;
-	Handle<Value> argv[argc] = {
-		Number::New(closure->width),
-		Number::New(closure->height)
-	};
-	Local<Object> instance = Image::constructor->NewInstance(argc, argv);
+	// fetch our closure
+	ReadClosure* closure = reinterpret_cast<ReadClosure*>(req->data);
 
-	// TODO callback
+	// create the image instance
+	Handle<Value> imageArgs[] = {
+		Number::New(closure->imageData->w),
+		Number::New(closure->imageData->h)
+	};
+	Local<Object> instance = Image::constructor->NewInstance(sizeof(imageArgs), imageArgs);
+
+	// link with image data
+	// TODO
+
+	// execute the callback function
+	Handle<Value> callbackArgs[] = {
+		Null(),
+		instance
+	};
+	closure->callback->Call(Context::GetCurrent()->Global(), 2, callbackArgs);
 };
