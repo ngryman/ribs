@@ -20,13 +20,12 @@ public:
 
 	static NAN_METHOD(FromFile);
 
+	std::string filename;
+	Pix* imageData;
+
 private:
 	Image();
     ~Image();
-
-	std::string filename;
-	int64_t width;
-	int64_t height;
 };
 
 #endif

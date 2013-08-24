@@ -8,6 +8,7 @@
 #include "image_decoder.h"
 
 using namespace v8;
+using namespace node;
 using namespace std;
 
 static void OnDecoded(ImageDecoder::Result* result);
@@ -38,8 +39,9 @@ NAN_METHOD(Image::New) {
 	NanScope();
 
 	Image* image = new Image();
-	image->width = args[0]->IsUndefined() ? 0 : args[0]->IntegerValue();
-	image->height = args[1]->IsUndefined() ? 0 : args[1]->IntegerValue();
+	if (NULL == image) {
+		return NanThrowError("Not enough memory.");
+	}
 
 	image->Wrap(args.This());
 	NanReturnValue(args.This());
@@ -48,13 +50,13 @@ NAN_METHOD(Image::New) {
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
 	Image* image = ObjectWrap::Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->width));
+	NanReturnValue(Number::New(image->imageData->w));
 }
 
 NAN_GETTER(Image::GetHeight) {
 	NanScope();
 	Image* image = ObjectWrap::Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->height));
+	NanReturnValue(Number::New(image->imageData->h));
 }
 
 NAN_METHOD(Image::FromFile) {
@@ -74,19 +76,17 @@ NAN_METHOD(Image::FromFile) {
 
 void OnDecoded(ImageDecoder::Result* result) {
 	// create the image instance
-	Handle<Value> imageArgs[] = {
-		Number::New(result->imageData->w),
-		Number::New(result->imageData->h)
-	};
-	Local<Object> instance = Image::constructor->NewInstance(sizeof(imageArgs), imageArgs);
+	Local<Object> instance = Image::constructor->NewInstance();
 
 	// link with image data
-	// TODO
+	Image* image = ObjectWrap::Unwrap<Image>(instance);
+	image->filename = result->filename;
+	image->imageData = result->imageData;
 
 	// execute the callback function
-	Handle<Value> callbackArgs[] = {
+	Handle<Value> args[] = {
 		Null(),
 		instance
 	};
-	result->jsCallback->Call(Context::GetCurrent()->Global(), 2, callbackArgs);
+	result->jsCallback->Call(Context::GetCurrent()->Global(), sizeof(args), args);
 }
