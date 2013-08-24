@@ -64,8 +64,7 @@ NAN_METHOD(Image::FromFile) {
 
 	// get filename & callback
 	string filename = FromV8String(args[0]);
-	Persistent<Function> callback;
-	NanAssignPersistent(Function, callback, Local<Function>::Cast(args[1]));
+	NanCallback* callback = new NanCallback(args[1].As<Function>());
 
 	// start the decoding process async
 	ImageDecoder::Decode(filename, OnDecoded, callback);
@@ -75,18 +74,25 @@ NAN_METHOD(Image::FromFile) {
 }
 
 void OnDecoded(ImageDecoder::Result* result) {
+	if (!result->error.empty()) {
+		// execute callback with error
+		Local<Value> args[] = {
+			Exception::Error(String::New(result->error.c_str()))
+		};
+		return result->callback->Call(sizeof(args), args);
+	}
+
 	// create the image instance
 	Local<Object> instance = Image::constructor->NewInstance();
-
 	// link with image data
 	Image* image = ObjectWrap::Unwrap<Image>(instance);
 	image->filename = result->filename;
 	image->imageData = result->imageData;
 
-	// execute the callback function
-	Handle<Value> args[] = {
-		Null(),
+	// execute callback with newly created image
+	Local<Value> args[] = {
+		Local<Value>::New(Null()),
 		instance
 	};
-	result->jsCallback->Call(Context::GetCurrent()->Global(), sizeof(args), args);
+	result->callback->Call(sizeof(args), args);
 }

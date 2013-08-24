@@ -14,12 +14,13 @@ public:
 	struct Result {
 		std::string filename;
 		Pix* imageData;
-		v8::Persistent<v8::Function> jsCallback;
+		NanCallback* callback;
+		std::string error;
 	};
 
 	typedef void (*Callback)(Result*);
 
-	static void Decode(const std::string& filename, Callback callback, v8::Persistent<v8::Function> jsCallback);
+	static void Decode(const std::string& filename, Callback callback, NanCallback* jsCallback);
 
 private:
 	ImageDecoder();

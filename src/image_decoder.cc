@@ -11,14 +11,15 @@ using namespace v8;
 using namespace std;
 
 struct Baton {
-	std::string filename;
+	// data
+	ImageDecoder::Result* result;
+	ImageDecoder::Callback callback;
+	// fs stuff
+	uv_fs_t fsReq;
 	uint8_t* buf;
 	int offset;
-	Pix* imageData;
-	uv_fs_t fsReq;
+	// decoder stuff
 	uv_work_t workReq;
-	ImageDecoder::Callback callback;
-	Persistent<Function> jsCallback;
 };
 
 static const int BUFFER_SIZE = 4096;
@@ -28,38 +29,31 @@ static void OnRead(uv_fs_t* req);
 static void OnClose(uv_fs_t* req);
 static void DecodeAsync(uv_work_t* req);
 static void OnDecoded(uv_work_t* req);
+static void Done(Baton* baton);
 
-void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callback, Persistent<Function> jsCallback) {
+void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callback, NanCallback* jsCallback) {
 	// create our Baton that will be passed over different uv calls
 	Baton* baton = new Baton();
-	// assign request variables
-	baton->filename = filename;
+	baton->result = new ImageDecoder::Result();
+	baton->result->filename = filename;
+	baton->result->callback = jsCallback;
 	baton->callback = callback;
-	baton->jsCallback = jsCallback;
-
-	// set request data pointer to Baton
-	baton->fsReq.data = static_cast<void*>(baton);
+	// reference baton in the request
+	baton->fsReq.data = baton;
 
 	// open the file async
-	uv_fs_open(uv_default_loop(), &baton->fsReq, baton->filename.c_str(), O_RDONLY, 0, OnOpen);
+	uv_fs_open(uv_default_loop(), &baton->fsReq, baton->result->filename.c_str(), O_RDONLY, 0, OnOpen);
 };
 
 void OnOpen(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
 
 	// fetch our Baton
-	Baton* baton = reinterpret_cast<Baton*>(req->data);
+	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
-		fprintf(stderr, "Error at opening file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
-
-		// TODO: factorize
-		// dispose the Persistent handle so the callback
-		// function can be garbage-collected
-		baton->jsCallback.Dispose();
-		// clean up any memory we allocated
-		delete baton;
-		return;
+		baton->result->error = "Error opening file: %s.", uv_strerror(uv_last_error(uv_default_loop()));
+		return Done(baton);
 	}
 
 	// allocate buffer now
@@ -72,19 +66,11 @@ void OnRead(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
 
 	// fetch our Baton
-	Baton* baton = reinterpret_cast<Baton*>(req->data);
+	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
-		fprintf(stderr, "Error at reading file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
-
-		// TODO: factorize
-		// dispose the Persistent handle so the callback
-		// function can be garbage-collected
-		baton->jsCallback.Dispose();
-		// clean up any memory we allocated
-		delete[] baton->buf;
-		delete baton;
-		return;
+		baton->result->error = "Error reading file: %s.", uv_strerror(uv_last_error(uv_default_loop()));
+		return Done(baton);
 	}
 
 	// schedule a new read all the buffer was read
@@ -100,14 +86,16 @@ void OnRead(uv_fs_t* req) {
 void OnClose(uv_fs_t* req) {
 	uv_fs_req_cleanup(req);
 
-	// fetch our Baton
-	Baton* baton = reinterpret_cast<Baton*>(req->data);
+	// fetch our baton
+	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
-		fprintf(stderr, "Error at closing file: %s.\n", uv_strerror(uv_last_error(uv_default_loop())));
+		baton->result->error = "Error closing file: %s.", uv_strerror(uv_last_error(uv_default_loop()));
+		return Done(baton);
 	}
 	else {
-		baton->workReq.data = static_cast<void*>(baton);
+		// reference baton in the request
+		baton->workReq.data = baton;
 
 		// pass the request to libuv to be run when a worker-thread is available to
 		uv_queue_work(
@@ -120,26 +108,30 @@ void OnClose(uv_fs_t* req) {
 }
 
 void DecodeAsync(uv_work_t* req) {
-	// fetch our Baton
-	Baton* baton = reinterpret_cast<Baton*>(req->data);
+	// fetch our baton
+	Baton* baton = static_cast<Baton*>(req->data);
+
 	// let leptonica fetch image data for us
-	baton->imageData = pixReadMem(baton->buf, sizeof(baton->buf));
+	baton->result->imageData = pixReadMem(baton->buf, sizeof(baton->buf));
+	// TODO: handle error
 };
 
 void OnDecoded(uv_work_t* req) {
 	NanScope();
 
-	// fetch our Baton
-	Baton* baton = reinterpret_cast<Baton*>(req->data);
+	// fetch our baton
+	Baton* baton = static_cast<Baton*>(req->data);
+	// and call Done directly
+	Done(baton);
+};
 
-	// build up our result
+void Done(Baton* baton) {
 	ImageDecoder::Result* result = new ImageDecoder::Result();
-	result->filename = baton->filename;
-	result->imageData = baton->imageData;
-	result->jsCallback = baton->jsCallback;
 
-	// TODO: free memory
+	// free baton allocated memory
+	if(baton->buf) delete[] baton->buf;
+	delete baton;
 
 	// and forward it to the callback
 	baton->callback(result);
-};
+}
