@@ -114,17 +114,17 @@ void DecodeAsync(uv_work_t* req) {
 
 	// let leptonica fetch image data for us
 	baton->result.imageData = pixReadMem(baton->buf, sizeof(baton->buf));
-	if (NULL == baton->result.imageData) {
-		baton->result.error = RibsError("Error decoding file", "TODO");
-	}
 };
 
 void OnDecoded(uv_work_t* req) {
 	NanScope();
-	Baton* baton = static_cast<Baton*>(req->data);
-	// TODO: handle error of image not decompressed
 
-	// and call Done directly
+	// check if image was decoded correctly
+	Baton* baton = static_cast<Baton*>(req->data);
+	if (NULL == baton->result.imageData) {
+		baton->result.error = RibsError("Error decoding file", "TODO");
+	}
+
 	Done(baton);
 };
 

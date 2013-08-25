@@ -96,19 +96,22 @@ void Image::Initialize(Handle<Object> target) {
 void OnDecoded(ImageDecoder::Result* result) {
 	NanScope();
 
+	int argc = 0;
+	Local<Value> argv[2];
+
 	// execute callback with error
 	if (!result->error.empty()) {
-		Local<Value> arg = Exception::Error(String::New(result->error.c_str()));
-		return result->callback->Call(1, &arg);
+		argv[argc++] = Exception::Error(String::New(result->error.c_str()));
+	}
+	else {
+		// create the image instance with data
+		Local<Object> instance = Image::New(result->filename, result->imageData);
+
+		// execute callback with newly created image
+		argv[argc++] = Local<Value>::New(Null());
+		argv[argc++] = instance;
 	}
 
-	// create the image instance with data
-	Local<Object> instance = Image::New(result->filename, result->imageData);
-
-	// execute callback with newly created image
-	Local<Value> args[] = {
-		Local<Value>::New(Null()),
-		instance
-	};
-	result->callback->Call(sizeof(args), args);
+	result->callback->Call(argc, argv);
+	delete result->callback;
 }
