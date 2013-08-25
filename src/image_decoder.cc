@@ -76,7 +76,7 @@ void OnRead(uv_fs_t* req) {
 	// copy data
 	baton->buffer.append(baton->buf);
 
-	// schedule a new read all the buffer was read
+	// schedule a new read if all the buffer was read
 	if (req->result == SmartBuffer::ChunkSize) {
 		uv_fs_read(uv_default_loop(), &baton->fs, req->fd, baton->buf, SmartBuffer::ChunkSize, baton->buffer.size(), OnRead);
 	}
@@ -108,7 +108,15 @@ void DecodeAsync(uv_work_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	// let leptonica fetch image data for us
-	baton->result.imageData = pixReadMem(baton->buf, sizeof(baton->buf));
+	//
+	// leptonica can read from memory, but not on Windows:
+	//   http://tpgit.github.io/UnOfficialLeptDocs/leptonica/README.html#gnu-runtime-functions-for-stream-redirection-to-memory
+	// so for now, a ugly thing is done in order to continue the dev: leptonica re-reads the file from disk... yeah i know, i know...
+#ifdef WIN32
+	baton->result.imageData = pixRead(baton->result.filename.c_str());
+#else
+	baton->result.imageData = pixReadMem(baton->buffer, baton->buffer.size());
+#endif
 };
 
 void OnDecoded(uv_work_t* req) {

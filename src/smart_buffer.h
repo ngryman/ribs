@@ -17,6 +17,8 @@ public:
 	bool append(uint8_t* buf);
 	int size() const;
 
+	operator const uint8_t* () const;
+
 	static const int ChunkSize;
 
 private:

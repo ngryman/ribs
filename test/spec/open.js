@@ -28,9 +28,9 @@ var FILENAME_SRC = __dirname + '/../fixtures/in.png';
  * Tests helper functions.
  */
 
-var checkDone = curry(function(done, err, res) {
+var checkDone = curry(function(done, err, image) {
 	should.not.exist(err);
-	res.should.be.instanceof(Image);
+	image.should.be.instanceof(Image);
 	done();
 });
 

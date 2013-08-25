@@ -20,7 +20,7 @@ public:
 
 private:
 	Image(v8::Handle<v8::Object> wrapper);
-    ~Image();
+	~Image();
 
 	static v8::Persistent<v8::FunctionTemplate> constructorTemplate;
 
