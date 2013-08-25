@@ -23,6 +23,8 @@ var ribs = require('../..'),
  */
 
 var FILENAME_SRC = __dirname + '/../fixtures/in.png';
+var WIDTH = 160;
+var HEIGHT = 90;
 
 /**
  * Tests helper functions.
@@ -31,6 +33,8 @@ var FILENAME_SRC = __dirname + '/../fixtures/in.png';
 var checkDone = curry(function(done, err, image) {
 	should.not.exist(err);
 	image.should.be.instanceof(Image);
+	image.width.should.equal(WIDTH);
+	image.height.should.equal(HEIGHT);
 	done();
 });
 

@@ -62,6 +62,7 @@ void OnOpen(uv_fs_t* req) {
 
 	// read the file async
 	uv_fs_read(uv_default_loop(), &baton->fs, req->result, baton->buf, SmartBuffer::ChunkSize, 0, OnRead);
+	uv_fs_req_cleanup(req);
 }
 
 void OnRead(uv_fs_t* req) {
