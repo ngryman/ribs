@@ -22,20 +22,22 @@ Responsive images is the next big challenge.
 Some [client-side patterns] already exist along with [build tasks] in order to **procude**, **optimize**, **manage** and
 **pick** the right image for the right screen size.
 
-In the wild, the fact is that this is not as much used as it should be. AFAIK this is probably because it asks a certain
-amount of time to choose and apply a technique and it needs too much tools in the process. The fact is, developpers
-don't take enough time for this and tend to neglect this part of an application.
+In the wild, this is not as much used as it should be. AFAIK this is probably because it asks a certain amount of time
+to choose and apply a technique and it too much tools in the process. The fact is, developpers don't take enough time
+for this and tend to neglect this part of an application.
 
-I believe in the *on-the-fly* way of thinking that the Web offers. So, for this problem, just ask the image you want,
-and you will receive it processed, point.
+I believe in the *on-the-fly* way of thinking that the Web cam offer. So, for this problem, just ask the image you want,
+and you will receive it already processed, end of story.
 This also have to garanty that you:
 - do not **load more than your are going to show**.
 - do not **scale the image in CSS**.
 - do not **load important images with javascript**.
+- do not **handle each image sizes manually**.
+- **do simply your workflow**.
 
 From [RESS slides].
 
-This is pretty much what [Sencha.io Src] provides. It needs to be available in the wild, with a good level of
+This is pretty much what [Sencha.io Src] offers. It needs to be available in the wild, with a good level of
 customization.
 
 [client-side patterns]: http://css-tricks.com/which-responsive-images-solution-should-you-use
@@ -50,7 +52,7 @@ customization.
 - **Proxy** existing servers.
 - Be **super easy** to deploy and use.
 - Propose **different points of customization** to be as interop as it can be.
-- Support [art direction] (automatically?).
+- Support [art direction], automatically perhaps?.
 
 [art direction]: http://usecases.responsiveimages.org/#art-direction
 
