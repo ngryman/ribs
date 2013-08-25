@@ -23,7 +23,6 @@ var ribs = require('../..'),
  */
 
 var FILENAME_SRC = __dirname + '/../fixtures/in.png';
-console.log(process.env.NODE_ENV);
 
 /**
  * Tests helper functions.

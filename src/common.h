@@ -27,8 +27,8 @@ inline static std::string FromV8String(v8::Local<v8::Value> v8Str) {
 }
 
 static std::string RibsError(const char* message, const char* description) {
-	std::ostringstream stream(message);
-	stream << ": " << description << ".";
+	std::ostringstream stream;
+	stream << message << ": " << description;
 	return stream.str();
 }
 
