@@ -24,7 +24,7 @@ public:
 
 private:
 	ImageDecoder();
-    ~ImageDecoder();
+	~ImageDecoder();
 };
 
 #endif
