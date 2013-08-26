@@ -25,6 +25,7 @@ struct Baton {
 
 static void OnOpen(uv_fs_t* req);
 static void OnRead(uv_fs_t* req);
+static void Close(uv_fs_t* req);
 static void DecodeAsync(uv_work_t* req);
 static void OnDecoded(uv_work_t* req);
 static void Done(Baton* baton);
@@ -56,21 +57,22 @@ void OnOpen(uv_fs_t* req) {
 	baton->buf = new uint8_t[SmartBuffer::ChunkSize];
 	if (NULL == baton->buf) {
 		baton->result.error = RibsError("Error opening file", "not enough memory");
-		uv_fs_req_cleanup(req);
+		Close(req);
 		return Done(baton);
 	}
 
 	// read the file async
-	uv_fs_read(uv_default_loop(), &baton->fs, req->result, baton->buf, SmartBuffer::ChunkSize, 0, OnRead);
 	uv_fs_req_cleanup(req);
+	uv_fs_read(uv_default_loop(), &baton->fs, req->result, baton->buf, SmartBuffer::ChunkSize, 0, OnRead);
 }
 
 void OnRead(uv_fs_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
+	printf("%d", req->result);
 
 	if (-1 == req->result) {
 		baton->result.error = RibsError("Error reading file", uv_strerror(uv_last_error(uv_default_loop())));
-		uv_fs_req_cleanup(req);
+		Close(req);
 		return Done(baton);
 	}
 
@@ -79,18 +81,11 @@ void OnRead(uv_fs_t* req) {
 
 	// schedule a new read if all the buffer was read
 	if (req->result == SmartBuffer::ChunkSize) {
+		uv_fs_req_cleanup(req);
 		uv_fs_read(uv_default_loop(), &baton->fs, req->fd, baton->buf, SmartBuffer::ChunkSize, baton->buffer.size(), OnRead);
 	}
 	else {
-		// close file sync
-		// it's a quick operation that does not need threading overhead
-		int err = uv_fs_close(uv_default_loop(), &baton->fs, req->fd, NULL);
-		if (-1 == err) {
-			baton->result.error = RibsError("Error closing file", uv_strerror(uv_last_error(uv_default_loop())));
-			uv_fs_req_cleanup(req);
-			return Done(baton);
-		}
-
+		Close(req);
 		// reference baton in the request
 		baton->work.data = baton;
 		// pass the request to libuv to be run when a worker-thread is available to
@@ -101,8 +96,22 @@ void OnRead(uv_fs_t* req) {
 			(uv_after_work_cb)OnDecoded
 		);
 	}
+}
 
+void Close(uv_fs_t* req) {
+	// clean previous request
 	uv_fs_req_cleanup(req);
+
+	// close file sync
+	// it's a quick operation that does not need threading overhead
+	int err = uv_fs_close(uv_default_loop(), req, req->fd, NULL);
+
+	// fail silently
+	if (-1 == err) {
+		// TODO: log warning
+		//baton->result.error = RibsError("Error closing file", uv_strerror(uv_last_error(uv_default_loop())));
+		uv_fs_req_cleanup(req);
+	}
 }
 
 void DecodeAsync(uv_work_t* req) {

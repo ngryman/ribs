@@ -23,10 +23,10 @@ SmartBuffer::~SmartBuffer() {
 bool SmartBuffer::append(uint8_t* buf) {
 	chunksCount++;
 	if (1 == chunksCount) {
-		chunksPtr = (uint8_t*)calloc(ChunkSize, sizeof(uint8_t));
+		chunksPtr = static_cast<uint8_t*>(calloc(ChunkSize, sizeof(uint8_t)));
 	}
 	else {
-		chunksPtr = (uint8_t*)realloc(chunksPtr, chunksCount * ChunkSize * sizeof(uint8_t));
+		chunksPtr = static_cast<uint8_t*>(realloc(chunksPtr, chunksCount * ChunkSize * sizeof(uint8_t)));
 	}
 
 	if (NULL == chunksPtr) {

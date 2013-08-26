@@ -35,6 +35,7 @@ var checkDone = curry(function(done, err, image) {
 	image.should.be.instanceof(Image);
 	image.width.should.equal(WIDTH);
 	image.height.should.equal(HEIGHT);
+	image.pixels.should.be.instanceof(Buffer);
 	done();
 });
 

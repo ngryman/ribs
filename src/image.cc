@@ -48,15 +48,22 @@ Local<Object> Image::New(const string& filename, Pix* imageData) {
 
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
-	Image* image = ObjectWrap::Unwrap<Image>(args.This());
+	Image* image = Unwrap<Image>(args.This());
 	NanReturnValue(Number::New(image->imageData->w));
 }
 
 NAN_GETTER(Image::GetHeight) {
 	NanScope();
-	Image* image = ObjectWrap::Unwrap<Image>(args.This());
+	Image* image = Unwrap<Image>(args.This());
 	NanReturnValue(Number::New(image->imageData->h));
 }
+
+NAN_GETTER(Image::GetPixels) {
+	NanScope();
+	Image* image = Unwrap<Image>(args.This());
+	Local<Value> pixels = NanNewBufferHandle(reinterpret_cast<char*>(image->imageData->data), image->imageData->w * image->imageData->h);
+	NanReturnValue(pixels);
+};
 
 NAN_METHOD(Image::FromFile) {
 	NanScope();
@@ -85,6 +92,7 @@ void Image::Initialize(Handle<Object> target) {
 	Local<ObjectTemplate> prototype = constructorTemplate->PrototypeTemplate();
 	prototype->SetAccessor(NanSymbol("width"), GetWidth);
 	prototype->SetAccessor(NanSymbol("height"), GetHeight);
+	prototype->SetAccessor(NanSymbol("pixels"), GetPixels);
 
 	// object
 	NODE_SET_METHOD(constructorTemplate->GetFunction(), "fromFile", FromFile);

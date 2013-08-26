@@ -26,6 +26,7 @@ private:
 
 	static NAN_GETTER(GetWidth);
 	static NAN_GETTER(GetHeight);
+	static NAN_GETTER(GetPixels);
 	static NAN_METHOD(FromFile);
 };
 
