@@ -22,7 +22,7 @@ var ribs = require('../..'),
  * Tests constants.
  */
 
-var FILENAME_SRC = __dirname + '/../fixtures/in.png';
+var FILENAME_SRC = __dirname + '/../fixtures/in';
 var WIDTH = 160;
 var HEIGHT = 90;
 
@@ -51,16 +51,16 @@ var checkDoneErr = curry(function(trueErr, done, err) {
 
 describe('open operation', function() {
 	it('should accept a filename', function(done) {
-		ribs.open(FILENAME_SRC).done(checkDone(done));
+		ribs.open(FILENAME_SRC + '.png').done(checkDone(done));
 	});
 
 	it('should return a Pipeline', function() {
-		var ret = ribs.open(FILENAME_SRC);
+		var ret = ribs.open(FILENAME_SRC + '.png');
 		ret.should.be.instanceof(Pipeline);
 	});
 
 	it('should pass an error if file is not found', function(done) {
-		ribs.open(FILENAME_SRC + '1337').done(checkDoneErr('ENOENT', done));
+		ribs.open('1337').done(checkDoneErr('no such file or directory', done));
 	});
 	
 	it('should pass an error for invalid filename', function(done) {
@@ -68,15 +68,15 @@ describe('open operation', function() {
 	});
 
 	it('should open jpg files', function(done) {
-
+		ribs.open(FILENAME_SRC + '.jpg').done(checkDone(done));
 	});
 
 	it('should open png files', function(done) {
-
+		ribs.open(FILENAME_SRC + '.png').done(checkDone(done));
 	});
 
 	it('should open gif files', function(done) {
-
+		ribs.open(FILENAME_SRC + '.gif').done(checkDone(done));
 	});
 
 	it('should be aliased to ribs', function(done) {
