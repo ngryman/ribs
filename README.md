@@ -143,3 +143,9 @@ start of the width of height parameters:
 - document.body.offsetWidth:	`bow`
 
 *To specify...*
+
+## Contact
+
+- Twitter: https://twitter.com/getribs
+- Mailing list: http://groups.google.com/group/getribs
+- Issues: https://github.com/ngryman/ribs/issues
