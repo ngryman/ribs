@@ -1,7 +1,7 @@
 /*!
  * ribs
  * Copyright (c) 2013 Nicolas Gryman <ngryman@gmail.com>
- * MIT Licensed
+ * LGPL Licensed
  */
 
 'use strict';
@@ -15,8 +15,10 @@ var ribs = require('../..'),
 	Image = ribs.Image,
 	Pipeline = require('../../lib/pipeline'),
 	curry = require('curry'),
+	async = require('async'),
 	chai = require('chai'),
-	should = chai.should();
+	should = chai.should(),
+	Assertion = chai.Assertion;;
 
 /**
  * Tests constants.
@@ -35,6 +37,7 @@ var checkDone = curry(function(done, err, image) {
 	image.should.be.instanceof(Image);
 	image.width.should.equal(WIDTH);
 	image.height.should.equal(HEIGHT);
+	image.depth.should.within(8, 32);
 	image.pixels.should.be.instanceof(Buffer);
 	done();
 });
@@ -43,6 +46,37 @@ var checkDoneErr = curry(function(trueErr, done, err) {
 	err.should.be.instanceof(Error);
 	err.message.should.have.string(trueErr);
 	done();
+});
+
+var asyncOpen = curry(function(ext, callback) {
+	ribs.open(FILENAME_SRC + '.' + ext).done(callback);
+});
+
+Assertion.addMethod('samePixels', function(image) {
+	var obj = this._obj, i, check = true;
+
+	// first, our instanceof check, shortcut
+	new Assertion(obj).to.be.instanceof(Image);
+	new Assertion(image).to.be.instanceof(Image);
+
+	// second, check for 100 first pixels
+	for (i = 0; i < 100; i++) {
+		if (obj.pixels[i] != image.pixels[i]) {
+			check = false;
+			break;
+		}
+	}
+
+	// assertion
+	this.assert(
+		check,
+		'expected #{this} to have the same pixels as #{exp}',
+		'expected #{this} to not have the same pixels as #{exp}',
+		image
+	);
+});
+chai.use(function(chai, utils) {
+
 });
 
 /**
@@ -81,5 +115,16 @@ describe('open operation', function() {
 
 	it('should be aliased to ribs', function(done) {
 		ribs(FILENAME_SRC).done(checkDone(done));
+	});
+
+	xit('should return the same data from several image formats', function(done) {
+		async.parallel({
+			jpg: asyncOpen('jpg'),
+			png: asyncOpen('png'),
+			gif: asyncOpen('gif')
+		}, function(err, res) {
+			res.png.should.have.samePixels(res.gif);
+			done();
+		})
 	});
 });

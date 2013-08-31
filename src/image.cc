@@ -1,7 +1,7 @@
 /*!
  * ribs
  * Copyright (c) 2013 Nicolas Gryman <ngryman@gmail.com>
- * MIT Licensed
+ * LGPL Licensed
  */
 
 #include "image.h"
@@ -34,14 +34,30 @@ NAN_METHOD(Image::New) {
 	NanReturnValue(args.This());
 }
 
-Local<Object> Image::New(const string& filename, Pix* imageData) {
+Local<Object> Image::New(const string& filename, int width, int height, int depth, uint32_t* pixels) {
 	NanScope();
 
 	// create a new instance an feed it
 	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
 	Image* image = Unwrap<Image>(instance);
 	image->filename = filename;
-	image->imageData = imageData;
+	image->width = width;
+	image->height = height;
+	image->depth = depth;
+	// TODO: pixCreate?
+
+	NanReturnValue(instance);
+};
+
+Local<Object> Image::New(const string& filename, Pix* raw) {
+	NanScope();
+
+	// create a new instance an feed it
+	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
+	Image* image = Unwrap<Image>(instance);
+	image->filename = filename;
+	pixGetDimensions(raw, &image->width, &image->height, &image->depth);
+	image->raw = raw;
 
 	NanReturnValue(instance);
 };
@@ -49,19 +65,35 @@ Local<Object> Image::New(const string& filename, Pix* imageData) {
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
 	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->imageData->w));
+	NanReturnValue(Number::New(image->width));
 }
 
 NAN_GETTER(Image::GetHeight) {
 	NanScope();
 	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->imageData->h));
+	NanReturnValue(Number::New(image->height));
+}
+
+NAN_GETTER(Image::GetDepth) {
+	NanScope();
+	Image* image = Unwrap<Image>(args.This());
+	NanReturnValue(Number::New(image->depth));
 }
 
 NAN_GETTER(Image::GetPixels) {
 	NanScope();
 	Image* image = Unwrap<Image>(args.This());
-	Local<Value> pixels = NanNewBufferHandle(reinterpret_cast<char*>(image->imageData->data), image->imageData->w * image->imageData->h);
+
+	if (pixGetColormap(image->raw)) {
+		Pix* rgbRaw = pixRemoveColormap(image->raw, REMOVE_CMAP_TO_FULL_COLOR);
+		pixDestroy(&image->raw);
+		image->raw = rgbRaw;
+	}
+
+	//Pix* pixd = pixConvertTo32(image->raw);
+	// TODO: error check
+
+	Local<Value> pixels = NanNewBufferHandle(reinterpret_cast<char*>(pixGetData(image->raw)), image->width * image->height);
 	NanReturnValue(pixels);
 };
 
@@ -92,6 +124,7 @@ void Image::Initialize(Handle<Object> target) {
 	Local<ObjectTemplate> prototype = constructorTemplate->PrototypeTemplate();
 	prototype->SetAccessor(NanSymbol("width"), GetWidth);
 	prototype->SetAccessor(NanSymbol("height"), GetHeight);
+	prototype->SetAccessor(NanSymbol("depth"), GetDepth);
 	prototype->SetAccessor(NanSymbol("pixels"), GetPixels);
 
 	// object
@@ -99,6 +132,11 @@ void Image::Initialize(Handle<Object> target) {
 
 	// export
 	target->Set(NanSymbol("Image"), constructorTemplate->GetFunction());
+
+	// initialize image decoder
+	ImageDecoder::Initialize();
+
+	// TODO return?
 }
 
 void OnDecoded(ImageDecoder::Result* result) {
@@ -113,7 +151,7 @@ void OnDecoded(ImageDecoder::Result* result) {
 	}
 	else {
 		// create the image instance with data
-		Local<Object> instance = Image::New(result->filename, result->imageData);
+		Local<Object> instance = Image::New(result->filename, result->raw);
 
 		// execute callback with newly created image
 		argv[argc++] = Local<Value>::New(Null());

@@ -5,7 +5,6 @@
  */
 
 'use strict';
-process.env.NODE_ENV = 'test';
 
 /**
  * Module dependencies.
@@ -82,9 +81,9 @@ xdescribe('shrink operation', function() {
 			}).should.not.throw();
 		});
 
-		it('should accept width and height as string', function(done) {
+		it('should accept width and height as percentage', function(done) {
 			(function() {
-				ribs.shrink(FILENAME_SRC, WIDTH_2.toString(), HEIGHT_2.toString(), checkCallbackSize_2(done));
+				ribs.shrink(FILENAME_SRC, '50%', '50%', checkCallbackSize_2(done));
 			}).should.not.throw();
 		});
 
@@ -126,7 +125,7 @@ xdescribe('shrink operation', function() {
 		it('should shrink to the given width and height by default', function(done) {
 			ribs.shrink(FILENAME_SRC, WIDTH_2, HEIGHT_2, checkCallbackSize_2(done));
 		});
-		
+
 		it('should not upscale', function(done) {
 			async.parallel([
 				asyncCall(FILENAME_SRC, WIDTH * 2, HEIGHT * 2, WIDTH, HEIGHT),
@@ -141,51 +140,6 @@ xdescribe('shrink operation', function() {
 				asyncCall(FILENAME_SRC, null, HEIGHT_2, WIDTH_2, HEIGHT_2),
 				asyncCall(FILENAME_SRC, WIDTH_2, HEIGHT * 2, WIDTH_2, HEIGHT_2),
 				asyncCall(FILENAME_SRC, WIDTH * 2, HEIGHT_2, WIDTH_2, HEIGHT_2)
-			], done);
-		});
-	});
-	
-	describe('with formulaic values', function() {
-		it('should deduct a negative value', function(done) {
-			async.parallel([
-				asyncCall(FILENAME_SRC, -10, 0, WIDTH - 20, 79),
-				asyncCall(FILENAME_SRC, 0, -10, 124, HEIGHT - 20),
-				asyncCall(FILENAME_SRC, -10, -10, 124, HEIGHT - 20),
-				asyncCall(FILENAME_SRC, '-10', '-10', 124, HEIGHT - 20),
-				asyncCall(FILENAME_SRC, '100-10', 0, 90, 51)
-			], done);
-		});
-
-		it('should multiply by a percentage', function(done) {
-			async.parallel([
-				asyncCall(FILENAME_SRC, 'x50', 0, WIDTH_2, HEIGHT_2),
-				asyncCall(FILENAME_SRC, 0, 'x50', WIDTH_2, HEIGHT_2),
-				asyncCall(FILENAME_SRC, 'x50', 'x50', WIDTH_2, HEIGHT_2),
-				asyncCall(FILENAME_SRC, '100x50', 0, 50, 28)
-			], done);
-		});
-		
-		it('should add a value', function(done) {
-			async.parallel([
-				asyncCall(FILENAME_SRC, '100a50', 0, 150, 84),
-				asyncCall(FILENAME_SRC, 0, '10a50', 107, 60),
-				asyncCall(FILENAME_SRC, '100a50', '10a50', 107, 60)
-			], done);
-		});
-
-		it('should round down to a multiple of a value', function(done) {
-			async.parallel([
-				asyncCall(FILENAME_SRC, 'r50', 0, 150, 84),
-				asyncCall(FILENAME_SRC, 0, 'r50', 89, 50),
-				asyncCall(FILENAME_SRC, 'r50', 'r50', 89, 50)
-			], done);
-		});
-
-		it('should rox with complex formulas', function(done) {
-			async.parallel([
-				asyncCall(FILENAME_SRC, '-10x50', 0, 75, 42),
-				asyncCall(FILENAME_SRC, 'x50a10', 0, 90, 51),
-				asyncCall(FILENAME_SRC, 'a50r160', 0, WIDTH, HEIGHT)
 			], done);
 		});
 	});

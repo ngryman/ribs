@@ -21,7 +21,7 @@
 		"canvas"
 	],
 	"author": "Nicolas Gryman <ngryman@gmail.com>",
-	"license": "MIT",
+	"license": "LGPL",
 	"dependencies": {
 		"curry": "~1.0.2",
 		"async": "~0.2.9",

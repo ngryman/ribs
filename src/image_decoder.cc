@@ -1,7 +1,7 @@
 /*!
  * ribs
  * Copyright (c) 2013 Nicolas Gryman <ngryman@gmail.com>
- * MIT Licensed
+ * LGPL Licensed
  */
 
 #include "image_decoder.h"
@@ -29,6 +29,11 @@ static void Close(uv_fs_t* req);
 static void DecodeAsync(uv_work_t* req);
 static void OnDecoded(uv_work_t* req);
 static void Done(Baton* baton);
+
+void ImageDecoder::Initialize(void) {
+	// ensure that leptonica do read png alpha channel
+	l_pngSetStripAlpha(0);
+}
 
 void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callback, NanCallback* jsCallback) {
 	// create our Baton that will be passed over different uv calls
@@ -68,7 +73,6 @@ void OnOpen(uv_fs_t* req) {
 
 void OnRead(uv_fs_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
-	printf("%d", req->result);
 
 	if (-1 == req->result) {
 		baton->result.error = RibsError("Error reading file", uv_strerror(uv_last_error(uv_default_loop())));
@@ -123,18 +127,26 @@ void DecodeAsync(uv_work_t* req) {
 	//   http://tpgit.github.io/UnOfficialLeptDocs/leptonica/README.html#gnu-runtime-functions-for-stream-redirection-to-memory
 	// so for now, a ugly thing is done in order to continue the dev: leptonica re-reads the file from disk... yeah i know, i know...
 #ifdef WIN32
-	baton->result.imageData = pixRead(baton->result.filename.c_str());
+	Pix* raw = pixRead(baton->result.filename.c_str());
 #else
-	baton->result.imageData = pixReadMem(baton->buffer, baton->buffer.size());
+	Pix* raw = baton->result.imageData = pixReadMem(baton->buffer, baton->buffer.size());
 #endif
+
+	// convert to 32bpp
+	// pixEndianByteSwapNew
+	/*if (1 == pixGetDepth(raw)) {
+
+	}*/
+	baton->result.raw = raw;
 };
 
 void OnDecoded(uv_work_t* req) {
 	NanScope();
 
 	// check if image was decoded correctly
+	// TODO: check will be done before this
 	Baton* baton = static_cast<Baton*>(req->data);
-	if (NULL == baton->result.imageData) {
+	if (NULL == baton->result.raw) {
 		baton->result.error = RibsError("Error decoding file", "TODO");
 	}
 

@@ -1,7 +1,7 @@
 /*!
  * ribs
  * Copyright (c) 2013 Nicolas Gryman <ngryman@gmail.com>
- * MIT Licensed
+ * LGPL Licensed
  */
 
 #ifndef __RIBS_IMAGE_DECODER_H__
@@ -13,13 +13,14 @@ class ImageDecoder {
 public:
 	struct Result {
 		std::string filename;
-		Pix* imageData;
+		Pix* raw;
 		NanCallback* callback;
 		std::string error;
 	};
 
 	typedef void (*Callback)(Result*);
 
+	static void Initialize(void);
 	static void Decode(const std::string& filename, Callback callback, NanCallback* jsCallback);
 
 private:
