@@ -16,12 +16,12 @@
 		"conditions": [
 			["OS=='win'", {
 				"libraries": [
-					"-l../deps/leptonica/lib/liblept168-static-mtdll.lib",
-					"-l../deps/leptonica/lib/giflib416-static-mtdll.lib",
-					"-l../deps/leptonica/lib/libjpeg8c-static-mtdll.lib",
-					"-l../deps/leptonica/lib/libpng143-static-mtdll.lib",
-					"-l../deps/leptonica/lib/libtiff394-static-mtdll.lib",
-					"-l../deps/leptonica/lib/zlib125-static-mtdll.lib",
+					"-l../deps/leptonica/lib/liblept.lib",
+					"-l../deps/leptonica/lib/giflib.lib",
+					"-l../deps/leptonica/lib/libjpeg.lib",
+					"-l../deps/leptonica/lib/libpng.lib",
+					"-l../deps/leptonica/lib/libtiff.lib",
+					"-l../deps/leptonica/lib/zlib.lib",
 				],
 				"include_dirs": [
 					"deps/leptonica/include",
