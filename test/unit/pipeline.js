@@ -84,7 +84,7 @@ var checkError = curry(function (operations, expectedName, expectedErr, done, er
 
 describe('Pipeline', function() {
 	beforeEach(function() {
-		this.pipeline = Pipeline();
+		this.pipeline = new Pipeline();
 	});
 
 	describe('constructor', function() {
@@ -94,8 +94,10 @@ describe('Pipeline', function() {
 		});
 		
 		it('should support a shortcut syntax', function() {
-			this.pipeline.should.be.instanceof(Pipeline);
-			this.pipeline.should.have.property('queue').and.be.instanceof(Array);
+			/*jshint newcap:false*/
+			var p = Pipeline();
+			p.should.be.instanceof(Pipeline);
+			p.should.have.property('queue').and.be.instanceof(Array);
 		});
 	});
 
@@ -248,14 +250,11 @@ describe('Pipeline', function() {
 
 	describe('add', function() {
 		it('should add an operation', function(done) {
-			var op = add();
+			var p = this.pipeline, op = add();
 			Pipeline.operations.should.have.property(op.name);
 			Pipeline.operations[op.name].should.equal(op.operation);
-			Pipeline()[op.name].should.be.a('function');
-			this.pipeline[op.name]().done(function() {
-				op.spy.should.have.been.calledOnce;
-				done();
-			});
+			p[op.name].should.be.a('function');
+			this.pipeline[op.name]().done(checkOk(op, done));
 		});
 	});
 });

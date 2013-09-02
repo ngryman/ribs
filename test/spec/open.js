@@ -53,6 +53,7 @@ var asyncOpen = curry(function(ext, callback) {
 });
 
 Assertion.addMethod('samePixels', function(image) {
+	/*jshint nomen:false*/
 	var obj = this._obj, i, check = true;
 
 	// first, our instanceof check, shortcut
@@ -125,6 +126,6 @@ describe('open operation', function() {
 		}, function(err, res) {
 			res.png.should.have.samePixels(res.gif);
 			done();
-		})
+		});
 	});
 });

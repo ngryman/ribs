@@ -26,16 +26,15 @@ module.exports = function(grunt) {
 		},
 		// TODO: use eslint when available
 		jshint: {
-			options: {
-				jshintrc: '.jshintrc'
-			},
+			options: grunt.file.readJSON('.jshintrc'),
 			all: [
 				'Gruntfile.js',
 				'lib/{,*/}*.js'
 			],
 			tests: {
 				options: {
-					expr: true
+					expr: true,
+					immed: false
 				},
 				src: ['<%= config.test %>']
 			}

@@ -55,9 +55,9 @@ bindings.shrink = function(hookChain, filename, callback) {
  * @param filename
  * @param input
  */
-bindings.shrinkStream = function(hookChain, filename, input) {
-	return new Stream();
-};
+//bindings.shrinkStream = function(hookChain, filename, input) {
+//	return new Stream();
+//};
 
 /**
  *
