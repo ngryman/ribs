@@ -18,7 +18,7 @@ var ribs = require('../..'),
 	async = require('async'),
 	chai = require('chai'),
 	should = chai.should(),
-	Assertion = chai.Assertion;;
+	Assertion = chai.Assertion;
 
 /**
  * Tests constants.

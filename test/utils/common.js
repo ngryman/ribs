@@ -1,0 +1,19 @@
+/*!
+ * ribs
+ * Copyright (c) 2013 Nicolas Gryman <ngryman@gmail.com>
+ * LGPL Licensed
+ */
+
+'use strict';
+
+/**
+ * Common test modules dependencies.
+ */
+
+global.curry = require('curry');
+global.async = require('async');
+global.chai = require('chai');
+global.sinon = require('sinon');
+global.should = global.chai.should();
+
+global.chai.use(require('sinon-chai'));

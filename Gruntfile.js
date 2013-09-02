@@ -13,7 +13,9 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		config: {
-			test: 'test/{,*/}*.js'
+			test: 'test/{,*/}*.js',
+			testUnit: 'test/unit/*.js',
+			testSpec: 'test/spec/*.js'
 		},
 		meta: {
 			banner: '/*! <%%= pkg.name %> - v<%%= pkg.version %> - ' +
@@ -41,12 +43,21 @@ module.exports = function(grunt) {
 		mochacli: {
 			options: {
 				reporter: 'spec',
-				bail: true
+				bail: true,
+				require: ['./test/utils/common']
 			},
-			all: ['<%= config.test %>']
+			unit: {
+				options: {
+					bail: false
+				},
+				src: ['<%= config.testUnit %>']
+			},
+			spec: ['<%= config.testSpec %>']
 		}
 	});
 
 	// front tasks
 	grunt.registerTask('test', [/*'jshint', */'mochacli']);
+	grunt.registerTask('test:unit', [/*'jshint', */'mochacli:unit']);
+	grunt.registerTask('test:spec', [/*'jshint', */'mochacli:spec']);
 };
