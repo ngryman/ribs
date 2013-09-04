@@ -14,8 +14,8 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		config: {
 			test: 'test/{,*/}*.js',
-			testUnit: 'test/unit/*.js',
-			testSpec: 'test/spec/*.js'
+			testUnit: 'test/unit/{,*/}*.js',
+			testSpec: 'test/spec/{,*/}*.js'
 		},
 		meta: {
 			banner: '/*! <%%= pkg.name %> - v<%%= pkg.version %> - ' +
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
 			options: {
 				reporter: 'spec',
 				bail: true,
-				require: ['./test/utils/common']
+				require: ['./test/common']
 			},
 			unit: {
 				options: {

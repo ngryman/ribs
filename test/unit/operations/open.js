@@ -10,7 +10,7 @@
  * Module dependencies.
  */
 
-var open = require('../../lib/operations/open');
+var open = require('../../../lib/operations/open');
 
 /**
  * Tests constants.

@@ -10,8 +10,8 @@
  * Module dependencies.
  */
 
-var open = require('../../lib/operations/open'),
-	save = require('../../lib/operations/save'),
+var open = require('../../../lib/operations/open'),
+	save = require('../../../lib/operations/save'),
 	fs = require('fs');
 
 /**
