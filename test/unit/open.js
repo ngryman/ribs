@@ -54,6 +54,7 @@ var testOpen = curry(function(filename, expectedErr, done) {
  * Test suite.
  */
 
+// TODO: see if all alternatives are (1) relevant, (2) possible
 describe('open operation', function() {
 	describe('with jpg files', function() {
 		it('should open when 100% compressed', testOpen('in-q100.jpg', null));
