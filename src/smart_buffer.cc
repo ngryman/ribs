@@ -34,12 +34,12 @@ bool SmartBuffer::append(uint8_t* buf) {
 		return false;
 	}
 	return true;
-};
+}
 
 int SmartBuffer::size() const {
 	return chunksCount * ChunkSize;
-};
+}
 
 SmartBuffer::operator const uint8_t* () const {
 	return chunksPtr;
-};
+}

@@ -17,6 +17,7 @@ struct Baton {
 	ImageDecoder::Callback callback;
 	// fs stuff
 	uv_fs_t fs;
+	uv_file fd;
 	uint8_t* buf;
 	SmartBuffer buffer;
 	// decoder stuff
@@ -47,7 +48,7 @@ void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callbac
 
 	// open the file async
 	uv_fs_open(uv_default_loop(), &baton->fs, baton->result.filename.c_str(), O_RDONLY, 0, OnOpen);
-};
+}
 
 void OnOpen(uv_fs_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
@@ -66,9 +67,12 @@ void OnOpen(uv_fs_t* req) {
 		return Done(baton);
 	}
 
+	// stores file descriptor on read
+	baton->fd = req->result;
+
 	// read the file async
 	uv_fs_req_cleanup(req);
-	uv_fs_read(uv_default_loop(), &baton->fs, req->result, baton->buf, SmartBuffer::ChunkSize, 0, OnRead);
+	uv_fs_read(uv_default_loop(), &baton->fs, baton->fd, baton->buf, SmartBuffer::ChunkSize, 0, OnRead);
 }
 
 void OnRead(uv_fs_t* req) {
@@ -86,7 +90,7 @@ void OnRead(uv_fs_t* req) {
 	// schedule a new read if all the buffer was read
 	if (req->result == SmartBuffer::ChunkSize) {
 		uv_fs_req_cleanup(req);
-		uv_fs_read(uv_default_loop(), &baton->fs, req->fd, baton->buf, SmartBuffer::ChunkSize, baton->buffer.size(), OnRead);
+		uv_fs_read(uv_default_loop(), &baton->fs, baton->fd, baton->buf, SmartBuffer::ChunkSize, baton->buffer.size(), OnRead);
 	}
 	else {
 		Close(req);
@@ -106,9 +110,11 @@ void Close(uv_fs_t* req) {
 	// clean previous request
 	uv_fs_req_cleanup(req);
 
+	Baton* baton = static_cast<Baton*>(req->data);
+
 	// close file sync
 	// it's a quick operation that does not need threading overhead
-	int err = uv_fs_close(uv_default_loop(), req, req->fd, NULL);
+	int err = uv_fs_close(uv_default_loop(), req, baton->fd, NULL);
 
 	// fail silently
 	if (-1 == err) {
@@ -129,7 +135,7 @@ void DecodeAsync(uv_work_t* req) {
 #ifdef WIN32
 	Pix* raw = pixRead(baton->result.filename.c_str());
 #else
-	Pix* raw = baton->result.imageData = pixReadMem(baton->buffer, baton->buffer.size());
+	Pix* raw = pixReadMem(baton->buffer, baton->buffer.size());
 #endif
 
 	// convert to 32bpp

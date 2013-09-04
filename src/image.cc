@@ -17,7 +17,7 @@ Persistent<FunctionTemplate> Image::constructorTemplate;
 
 Image::Image(Handle<Object> wrapper) {
 	Wrap(wrapper);
-};
+}
 
 Image::~Image() {};
 
@@ -47,7 +47,7 @@ Local<Object> Image::New(const string& filename, int width, int height, int dept
 	// TODO: pixCreate?
 
 	NanReturnValue(instance);
-};
+}
 
 Local<Object> Image::New(const string& filename, Pix* raw) {
 	NanScope();
@@ -60,7 +60,7 @@ Local<Object> Image::New(const string& filename, Pix* raw) {
 	image->raw = raw;
 
 	NanReturnValue(instance);
-};
+}
 
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
@@ -95,7 +95,7 @@ NAN_GETTER(Image::GetPixels) {
 
 	Local<Value> pixels = NanNewBufferHandle(reinterpret_cast<char*>(pixGetData(image->raw)), image->width * image->height);
 	NanReturnValue(pixels);
-};
+}
 
 NAN_METHOD(Image::FromFile) {
 	NanScope();

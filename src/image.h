@@ -13,8 +13,8 @@ class Image : public node::ObjectWrap {
 public:
 	static void Initialize(v8::Handle<v8::Object> target);
 	static NAN_METHOD(New);
-	static v8::Local<v8::Object> Image::New(const std::string& filename, int width, int height, int depth, uint32_t* pixels);
-	static v8::Local<v8::Object> Image::New(const std::string& filename, Pix* raw);
+	static v8::Local<v8::Object> New(const std::string& filename, int width, int height, int depth, uint32_t* pixels);
+	static v8::Local<v8::Object> New(const std::string& filename, Pix* raw);
 
 private:
 	Image(v8::Handle<v8::Object> wrapper);
