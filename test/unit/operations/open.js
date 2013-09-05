@@ -10,7 +10,8 @@
  * Module dependencies.
  */
 
-var open = require('../../../lib/operations/open');
+var open = require('../../../lib/operations/open'),
+	Image = require('../../../lib').Image;
 
 /**
  * Tests constants.

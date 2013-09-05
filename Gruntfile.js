@@ -13,7 +13,8 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		config: {
-			test: 'test/{,*/}*.js',
+			lib: 'lib/{,*/}*.js',
+			test: 'test/**/*.js',
 			testUnit: 'test/unit/{,*/}*.js',
 			testSpec: 'test/spec/{,*/}*.js'
 		},
@@ -27,9 +28,8 @@ module.exports = function(grunt) {
 		// TODO: use eslint when available
 		jshint: {
 			options: grunt.file.readJSON('.jshintrc'),
-			all: [
-				'Gruntfile.js',
-				'lib/{,*/}*.js'
+			lib: [
+				'<%= config.lib %>'
 			],
 			tests: {
 				options: {
@@ -37,7 +37,10 @@ module.exports = function(grunt) {
 					immed: false
 				},
 				src: ['<%= config.test %>']
-			}
+			},
+			misc: [
+				'Gruntfile.js'
+			]
 		},
 		mochacli: {
 			options: {
