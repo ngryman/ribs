@@ -15,8 +15,8 @@ module.exports = function(grunt) {
 		config: {
 			lib: 'lib/{,*/}*.js',
 			test: 'test/**/*.js',
-			testUnit: 'test/unit/{,*/}*.js',
-			testSpec: 'test/spec/{,*/}*.js'
+			unit: 'test/unit/{,*/}*.js',
+			spec: 'test/spec/{,*/}*.js'
 		},
 		meta: {
 			banner: '/*! <%%= pkg.name %> - v<%%= pkg.version %> - ' +
@@ -28,19 +28,20 @@ module.exports = function(grunt) {
 		// TODO: use eslint when available
 		jshint: {
 			options: grunt.file.readJSON('.jshintrc'),
-			lib: [
-				'<%= config.lib %>'
-			],
-			tests: {
+			lib: ['<%= config.lib %>'],
+			unit: {
 				options: {
-					expr: true,
-					immed: false
+					expr: true
 				},
-				src: ['<%= config.test %>']
+				src: ['<%= config.unit %>']
 			},
-			misc: [
-				'Gruntfile.js'
-			]
+			spec: {
+				options: {
+					expr: true
+				},
+				src: ['<%= config.spec %>']
+			},
+			misc: ['Gruntfile.js']
 		},
 		mochacli: {
 			options: {
@@ -50,16 +51,16 @@ module.exports = function(grunt) {
 			},
 			unit: {
 				options: {
-					bail: false
+					reporter: 'landing'
 				},
-				src: ['<%= config.testUnit %>']
+				src: ['<%= config.unit %>']
 			},
-			spec: ['<%= config.testSpec %>']
+			spec: ['<%= config.spec %>']
 		}
 	});
 
 	// front tasks
-	grunt.registerTask('test', [/*'jshint', */'mochacli']);
-	grunt.registerTask('test:unit', [/*'jshint', */'mochacli:unit']);
-	grunt.registerTask('test:spec', [/*'jshint', */'mochacli:spec']);
+	grunt.registerTask('test', ['jshint', 'mochacli']);
+	grunt.registerTask('test:unit', ['jshint:unit', 'mochacli:unit']);
+	grunt.registerTask('test:spec', ['jshint:spec', 'mochacli:spec']);
 };
