@@ -11,11 +11,17 @@
  */
 
 var open = require('../../../lib/operations/open'),
-	resize = require('../../../lib/operations/resize');
+	resize = require('../../../lib/operations/resize'),
+	Image = require('../../../lib').Image;
 
 /**
  * Tests constants.
  */
+
+var W = 16,
+	H = 9,
+	W_2 = W / 2,
+	H_2 = H / 2 << 0;
 
 /**
  * Tests helper functions.
@@ -48,81 +54,85 @@ var matrixTest = curry(function(expect, width, height, done) {
 	], done);
 });
 
+// TODO check pixel data
+
 /**
  * Test suite.
  */
 
 describe('resize operation', function() {
 	it('should resize to given width and height', testResize({
-		width: 16 / 2,
-		height: 9 / 2 << 0
-	}, null, 16 / 2, 9 / 2 << a));
+		width: W_2,
+		height: H_2
+	}, null, W_2, H_2));
 
 	it('should resize to given width and height when strings are specified', testResize({
-		width: WIDTH_2.toString(),
-		height: HEIGHT_2.toString()
-	}, null, WIDTH_2, HEIGHT_2));
+		width: W_2.toString(),
+		height: H_2.toString()
+	}, null, W_2, H_2));
 
 	it('should not upscale when superior sizes are specified', matrixTest([
-		80, 0,
-		80, 0,
-		80, 0
-	], WIDTH * 2, HEIGHT * 2));
+		W, H,
+		W, H,
+		W, H
+	], W * 2, H * 2));
 
-	it('should keep aspect ratio when sizes compute to a different aspect ratio', function(done) {
-		async.parallel([
-			testResize({ width: WIDTH_2 }, null, WIDTH_2, HEIGHT_2),
-			testResize({ width: HEIGHT_2 }, null, WIDTH_2, HEIGHT_2),
-			testResize({ width: WIDTH_2, height: HEIGHT * 2 }, null, WIDTH_2, HEIGHT_2),
-			testResize({ width: WIDTH * 2, height: HEIGHT_2 }, null, WIDTH_2, HEIGHT_2)
-		], done);
-	});
+	it('should keep aspect ratio when sizes compute to a different aspect ratio', matrixTest([
+		W_2, H_2,
+		W_2, H_2,
+		W_2, H_2
+	], W_2, H_2));
+	
+	it('should keep aspect ratio relative to the smaller size', matrixTest([
+		53, 30,
+		80, 45,
+		53, 30
+	], W / 3 << 0, H_2));
 
 	it('should add a padding to source size given a negative value', matrixTest([
-		WIDTH - 20, 79,
-		124, HEIGHT - 20,
-		124, HEIGHT - 20
+		W - 20, 80,
+		124, H - 20,
+		124, H - 20
 	], -10, -10));
 
-	it('should add a padding to source size given a string negative value', function(done) {
-		async.parallel([
-			asyncCall(FILENAME_SRC, '-10', '-10', 124, HEIGHT - 20)
-		], done);
-	});
+	it('should add a padding to source size given a string negative value', testResize({
+		width: '-10',
+		height: '-10'
+	}, null, 124, H - 20));
 
 	it('should add a padding to a constant given a 2-op subtraction', matrixTest([
-		80, 0,
-		80, 0,
-		80, 0
+		80, 45,
+		142, 80,
+		80, 45
 	], '100-10', '100-10'));
 
 	it('should resize to the given percentage of source size', matrixTest([
-		80, 0,
-		80, 0,
-		80, 0
-	], 'x50', 'x50'));
+		W_2, H_2,
+		48, 27,
+		48, 27
+	], 'x50', 'x30'));
 
 	it('should resize to the given percentage of a constant', matrixTest([
 		50, 28,
-		50, 28,
+		89, 50,
 		50, 28
 	], '100x50', '100x50'));
 
 	it('should add a margin to source size given a addition', matrixTest([
-		150, 84,
-		107, 60,
-		107, 60
+		W, H,
+		W, H,
+		W, H
 	], 'a50', 'a50'));
 
 	it('should add a margin to a constant given a 2-op addition', matrixTest([
-		107, 60,
-		107, 60,
-		107, 60
+		150, 84,
+		W, H,
+		150, 84
 	], '100a50', '100a50'));
 
 	it('should round down source size to a given multiple', matrixTest([
 		150, 84,
-		107, 60,
+		89, 50,
 		107, 60
 	], 'r50', 'r50'));
 
