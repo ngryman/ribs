@@ -71,6 +71,7 @@ describe('open operation', function() {
 	describe('with png files', function() {
 		it('should open 8-bit', testOpen('in-8.png', null));
 		it('should open 8-bit with alpha channel', testOpen('in-8-a.png', null));
+		it('should open interlaced 8-bit with alpha channel', testOpen('in-8-a-i.png', null));
 		it('should open 24-bit', testOpen('in-24.png', null));
 		it('should open 24-bit with alpha channel', testOpen('in-24-a.png', null));
 		it('should open interlaced 24-bit with alpha channel', testOpen('in-24-a-i.png', null));

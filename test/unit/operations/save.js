@@ -61,6 +61,7 @@ describe('save operation', function() {
 	describe('with png files', function() {
 		it('should save 8-bit', testSave('in-8.png', null));
 		it('should save 8-bit with alpha channel', testSave('in-8-a.png', null));
+		it('should open interlaced 8-bit with alpha channel', testSave('in-8-a-i.png', null));
 		it('should save 24-bit', testSave('in-24.png', null));
 		it('should save 24-bit with alpha channel', testSave('in-24-a.png', null));
 		it('should save interlaced 24-bit with alpha channel', testSave('in-24-a-i.png', null));
