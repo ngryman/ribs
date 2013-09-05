@@ -36,10 +36,10 @@ var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeig
 			}
 			else {
 				should.not.exist(err);
-				image.should.be.instanceof(Image);
-				image.should.have.property('width', expectedWidth);
-				image.should.have.property('height', expectedHeight);
 			}
+			image.should.be.instanceof(Image);
+			image.should.have.property('width', expectedWidth);
+			image.should.have.property('height', expectedHeight);
 			done();
 		});
 	});
@@ -141,4 +141,27 @@ describe('resize operation', function() {
 		107, 60,
 		107, 60
 	], '100r50', '100r50'));
+
+	it('should do nothing when both sizes are null', testResize({
+		width: null,
+		height: null
+	}, null, W, H));
+
+	it('should do nothing when both params is null', testResize(null, null, W, H));
+
+	it('should pass an error when width is not valid', testResize({
+		width: 'woot'
+	}, 'width has an invalid value', W, H));
+
+	it('should pass an error when height is not valid', testResize({
+		height: 'woot'
+	}, 'height has an invalid value', W, H));
+
+	it('should pass an error when width has an invalid type', testResize({
+		width: { 0 : 0 }
+	}, 'width should a string or number', W, H));
+
+	it('should pass an error when height has an invalid type', testResize({
+		height: { 0 : 0 }
+	}, 'height should a string or number', W, H));
 });
