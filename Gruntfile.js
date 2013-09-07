@@ -15,8 +15,8 @@ module.exports = function(grunt) {
 		config: {
 			lib: 'lib/{,*/}*.js',
 			test: 'test/**/*.js',
-			unit: 'test/unit/{,*/}*.js',
-			spec: 'test/spec/{,*/}*.js'
+			unit: 'test/unit/index.js',
+			spec: 'test/spec/index.js'
 		},
 		meta: {
 			banner: '/*! <%%= pkg.name %> - v<%%= pkg.version %> - ' +
