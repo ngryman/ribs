@@ -46,17 +46,9 @@ var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight
 });
 
 var matrixTest = curry(function(expect, width, height, x, y, done) {
-	var matrix = matrixify(params);
-
-	var i = 0;
-	async.parallel([
-		testCrop({ width: width }, null, expect[i++], expect[i++]),
-		testCrop({ height: height }, null, expect[i++], expect[i++]),
-		testCrop({ width: width, height: height }, null, expect[i++], expect[i++]),
-		testCrop({ width: width }, null, expect[i++], expect[i++]),
-		testCrop({ height: height }, null, expect[i++], expect[i++]),
-		testCrop({ width: width, height: height }, null, expect[i++], expect[i++])
-	], done);
+	optify({ width: width, height: height, x: x, y: y }, function(opts, i, done) {
+		testCrop(opts, null, expect[i++], expect[i++], done);
+	}, done);
 });
 
 // TODO check pixel data

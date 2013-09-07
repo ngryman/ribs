@@ -12,6 +12,7 @@
 
 global.curry = require('curry');
 global.async = require('async');
+global.optify = require('optify');
 global.chai = require('chai');
 global.sinon = require('sinon');
 global.should = global.chai.should();

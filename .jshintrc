@@ -48,6 +48,7 @@
 		"setImmediate": true,
 		"async": true,
 		"curry": true,
+		"optify": true,
 		"describe": true,
 		"xdescribe": true,
 		"it": true,

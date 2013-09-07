@@ -45,13 +45,10 @@ var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeig
 	});
 });
 
-var matrixTest = curry(function(expect, width, height, done) {
-	var i = 0;
-	async.parallel([
-		testResize({ width: width }, null, expect[i++], expect[i++]),
-		testResize({ height: height }, null, expect[i++], expect[i++]),
-		testResize({ width: width, height: height }, null, expect[i++], expect[i++])
-	], done);
+var testMatrix = curry(function(expect, width, height, done) {
+	optify({ width: width, height: height }, function(opts, i, done) {
+		testResize(opts, null, expect[i * 2], expect[(i + 1) * 2], done);
+	}, done);
 });
 
 // TODO check pixel data
@@ -71,25 +68,25 @@ describe('resize operation', function() {
 		height: H_2.toString()
 	}, null, W_2, H_2));
 
-	it('should not upscale when superior sizes are specified', matrixTest([
+	it('should not upscale when superior sizes are specified', testMatrix([
 		W, H,
 		W, H,
 		W, H
 	], W * 2, H * 2));
 
-	it('should keep aspect ratio when sizes compute to a different aspect ratio', matrixTest([
+	it('should keep aspect ratio when sizes compute to a different aspect ratio', testMatrix([
 		W_2, H_2,
 		W_2, H_2,
 		W_2, H_2
 	], W_2, H_2));
 	
-	it('should keep aspect ratio relative to the smaller size', matrixTest([
+	it('should keep aspect ratio relative to the smaller size', testMatrix([
 		53, 30,
 		80, 45,
 		53, 30
 	], W / 3 << 0, H_2));
 
-	it('should add a padding to source size given a negative value', matrixTest([
+	it('should add a padding to source size given a negative value', testMatrix([
 		W - 20, 80,
 		124, H - 20,
 		124, H - 20
@@ -100,43 +97,43 @@ describe('resize operation', function() {
 		height: '-10'
 	}, null, 124, H - 20));
 
-	it('should add a padding to a constant given a 2-op subtraction', matrixTest([
+	it('should add a padding to a constant given a 2-op subtraction', testMatrix([
 		80, 45,
 		142, 80,
 		80, 45
 	], '100-10', '100-10'));
 
-	it('should resize to the given percentage of source size', matrixTest([
+	it('should resize to the given percentage of source size', testMatrix([
 		W_2, H_2,
 		48, 27,
 		48, 27
 	], 'x50', 'x30'));
 
-	it('should resize to the given percentage of a constant', matrixTest([
+	it('should resize to the given percentage of a constant', testMatrix([
 		50, 28,
 		89, 50,
 		50, 28
 	], '100x50', '100x50'));
 
-	it('should add a margin to source size given a addition', matrixTest([
+	it('should add a margin to source size given a addition', testMatrix([
 		W, H,
 		W, H,
 		W, H
 	], 'a50', 'a50'));
 
-	it('should add a margin to a constant given a 2-op addition', matrixTest([
+	it('should add a margin to a constant given a 2-op addition', testMatrix([
 		150, 84,
 		W, H,
 		150, 84
 	], '100a50', '100a50'));
 
-	it('should round down source size to a given multiple', matrixTest([
+	it('should round down source size to a given multiple', testMatrix([
 		150, 84,
 		89, 50,
 		107, 60
 	], 'r50', 'r50'));
 
-	it('should round down a constant to a given multiple', matrixTest([
+	it('should round down a constant to a given multiple', testMatrix([
 		107, 60,
 		107, 60,
 		107, 60
