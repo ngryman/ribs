@@ -12,7 +12,7 @@
 
 var open = require('../../../lib/operations/open'),
 	resize = require('../../../lib/operations/resize'),
-	Image = require('../../../lib').Image;
+	Image = require('../../..').Image;
 
 /**
  * Tests constants.

@@ -35,6 +35,7 @@ var testSave = curry(function(filename, expectedErr, done) {
 			else {
 				should.not.exist(err);
 				fs.existsSync(filename).should.be.truthy;
+				fs.unlinkSync(filename);
 			}
 			done();
 		});

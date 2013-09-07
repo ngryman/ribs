@@ -11,7 +11,7 @@
  */
 
 var open = require('../../../lib/operations/open'),
-	Image = require('../../../lib').Image;
+	Image = require('../../..').Image;
 
 /**
  * Tests constants.

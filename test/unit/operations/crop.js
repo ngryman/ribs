@@ -12,7 +12,7 @@
 
 var open = require('../../../lib/operations/open'),
 	crop = require('../../../lib/operations/crop'),
-	Image = require('../../../lib').Image;
+	Image = require('../../..').Image;
 
 /**
  * Tests constants.
