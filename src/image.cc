@@ -15,11 +15,14 @@ static void OnDecoded(ImageDecoder::Result* result);
 
 Persistent<FunctionTemplate> Image::constructorTemplate;
 
-Image::Image(Handle<Object> wrapper) {
+Image::Image(Handle<Object>& wrapper) {
 	Wrap(wrapper);
 }
 
-Image::~Image() {};
+Image::~Image() {
+	pixDestroy(&data);
+	V8::AdjustAmountOfExternalAllocatedMemory(-length());
+};
 
 NAN_METHOD(Image::New) {
 	NanScope();
@@ -34,31 +37,21 @@ NAN_METHOD(Image::New) {
 	NanReturnValue(args.This());
 }
 
-Local<Object> Image::New(const string& filename, int width, int height, int depth, uint32_t* pixels) {
+Local<Object> Image::New(const string& filename, Pix* data) {
 	NanScope();
 
 	// create a new instance an feed it
 	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
 	Image* image = Unwrap<Image>(instance);
 	image->filename = filename;
-	image->width = width;
-	image->height = height;
-	image->depth = depth;
-	// TODO: pixCreate?
+	image->data = data;
+	pixGetDimensions(image->data, &image->width, &image->height, NULL);
 
-	NanReturnValue(instance);
-}
+	// Let v8 handle [] accessor
+	uint8_t* bytes = reinterpret_cast<uint8_t*>(pixGetData(image->data));
+	instance->SetIndexedPropertiesToPixelData(bytes, image->length());
 
-Local<Object> Image::New(const string& filename, Pix* raw) {
-	NanScope();
-
-	// create a new instance an feed it
-	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
-	Image* image = Unwrap<Image>(instance);
-	image->filename = filename;
-	pixGetDimensions(raw, &image->width, &image->height, &image->depth);
-	image->raw = raw;
-
+	V8::AdjustAmountOfExternalAllocatedMemory(image->length());
 	NanReturnValue(instance);
 }
 
@@ -74,27 +67,9 @@ NAN_GETTER(Image::GetHeight) {
 	NanReturnValue(Number::New(image->height));
 }
 
-NAN_GETTER(Image::GetDepth) {
+NAN_GETTER(Image::GetLength) {
 	NanScope();
-	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->depth));
-}
-
-NAN_GETTER(Image::GetPixels) {
-	NanScope();
-	Image* image = Unwrap<Image>(args.This());
-
-	if (pixGetColormap(image->raw)) {
-		Pix* rgbRaw = pixRemoveColormap(image->raw, REMOVE_CMAP_TO_FULL_COLOR);
-		pixDestroy(&image->raw);
-		image->raw = rgbRaw;
-	}
-
-	//Pix* pixd = pixConvertTo32(image->raw);
-	// TODO: error check
-
-	Local<Value> pixels = NanNewBufferHandle(reinterpret_cast<char*>(pixGetData(image->raw)), image->width * image->height);
-	NanReturnValue(pixels);
+	NanReturnValue(Number::New(args.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
 NAN_METHOD(Image::FromFile) {
@@ -102,7 +77,10 @@ NAN_METHOD(Image::FromFile) {
 
 	// get filename & callback
 	string filename = FromV8String(args[0]);
-	NanCallback* callback = new NanCallback(args[1].As<Function>());
+	NanCallback* callback = NULL;
+	if (args[1]->IsFunction()) {
+		callback = new NanCallback(args[1].As<Function>());
+	}
 
 	// start the decoding process async
 	ImageDecoder::Decode(filename, OnDecoded, callback);
@@ -124,8 +102,7 @@ void Image::Initialize(Handle<Object> target) {
 	Local<ObjectTemplate> prototype = constructorTemplate->PrototypeTemplate();
 	prototype->SetAccessor(NanSymbol("width"), GetWidth);
 	prototype->SetAccessor(NanSymbol("height"), GetHeight);
-	prototype->SetAccessor(NanSymbol("depth"), GetDepth);
-	prototype->SetAccessor(NanSymbol("pixels"), GetPixels);
+	prototype->SetAccessor(NanSymbol("length"), GetLength);
 
 	// object
 	NODE_SET_METHOD(constructorTemplate->GetFunction(), "fromFile", FromFile);
@@ -142,16 +119,22 @@ void Image::Initialize(Handle<Object> target) {
 void OnDecoded(ImageDecoder::Result* result) {
 	NanScope();
 
+	// no callback?
+	if (NULL == result->callback) return;
+
 	int argc = 0;
 	Local<Value> argv[2];
 
 	// execute callback with error
+	// note that we explicitly pass undefined to the 2nd argument
+	// this is to respect the arity of the function and allow curry for example
 	if (!result->error.empty()) {
 		argv[argc++] = Exception::Error(String::New(result->error.c_str()));
+		argv[argc++] = Local<Value>::New(Undefined());
 	}
 	else {
 		// create the image instance with data
-		Local<Object> instance = Image::New(result->filename, result->raw);
+		Local<Object> instance = Image::New(result->filename, result->data);
 
 		// execute callback with newly created image
 		argv[argc++] = Local<Value>::New(Null());

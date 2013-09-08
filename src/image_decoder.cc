@@ -27,9 +27,16 @@ struct Baton {
 static void OnOpen(uv_fs_t* req);
 static void OnRead(uv_fs_t* req);
 static void Close(uv_fs_t* req);
+static void BeginDecode(Baton* baton);
 static void DecodeAsync(uv_work_t* req);
 static void OnDecoded(uv_work_t* req);
 static void Done(Baton* baton);
+
+#ifdef WIN32
+#define PIX_READ pixRead
+#else
+#define PIX_READ pixReadMem
+#endif
 
 void ImageDecoder::Initialize(void) {
 	// ensure that leptonica do read png alpha channel
@@ -47,14 +54,22 @@ void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callbac
 	baton->fs.data = baton;
 
 	// open the file async
+#ifndef WIN32
+	// use libuv to increase performance on *nix platform
+	// on windows, leptonica does not support reading directly from memory:
+	//  http://tpgit.github.io/UnOfficialLeptDocs/leptonica/README.html#gnu-runtime-functions-for-stream-redirection-to-memory
 	uv_fs_open(uv_default_loop(), &baton->fs, baton->result.filename.c_str(), O_RDONLY, 0, OnOpen);
+#else
+	// use leptonica directly
+	BeginDecode(baton);
+#endif
 }
 
 void OnOpen(uv_fs_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
-		baton->result.error = RibsError("Error opening file", uv_strerror(uv_last_error(uv_default_loop())));
+		baton->result.error = RibsError("can't open file", uv_strerror(uv_last_error(uv_default_loop())));
 		uv_fs_req_cleanup(req);
 		return Done(baton);
 	}
@@ -62,7 +77,7 @@ void OnOpen(uv_fs_t* req) {
 	// allocate temporary buffer
 	baton->buf = new uint8_t[SmartBuffer::ChunkSize];
 	if (NULL == baton->buf) {
-		baton->result.error = RibsError("Error opening file", "not enough memory");
+		baton->result.error = RibsError("can't open file", "not enough memory");
 		Close(req);
 		return Done(baton);
 	}
@@ -79,7 +94,7 @@ void OnRead(uv_fs_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
-		baton->result.error = RibsError("Error reading file", uv_strerror(uv_last_error(uv_default_loop())));
+		baton->result.error = RibsError("can't read file", uv_strerror(uv_last_error(uv_default_loop())));
 		Close(req);
 		return Done(baton);
 	}
@@ -94,15 +109,7 @@ void OnRead(uv_fs_t* req) {
 	}
 	else {
 		Close(req);
-		// reference baton in the request
-		baton->work.data = baton;
-		// pass the request to libuv to be run when a worker-thread is available to
-		uv_queue_work(
-			uv_default_loop(),
-			&baton->work,
-			DecodeAsync,
-			(uv_after_work_cb)OnDecoded
-		);
+		BeginDecode(baton);
 	}
 }
 
@@ -124,26 +131,33 @@ void Close(uv_fs_t* req) {
 	}
 }
 
+void BeginDecode(Baton* baton) {
+	// reference baton in the request
+	baton->work.data = baton;
+	// pass the request to libuv to be run when a worker-thread is available to
+	uv_queue_work(
+		uv_default_loop(),
+		&baton->work,
+		DecodeAsync,
+		(uv_after_work_cb)OnDecoded
+	);
+}
+
 void DecodeAsync(uv_work_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	// let leptonica fetch image data for us
-	//
-	// leptonica can read from memory, but not on Windows:
-	//   http://tpgit.github.io/UnOfficialLeptDocs/leptonica/README.html#gnu-runtime-functions-for-stream-redirection-to-memory
-	// so for now, a ugly thing is done in order to continue the dev: leptonica re-reads the file from disk... yeah i know, i know...
-#ifdef WIN32
-	Pix* raw = pixRead(baton->result.filename.c_str());
-#else
-	Pix* raw = pixReadMem(baton->buffer, baton->buffer.size());
-#endif
+	Pix* data = PIX_READ(baton->result.filename.c_str());
 
-	// convert to 32bpp
-	// pixEndianByteSwapNew
-	/*if (1 == pixGetDepth(raw)) {
-
-	}*/
-	baton->result.raw = raw;
+	// get rid of color maps
+	if (pixGetColormap(data)) {
+		Pix* rgbData = pixRemoveColormap(data, REMOVE_CMAP_TO_FULL_COLOR);
+		baton->result.data = rgbData;
+		pixDestroy(&data);
+	}
+	else {
+		baton->result.data = data;
+	}
 };
 
 void OnDecoded(uv_work_t* req) {
@@ -152,8 +166,8 @@ void OnDecoded(uv_work_t* req) {
 	// check if image was decoded correctly
 	// TODO: check will be done before this
 	Baton* baton = static_cast<Baton*>(req->data);
-	if (NULL == baton->result.raw) {
-		baton->result.error = RibsError("Error decoding file", "TODO");
+	if (NULL == baton->result.data) {
+		baton->result.error = RibsError("can't decode file", "unknown image format");
 	}
 
 	Done(baton);

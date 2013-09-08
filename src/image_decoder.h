@@ -13,7 +13,7 @@ class ImageDecoder {
 public:
 	struct Result {
 		std::string filename;
-		Pix* raw;
+		Pix* data;
 		NanCallback* callback;
 		std::string error;
 	};
