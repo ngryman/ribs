@@ -43,10 +43,12 @@ void ImageDecoder::Initialize(void) {
 	l_pngSetStripAlpha(0);
 }
 
-void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callback, NanCallback* jsCallback) {
+void ImageDecoder::Decode(const char* filename, ImageDecoder::Callback callback, NanCallback* jsCallback) {
 	// create our Baton that will be passed over different uv calls
 	Baton* baton = new Baton;
 	baton->buf = NULL;
+	// ensure error is empty
+	baton->result.error[0] = 0;
 	baton->result.filename = filename;
 	baton->result.callback = jsCallback;
 	baton->callback = callback;
@@ -58,7 +60,7 @@ void ImageDecoder::Decode(const string& filename, ImageDecoder::Callback callbac
 	// use libuv to increase performance on *nix platform
 	// on windows, leptonica does not support reading directly from memory:
 	//  http://tpgit.github.io/UnOfficialLeptDocs/leptonica/README.html#gnu-runtime-functions-for-stream-redirection-to-memory
-	uv_fs_open(uv_default_loop(), &baton->fs, baton->result.filename.c_str(), O_RDONLY, 0, OnOpen);
+	uv_fs_open(uv_default_loop(), &baton->fs, baton->result.filename, O_RDONLY, 0, OnOpen);
 #else
 	// use leptonica directly
 	BeginDecode(baton);
@@ -69,7 +71,7 @@ void OnOpen(uv_fs_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
-		baton->result.error = RibsError("can't open file", uv_strerror(uv_last_error(uv_default_loop())));
+		RibsError(baton->result.error, "can't open file", uv_strerror(uv_last_error(uv_default_loop())));
 		uv_fs_req_cleanup(req);
 		return Done(baton);
 	}
@@ -77,7 +79,7 @@ void OnOpen(uv_fs_t* req) {
 	// allocate temporary buffer
 	baton->buf = new uint8_t[SmartBuffer::ChunkSize];
 	if (NULL == baton->buf) {
-		baton->result.error = RibsError("can't open file", "not enough memory");
+		RibsError(baton->result.error, "can't open file", "not enough memory");
 		Close(req);
 		return Done(baton);
 	}
@@ -94,7 +96,7 @@ void OnRead(uv_fs_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	if (-1 == req->result) {
-		baton->result.error = RibsError("can't read file", uv_strerror(uv_last_error(uv_default_loop())));
+		RibsError(baton->result.error, "can't read file", uv_strerror(uv_last_error(uv_default_loop())));
 		Close(req);
 		return Done(baton);
 	}
@@ -147,7 +149,7 @@ void DecodeAsync(uv_work_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	// let leptonica fetch image data for us
-	Pix* data = PIX_READ(baton->result.filename.c_str());
+	Pix* data = PIX_READ(baton->result.filename);
 
 	// get rid of color maps
 	if (pixGetColormap(data)) {
@@ -167,7 +169,7 @@ void OnDecoded(uv_work_t* req) {
 	// TODO: check will be done before this
 	Baton* baton = static_cast<Baton*>(req->data);
 	if (NULL == baton->result.data) {
-		baton->result.error = RibsError("can't decode file", "unknown image format");
+		RibsError(baton->result.error, "can't decode file", "unknown image format");
 	}
 
 	Done(baton);

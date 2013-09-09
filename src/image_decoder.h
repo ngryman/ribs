@@ -12,16 +12,16 @@
 class ImageDecoder {
 public:
 	struct Result {
-		std::string filename;
+		const char* filename;
 		Pix* data;
 		NanCallback* callback;
-		std::string error;
+		char error[128];
 	};
 
 	typedef void (*Callback)(Result*);
 
 	static void Initialize(void);
-	static void Decode(const std::string& filename, Callback callback, NanCallback* jsCallback);
+	static void Decode(const char* filename, Callback callback, NanCallback* jsCallback);
 
 private:
 	ImageDecoder();

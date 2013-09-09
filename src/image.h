@@ -13,7 +13,7 @@ class Image : public node::ObjectWrap {
 public:
 	static void Initialize(v8::Handle<v8::Object> target);
 	static NAN_METHOD(New);
-	static v8::Local<v8::Object> New(const std::string& filename, Pix* data);
+	static v8::Local<v8::Object> New(const char* filename, Pix* data);
 
 private:
 	Image(v8::Handle<v8::Object>& wrapper);
@@ -29,7 +29,7 @@ private:
 	inline int length() const { return stride() * height; }
     inline int stride() const { return width * 4; }
 
-	std::string filename;
+	const char* filename;
 	int width;
 	int height;
 	Pix* data;

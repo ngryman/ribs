@@ -37,7 +37,7 @@ NAN_METHOD(Image::New) {
 	NanReturnValue(args.This());
 }
 
-Local<Object> Image::New(const string& filename, Pix* data) {
+Local<Object> Image::New(const char* filename, Pix* data) {
 	NanScope();
 
 	// create a new instance an feed it
@@ -76,7 +76,7 @@ NAN_METHOD(Image::Open) {
 	NanScope();
 
 	// get filename & callback
-	string filename = FromV8String(args[0]);
+	const char* filename = FromV8String(args[0]);
 	NanCallback* callback = NULL;
 	if (args[1]->IsFunction()) {
 		callback = new NanCallback(args[1].As<Function>());
@@ -128,8 +128,8 @@ void OnDecoded(ImageDecoder::Result* result) {
 	// execute callback with error
 	// note that we explicitly pass undefined to the 2nd argument
 	// this is to respect the arity of the function and allow curry for example
-	if (!result->error.empty()) {
-		argv[argc++] = Exception::Error(String::New(result->error.c_str()));
+	if (0 < strlen(result->error)) {
+		argv[argc++] = Exception::Error(String::New(result->error));
 		argv[argc++] = Local<Value>::New(Undefined());
 	}
 	else {
