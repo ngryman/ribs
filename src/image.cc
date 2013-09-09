@@ -72,7 +72,7 @@ NAN_GETTER(Image::GetLength) {
 	NanReturnValue(Number::New(args.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
-NAN_METHOD(Image::FromFile) {
+NAN_METHOD(Image::Open) {
 	NanScope();
 
 	// get filename & callback
@@ -105,7 +105,7 @@ void Image::Initialize(Handle<Object> target) {
 	prototype->SetAccessor(NanSymbol("length"), GetLength);
 
 	// object
-	NODE_SET_METHOD(constructorTemplate->GetFunction(), "fromFile", FromFile);
+	NODE_SET_METHOD(constructorTemplate->GetFunction(), "open", Open);
 
 	// export
 	target->Set(NanSymbol("Image"), constructorTemplate->GetFunction());

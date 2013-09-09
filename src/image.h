@@ -24,7 +24,7 @@ private:
 	static NAN_GETTER(GetWidth);
 	static NAN_GETTER(GetHeight);
 	static NAN_GETTER(GetLength);
-	static NAN_METHOD(FromFile);
+	static NAN_METHOD(Open);
 
 	inline int length() const { return stride() * height; }
     inline int stride() const { return width * 4; }
