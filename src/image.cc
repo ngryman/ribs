@@ -6,12 +6,14 @@
 
 #include "image.h"
 #include "image_decoder.h"
+#include "image_encoder.h"
 
 using namespace v8;
 using namespace node;
 using namespace std;
 
 static void OnDecoded(ImageDecoder::Result* result);
+static void OnEncoded(ImageEncoder::Result* result);
 
 Persistent<FunctionTemplate> Image::constructorTemplate;
 
@@ -89,6 +91,26 @@ NAN_METHOD(Image::Open) {
 	NanReturnUndefined();
 }
 
+NAN_METHOD(Image::Save) {
+	NanScope();
+
+	// get filename, quality, progressive, image & callback
+	const char* filename = FromV8String(args[0]);
+	uint32_t quality = args[1]->Uint32Value();
+	bool progressive = args[2]->BooleanValue();
+	Image* image = Unwrap<Image>(args[3].As<Object>());
+	NanCallback* callback = NULL;
+	if (args[4]->IsFunction()) {
+		callback = new NanCallback(args[4].As<Function>());
+	}
+
+	// start the encoding process async
+	ImageEncoder::Encode(filename, quality, progressive, image, OnEncoded, callback);
+
+	// make the compiler happy
+	NanReturnUndefined();
+}
+
 void Image::Initialize(Handle<Object> target) {
 	NanScope();
 
@@ -106,12 +128,14 @@ void Image::Initialize(Handle<Object> target) {
 
 	// object
 	NODE_SET_METHOD(constructorTemplate->GetFunction(), "open", Open);
+	NODE_SET_METHOD(constructorTemplate->GetFunction(), "save", Save);
 
 	// export
 	target->Set(NanSymbol("Image"), constructorTemplate->GetFunction());
 
-	// initialize image decoder
+	// initialize image decoder/encoder
 	ImageDecoder::Initialize();
+	ImageEncoder::Initialize();
 
 	// TODO return?
 }
@@ -139,6 +163,27 @@ void OnDecoded(ImageDecoder::Result* result) {
 		// execute callback with newly created image
 		argv[argc++] = Local<Value>::New(Null());
 		argv[argc++] = instance;
+	}
+
+	result->callback->Call(argc, argv);
+	delete result->callback;
+}
+
+void OnEncoded(ImageEncoder::Result* result) {
+	NanScope();
+
+	// no callback?
+	if (NULL == result->callback) return;
+
+	int argc = 0;
+	Local<Value> argv[1];
+
+	// set error or not
+	if (0 < strlen(result->error)) {
+		argv[argc++] = Exception::Error(String::New(result->error));
+	}
+	else {
+		argv[argc++] = Local<Value>::New(Null());
 	}
 
 	result->callback->Call(argc, argv);

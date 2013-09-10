@@ -10,6 +10,7 @@
 		"sources": [
 			"src/image.cc",
 			"src/image_decoder.cc",
+			"src/image_encoder.cc",
 			"src/smart_buffer.cc",
 			"src/init.cc"
 		],

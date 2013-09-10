@@ -15,6 +15,10 @@ public:
 	static NAN_METHOD(New);
 	static v8::Local<v8::Object> New(const char* filename, Pix* data);
 
+	inline Pix* pixels() const { return data; }
+	inline int length() const { return stride() * height; }
+	inline int stride() const { return width * 4; }
+
 private:
 	Image(v8::Handle<v8::Object>& wrapper);
 	~Image();
@@ -25,9 +29,7 @@ private:
 	static NAN_GETTER(GetHeight);
 	static NAN_GETTER(GetLength);
 	static NAN_METHOD(Open);
-
-	inline int length() const { return stride() * height; }
-    inline int stride() const { return width * 4; }
+	static NAN_METHOD(Save);
 
 	const char* filename;
 	int width;

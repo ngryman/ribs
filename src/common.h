@@ -17,6 +17,8 @@
 #include "leptonica/allheaders.h"
 #include "nan.h"
 
+class Image;
+
 inline static const char* FromV8String(v8::Local<v8::Value> v8Str) {
 	// https://github.com/rvagg/nan/issues/29
 	return NanFromV8String(v8Str, Nan::UTF8, NULL, NULL, 0, v8::String::HINT_MANY_WRITES_EXPECTED);
