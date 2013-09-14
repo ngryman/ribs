@@ -27,7 +27,7 @@ var W = 16,
  * Tests helper functions.
  */
 
-var testResize = _.curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
+var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
 	open('../fixtures/in-24-a.png', function(err, image) {
 		resize(params, image, function(err, image) {
 			if (expectedErr) {
@@ -45,7 +45,7 @@ var testResize = _.curry(function(params, expectedErr, expectedWidth, expectedHe
 	});
 });
 
-var testMatrix = _.curry(function(expect, width, height, done) {
+var testMatrix = curry(function(expect, width, height, done) {
 	optify({ width: width, height: height }, function(opts, i, done) {
 		testResize(opts, null, expect[i * 2], expect[(i + 1) * 2], done);
 	}, done);

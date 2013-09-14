@@ -56,7 +56,7 @@ function add(name) {
 	return op;
 }
 
-var checkOk = _.curry(function(operations, done, err) {
+var checkOk = curry(function(operations, done, err) {
 	if (!Array.isArray(operations)) operations = [operations];
 	should.not.exist(err);
 	operations.forEach(function(operation) {
@@ -65,7 +65,7 @@ var checkOk = _.curry(function(operations, done, err) {
 	done();
 });
 
-var checkError = _.curry(function (operations, expectedName, expectedErr, done, err) {
+var checkError = curry(function (operations, expectedName, expectedErr, done, err) {
 	if (!Array.isArray(operations)) operations = [operations];
 	err.should.be.instanceof(Error);
 	err.message.should.have.string(expectedErr);

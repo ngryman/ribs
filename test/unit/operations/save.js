@@ -27,7 +27,7 @@ var SRC_DIR = path.resolve(__dirname + '/../../fixtures/'),
  * Tests helper functions.
  */
 
-var testSave = _.curry(function(filename, quality, progressive, expectedErr, done) {
+var testSave = curry(function(filename, quality, progressive, expectedErr, done) {
 	open(path.join(SRC_DIR, filename), function(err, image) {
 		filename = path.join(TMP_DIR, filename);
 		// randomize filename in order to avoid conflict with existing fixtures
