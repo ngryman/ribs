@@ -9,6 +9,8 @@
 
 #include "common.h"
 
+namespace ribs {
+
 class SmartBuffer {
 public:
 	SmartBuffer();
@@ -25,5 +27,7 @@ private:
 	uint8_t* chunksPtr;
 	int chunksCount;
 };
+
+}
 
 #endif

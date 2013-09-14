@@ -11,6 +11,7 @@
 using namespace v8;
 using namespace node;
 using namespace std;
+using namespace ribs;
 
 static void OnDecoded(ImageDecoder::Result* result);
 static void OnEncoded(ImageEncoder::Result* result);

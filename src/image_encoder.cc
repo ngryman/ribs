@@ -11,6 +11,7 @@
 
 using namespace v8;
 using namespace std;
+using namespace ribs;
 
 struct Baton {
 	// data

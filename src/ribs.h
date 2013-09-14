@@ -10,10 +10,14 @@
 #include <stdint.h>
 #include <string>
 
+namespace ribs {
+
 class Ribs {
 public:
 
 //	static void shrink(const std::string& filename, uint8_t width, uint8_t height);
+}
+
 }
 
 #endif

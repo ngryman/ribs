@@ -6,6 +6,8 @@
 
 #include "smart_buffer.h"
 
+using namespace ribs;
+
 // TODO: benchmark this size
 // TODO: when custom allocator will be available, perhaps a big increase would be possible in the working area
 const int SmartBuffer::ChunkSize = 32 * 1024;

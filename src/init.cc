@@ -7,6 +7,7 @@
 #include "image.h"
 
 using namespace v8;
+using namespace ribs;
 
 extern "C" void init(Handle<Object> target) {
 	Image::Initialize(target);

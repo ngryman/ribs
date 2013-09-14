@@ -9,6 +9,8 @@
 
 #include "common.h"
 
+namespace ribs {
+
 class ImageDecoder {
 public:
 	struct Result {
@@ -27,5 +29,7 @@ private:
 	ImageDecoder();
 	~ImageDecoder();
 };
+
+}
 
 #endif

@@ -17,6 +17,8 @@
 #include "leptonica/allheaders.h"
 #include "nan.h"
 
+namespace ribs {
+
 class Image;
 
 inline static const char* FromV8String(v8::Local<v8::Value> v8Str) {
@@ -26,6 +28,8 @@ inline static const char* FromV8String(v8::Local<v8::Value> v8Str) {
 
 inline static void RibsError(char* error, const char* message, const char* description) {
 	sprintf(error, "%s: %s", message, description);
+}
+
 }
 
 #endif
