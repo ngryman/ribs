@@ -23,7 +23,7 @@
 	"author": "Nicolas Gryman <ngryman@gmail.com>",
 	"license": "LGPL",
 	"dependencies": {
-		"curry": "~1.0.2",
+		"lodash": "~2.0.0",
 		"async": "~0.2.9",
 		"nan": "~0.4.0"
 	},
@@ -31,7 +31,7 @@
 		"grunt": "~0.4.1",
 		"load-grunt-tasks": "~0.1.0",
 		"grunt-contrib-jshint": "~0.6.2",
-		"grunt-mocha-test": "~1.1.0",
+		"grunt-mocha-test": "~0.6.3",
 		"chai": "~1.7.2",
 		"sinon-chai": "~2.4.0",
 		"sinon": "~1.7.3",

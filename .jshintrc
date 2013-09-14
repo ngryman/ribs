@@ -45,9 +45,9 @@
 	"trailing": true,
 	"white": false,
 	"globals": {
+		"_": true,
 		"setImmediate": true,
 		"async": true,
-		"curry": true,
 		"optify": true,
 		"describe": true,
 		"xdescribe": true,

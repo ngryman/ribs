@@ -10,7 +10,7 @@
  * Common test modules dependencies.
  */
 
-global.curry = require('curry');
+global._ = require('lodash');
 global.async = require('async');
 global.optify = require('optify');
 global.chai = require('chai');

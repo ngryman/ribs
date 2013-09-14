@@ -27,7 +27,7 @@ var W = 16,
  * Tests helper functions.
  */
 
-var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
+var testCrop = _.curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
 	open('../fixtures/in-24-a.png', function(err, image) {
 		crop(params, image, function(err, image) {
 			if (expectedErr) {
@@ -45,7 +45,7 @@ var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight
 	});
 });
 
-var matrixTest = curry(function(expect, width, height, x, y, done) {
+var matrixTest = _.curry(function(expect, width, height, x, y, done) {
 	optify({ width: width, height: height, x: x, y: y }, function(opts, i, done) {
 		testCrop(opts, null, expect[i++], expect[i++], done);
 	}, done);

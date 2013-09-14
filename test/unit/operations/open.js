@@ -35,7 +35,7 @@ var SRC_PATH = path.resolve(__dirname + '/../../fixtures/'),
  * Tests helper functions.
  */
 
-var checkPixels = curry(function(expectedErr, alpha, done, err, image) {
+var checkPixels = _.curry(function(expectedErr, alpha, done, err, image) {
 	if (expectedErr) {
 		err.should.be.instanceof(Error);
 		err.message.should.equal(expectedErr);
@@ -65,7 +65,7 @@ var checkPixels = curry(function(expectedErr, alpha, done, err, image) {
 	done();
 });
 
-var testOpen = curry(function(filename, expectedErr, alpha, done) {
+var testOpen = _.curry(function(filename, expectedErr, alpha, done) {
 	if (filename) filename = path.join(SRC_PATH, filename);
 	open(filename, checkPixels(expectedErr, alpha, done));
 });
