@@ -27,37 +27,39 @@ var SRC_DIR = path.resolve(__dirname + '/../../fixtures/'),
  * Tests helper functions.
  */
 
-var testSave = curry(function(filename, quality, progressive, expectedErr, done) {
-	open(path.join(SRC_DIR, '01a.gif'), function(err, image) {
-		filename = path.join(TMP_DIR, filename);
-		// randomize filename in order to avoid conflict with existing fixtures
-		filename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
-		save({
-			filename: filename,
-			quality: quality,
-			progressive: progressive
-		}, image, function(err) {
-			if (expectedErr) {
-				err.should.be.instanceof(Error);
-				err.message.should.equal(expectedErr);
-				done();
-			}
-			else {
-				should.not.exist(err);
-				fs.existsSync(filename).should.be.truthy;
-				open(filename, function(err, savedImage) {
-					for (var i = 0, len = image.length; i < len; i++) {
-						console.log(savedImage[i], image[i]);
-//						savedImage[i].should.equal(image[i]);
-					}
-					fs.unlinkSync(filename);
+var testSave = function(filename, quality, progressive, expectedErr) {
+	return function(done) {
+		open(path.join(SRC_DIR, filename), function(err, image) {
+			filename = path.join(TMP_DIR, filename);
+			// randomize filename in order to avoid conflict with existing fixtures
+			filename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
+			save({
+				filename: filename,
+				quality: quality,
+				progressive: progressive
+			}, image, function(err) {
+				if (expectedErr) {
+					err.should.be.instanceof(Error);
+					err.message.should.equal(expectedErr);
 					done();
-				});
-//				done();
-			}
+				}
+				else {
+					should.not.exist(err);
+					fs.existsSync(filename).should.be.truthy;
+					open(filename, function(err, savedImage) {
+						for (var i = 0, len = image.length; i < len; i++) {
+//							console.log(savedImage[i], image[i]);
+							//						savedImage[i].should.equal(image[i]);
+						}
+//						fs.unlinkSync(filename);
+						done();
+					});
+					//				done();
+				}
+			});
 		});
-	});
-});
+	};
+};
 
 /**
  * Test suite.
@@ -73,7 +75,7 @@ describe('save operation', function() {
 		fs.rmdirSync(TMP_DIR);
 	});
 
-	xdescribe('(filename, image, next)', function() {
+	describe('(filename, image, next)', function() {
 		it('should pass an error when params are not valid', function(done) {
 			save(null, null, function(err) {
 				err.should.be.instanceof(Error);
@@ -97,7 +99,7 @@ describe('save operation', function() {
 		});
 	});
 
-	xdescribe('(params, image, next)', function() {
+	describe('(params, image, next)', function() {
 		it('should pass an error when filename is not valid', function(done) {
 			save({ filename: null }, new Image(), function(err) {
 				err.should.be.instanceof(Error);

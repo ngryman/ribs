@@ -4,13 +4,6 @@
  * LGPL Licensed
  */
 
-/**
- * For now, color mapped images do not support alpha channel.
- * This has been addressed to Leptonica's developer.
- * He will probably add support for it in 1.70:
- *  - https://code.google.com/p/leptonica/issues/detail?id=82
- */
-
 'use strict';
 
 /**
@@ -22,10 +15,6 @@ var open = require('../../../lib/operations/open'),
 	raw = require('../../fixtures/raw'),
 	fs = require('fs'),
 	path = require('path');
-
-/**
- * Tests constants.
- */
 
 /**
  * Tests helper functions.

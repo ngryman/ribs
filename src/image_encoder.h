@@ -14,6 +14,7 @@ namespace ribs {
 class ImageEncoder {
 public:
 	struct Result {
+		const char* filename;
 		NanCallback* callback;
 		char error[128];
 

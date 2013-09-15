@@ -46,8 +46,8 @@ Local<Object> Image::New(const char* filename, uint32_t width, uint32_t height, 
 	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
 	Image* image = Unwrap<Image>(instance);
 	image->filename = filename;
-	image->width = width;
-	image->height = height;
+	image->w = width;
+	image->h = height;
 	image->data = data;
 
 	// Let v8 handle [] accessor
@@ -65,13 +65,13 @@ Local<Object> Image::New(const char* filename, uint32_t width, uint32_t height, 
 NAN_GETTER(Image::GetWidth) {
 	NanScope();
 	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->width));
+	NanReturnValue(Number::New(image->width()));
 }
 
 NAN_GETTER(Image::GetHeight) {
 	NanScope();
 	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->height));
+	NanReturnValue(Number::New(image->height()));
 }
 
 NAN_GETTER(Image::GetLength) {

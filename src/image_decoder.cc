@@ -15,7 +15,6 @@ using namespace v8;
 using namespace std;
 using namespace ribs;
 
-static jmp_buf jpeg_jmpbuf; // not sure this is really thread safe...
 static void jpeg_error_do_not_exit(j_common_ptr cinfo);
 
 struct Baton {
@@ -29,6 +28,7 @@ struct Baton {
 	SmartBuffer buffer;
 	// decoder stuff
 	uv_work_t work;
+	jmp_buf jpeg_jmpbuf;
 };
 
 // TODO: benchmark this size
@@ -80,7 +80,7 @@ void OnOpen(uv_fs_t* req) {
 		return Done(baton);
 	}
 
-	// stores file descriptor on read
+	// stores file descriptor for reading
 	baton->fd = req->result;
 
 	// read the file async
@@ -146,9 +146,9 @@ void DecodeAsync(uv_work_t* req) {
 	JSAMPROW in;
 	uint32_t* out;
 
-	if (setjmp(jpeg_jmpbuf)) {
-		free(out);
+	if (setjmp(baton->jpeg_jmpbuf)) {
 		free(in);
+		free(out);
 		RibsError(baton->result.error, "can't decode JPEG file", "internal jpeg error");
 		return;
 	}
@@ -158,7 +158,7 @@ void DecodeAsync(uv_work_t* req) {
 	jpeg_decompress_struct cinfo;
 
 	cinfo.err = jpeg_std_error(&jerr);
-	jerr.trace_level = 0;
+	cinfo.client_data = reinterpret_cast<void*>(&baton->jpeg_jmpbuf);
 	jerr.error_exit = jpeg_error_do_not_exit; // do not exit!
 
 	jpeg_create_decompress(&cinfo);
@@ -186,20 +186,11 @@ void DecodeAsync(uv_work_t* req) {
 	for (uint32_t y = 0; y < height; ++y) {
 		jpeg_read_scanlines(&cinfo, &in, (JDIMENSION) 1);
 		for (uint32_t x = 0; x < width; ++x, p++) {
-			if (1 == cinfo.jpeg_color_space) {
-				*p = 255 << 24
-					| in[x] << 16
-					| in[x] << 8
-					| in[x];
-				printf("%d %d %d", in[x] << 16, in[x] << 8, in[x]);
-			}
-			else {
-				uint32_t bx = 3 * x;
-				*p = 255 << 24
-					| in[bx + 0] << 16
-					| in[bx + 1] << 8
-					| in[bx + 2];
-			}
+			uint32_t bx = 3 * x;
+			*p = 255 << 24
+				| in[bx + 0] << 16
+				| in[bx + 1] << 8
+				| in[bx + 2];
 		}
 	}
 
@@ -240,7 +231,7 @@ void Done(Baton* baton) {
 static void jpeg_error_do_not_exit(j_common_ptr cinfo) {
 	(*cinfo->err->output_message)(cinfo);
 	jpeg_destroy(cinfo);
-	longjmp(jpeg_jmpbuf, 0);
+	longjmp(*reinterpret_cast<jmp_buf*>(&cinfo->client_data), 0);
 	return;
 }
 
@@ -248,14 +239,14 @@ static void jpeg_error_do_not_exit(j_common_ptr cinfo) {
 #if JPEG_LIB_VERSION < 80
 
 /* Read JPEG image from a memory segment */
-static void init_source(j_decompress_ptr cinfo) {}
+METHODDEF(void) init_source(j_decompress_ptr cinfo) {}
 
-static boolean fill_input_buffer(j_decompress_ptr cinfo) {
+METHODDEF(boolean) fill_input_buffer(j_decompress_ptr cinfo) {
 	ERREXIT(cinfo, JERR_INPUT_EMPTY);
 	return TRUE;
 }
 
-static void skip_input_data(j_decompress_ptr cinfo, long num_bytes) {
+METHODDEF(void) skip_input_data(j_decompress_ptr cinfo, size_t num_bytes) {
 	jpeg_source_mgr* src = (jpeg_source_mgr*) cinfo->src;
 	if (num_bytes > 0) {
 		src->next_input_byte += (size_t) num_bytes;
@@ -263,15 +254,14 @@ static void skip_input_data(j_decompress_ptr cinfo, long num_bytes) {
 	}
 }
 
-static void term_source (j_decompress_ptr cinfo) {}
+METHODDEF(void) term_source(j_decompress_ptr cinfo) {}
 
-static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
+GLOBAL(void) jpeg_mem_src(j_decompress_ptr cinfo, JOCTET* buffer, size_t nbytes) {
 	jpeg_source_mgr* src;
 
 	if (cinfo->src == NULL) {
-		cinfo->src = (struct jpeg_source_mgr *)
-		(*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-		sizeof(struct jpeg_source_mgr));
+		cinfo->src = (jpeg_source_mgr*) (*cinfo->mem->alloc_small)((j_common_ptr) cinfo, JPOOL_PERMANENT,
+			sizeof(struct jpeg_source_mgr));
 	}
 
 	src = (struct jpeg_source_mgr*) cinfo->src;

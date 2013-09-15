@@ -18,8 +18,10 @@ public:
 	static v8::Local<v8::Object> New(const char* filename, uint32_t width, uint32_t height, pixel_t* data);
 
 	inline pixel_t* pixels() const { return data; }
-	inline int length() const { return stride() * height; }
-	inline int stride() const { return width * 4; }
+	inline uint32_t width() const { return w; }
+	inline uint32_t height() const { return h; }
+	inline int length() const { return stride() * h; }
+	inline int stride() const { return w * 4; }
 
 private:
 	Image(v8::Handle<v8::Object>& wrapper);
@@ -34,8 +36,8 @@ private:
 	static NAN_METHOD(Save);
 
 	const char* filename;
-	uint32_t width;
-	uint32_t height;
+	uint32_t w;
+	uint32_t h;
 	pixel_t* data;
 };
 
