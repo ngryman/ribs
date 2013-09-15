@@ -155,12 +155,13 @@ void DecodeAsync(uv_work_t* req) {
 	// get rid of color maps
 	if (pixGetColormap(data)) {
 		Pix* rgbData = pixRemoveColormap(data, REMOVE_CMAP_TO_FULL_COLOR);
-		baton->result.data = rgbData;
 		pixDestroy(&data);
+		data = rgbData;
 	}
-	else {
-		baton->result.data = data;
-	}
+
+	// swap bytes on little-endian machines in order to be sure that we have RGBA quadruplets
+//	pixEndianByteSwap(data);
+	baton->result.data = data;
 };
 
 void OnDecoded(uv_work_t* req) {

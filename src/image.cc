@@ -53,7 +53,12 @@ Local<Object> Image::New(const char* filename, Pix* data) {
 	// Let v8 handle [] accessor
 	uint8_t* bytes = reinterpret_cast<uint8_t*>(pixGetData(image->data));
 	instance->SetIndexedPropertiesToPixelData(bytes, image->length());
+//	uint32_t* pixels = reinterpret_cast<uint32_t*>(pixGetData(image->data));
+//	instance->SetIndexedPropertiesToExternalArrayData(pixels, kExternalUnsignedIntArray, image->length());
 
+	// give a hint to GC about the amount of memory attached to this object
+	// this help GC to know exactly the amount of memory it will free if collecting this object
+	// this ensure GC will collect more regularly exhausted image objects
 	V8::AdjustAmountOfExternalAllocatedMemory(image->length());
 	NanReturnValue(instance);
 }

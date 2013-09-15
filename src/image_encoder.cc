@@ -98,7 +98,6 @@ void EncodeAsync(uv_work_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	// let leptonica write image data for us
-	// TODO: quality & progressive handling
 	if (0 != pixWriteImpliedFormat(baton->filename, baton->data, baton->quality, baton->progressive)) {
 		RibsError(baton->result.error, "can't encode file", "unknown image format");
 	}
