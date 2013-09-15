@@ -31,7 +31,7 @@ var open = require('../../../lib/operations/open'),
  * Tests helper functions.
  */
 
-var checkPixels = curry(function(filename, expectedErr, alpha, done, err, image) {
+var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, image) {
 	if (expectedErr) {
 		err.should.be.instanceof(Error);
 		err.message.should.equal(expectedErr);
@@ -51,10 +51,12 @@ var checkPixels = curry(function(filename, expectedErr, alpha, done, err, image)
 	done();
 });
 
-var testOpen = curry(function(filename, expectedErr, alpha, done) {
-	if (filename) filename = path.join(__dirname, '..', '..', 'fixtures', filename);
-	open(filename, checkPixels(filename, expectedErr, alpha, done));
-});
+var testOpen = function(filename, expectedErr, alpha) {
+	return function(done) {
+		if (filename) filename = path.join(__dirname, '..', '..', 'fixtures', filename);
+		open(filename, checkPixels(filename, expectedErr, alpha, done));
+	};
+};
 
 /**
  * Test suite.
