@@ -62,7 +62,6 @@ var testOpen = function(filename, expectedErr, alpha) {
  * Test suite.
  */
 
-// TODO: see if all alternatives are (1) relevant, (2) possible
 describe('open operation', function() {
 	describe('with jpg files', function() {
 		it('should open when quality is 100%', testOpen('01100.jpg', null, false));
@@ -76,30 +75,24 @@ describe('open operation', function() {
 		it('should open when optimized and quality is 0%', testOpen('010o.jpg', null, false));
 	});
 
-	xdescribe('with png files', function() {
-		it('should open 8-bit', testOpen('018.png', null, false));
-//		it('should open 8-bit with alpha channel', testOpen('018-a.png', null, true));
-//		it('should open interlaced 8-bit with alpha channel', testOpen('018-ai.png', null, true));
-		it('should open 24-bit', testOpen('0124.png', null, false));
-		it('should open 24-bit with alpha channel', testOpen('0124a.png', null, true));
-		it('should open interlaced 24-bit with alpha channel', testOpen('0124ai.png', null, true));
-	});
+//	xdescribe('with png files', function() {
+//		it('should open 8-bit', testOpen('018.png', null, false));
+////		it('should open 8-bit with alpha channel', testOpen('018-a.png', null, true));
+////		it('should open interlaced 8-bit with alpha channel', testOpen('018-ai.png', null, true));
+//		it('should open 24-bit', testOpen('0124.png', null, false));
+//		it('should open 24-bit with alpha channel', testOpen('0124a.png', null, true));
+//		it('should open interlaced 24-bit with alpha channel', testOpen('0124ai.png', null, true));
+//	});
 
-	xdescribe('with gif files', function() {
-		it('should open standard', testOpen('01.gif', null, false));
-		it('should open interlaced', testOpen('01i.gif', null, false));
-//		it('should open with alpha channel', testOpen('01a.gif', null, true));
-//		it('should open interlaced with alpha channel', testOpen('01ai.gif', null, true));
-	});
-
-	it('should pass an error when filename is not valid', testOpen(null, 'filename should not be null nor undefined', false));
-	it('should throw an error when next is not valid', function() {
-		(function() {
-			open(path.resolve(__dirname + '/../../fixtures/in.gif'), 'lolilol');
-		}).should.throw('next should be a function');
-	});
+//	xdescribe('with gif files', function() {
+//		it('should open standard', testOpen('01.gif', null, false));
+//		it('should open interlaced', testOpen('01i.gif', null, false));
+////		it('should open with alpha channel', testOpen('01a.gif', null, true));
+////		it('should open interlaced with alpha channel', testOpen('01ai.gif', null, true));
+//	});
 
 	it('should pass an error when filename is not valid', testOpen(null, 'filename should not be null nor undefined', false));
+
 	it('should throw an error when next is not valid', function() {
 		(function() {
 			open(path.resolve(__dirname + '/../../fixtures/in.gif'), 'lolilol');
