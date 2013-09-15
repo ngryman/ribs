@@ -29,10 +29,10 @@ function raw(filename, alpha) {
 	// merge 24bit pixels and 8 bit alpha channel
 	var rgba = new Array(a.length * 4);
 	for (var i = 0, len = a.length; i < len; i++) {
-		rgba[i * 4 + 0] = '1' == a[i] ? 255 : 0;
-		rgba[i * 4 + 1] = Number(rgb[i * 3 + 2]);
-		rgba[i * 4 + 2] = Number(rgb[i * 3 + 1]);
-		rgba[i * 4 + 3] = Number(rgb[i * 3]);
+		rgba[i * 4 + 0] = Number(rgb[i * 3 + 2]);
+		rgba[i * 4 + 1] = Number(rgb[i * 3 + 1]);
+		rgba[i * 4 + 2] = Number(rgb[i * 3]);
+		rgba[i * 4 + 3] = '1' == a[i] ? 255 : 0;
 	}
 
 	return rgba;

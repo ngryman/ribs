@@ -74,7 +74,7 @@ describe('open operation', function() {
 		it('should open when optimized and quality is 0%', testOpen('010o.jpg', null, false));
 	});
 
-	describe('with png files', function() {
+	xdescribe('with png files', function() {
 		it('should open 8-bit', testOpen('018.png', null, false));
 //		it('should open 8-bit with alpha channel', testOpen('018-a.png', null, true));
 //		it('should open interlaced 8-bit with alpha channel', testOpen('018-ai.png', null, true));
@@ -83,7 +83,7 @@ describe('open operation', function() {
 		it('should open interlaced 24-bit with alpha channel', testOpen('0124ai.png', null, true));
 	});
 
-	describe('with gif files', function() {
+	xdescribe('with gif files', function() {
 		it('should open standard', testOpen('01.gif', null, false));
 		it('should open interlaced', testOpen('01i.gif', null, false));
 //		it('should open with alpha channel', testOpen('01a.gif', null, true));
@@ -97,12 +97,12 @@ describe('open operation', function() {
 		}).should.throw('next should be a function');
 	});
 
-	// win32 leptonica does not support reading from memory, so it also handles reading from file
-	// as it does not give any error info, we can't really distinguish i/o errors from decoding errors
-	if ('win32' == process.platform) {
-		it('should pass an error when file is not found', testOpen('/dev/null', "can't decode file: unknown image format", false));
-	}
-	else {
-		it('should pass an error when file is not found', testOpen('/dev/null', "can't open file: no such file or directory", false));
-	}
+	it('should pass an error when filename is not valid', testOpen(null, 'filename should not be null nor undefined', false));
+	it('should throw an error when next is not valid', function() {
+		(function() {
+			open(path.resolve(__dirname + '/../../fixtures/in.gif'), 'lolilol');
+		}).should.throw('next should be a function');
+	});
+
+	it('should pass an error when file is not found', testOpen('/dev/null', "can't open file: no such file or directory", false));
 });

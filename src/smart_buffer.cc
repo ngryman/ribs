@@ -8,40 +8,45 @@
 
 using namespace ribs;
 
-// TODO: benchmark this size
-// TODO: when custom allocator will be available, perhaps a big increase would be possible in the working area
-const int SmartBuffer::ChunkSize = 32 * 1024;
-
 SmartBuffer::SmartBuffer() {
-	chunksCount = 0;
+	len = 0;
 }
 
 SmartBuffer::~SmartBuffer() {
-	if (chunksCount) {
-		free(chunksPtr);
+	if (0 != len) {
+		free(ptr);
 	}
 }
 
-bool SmartBuffer::append(uint8_t* buf) {
-	chunksCount++;
-	if (1 == chunksCount) {
-		chunksPtr = static_cast<uint8_t*>(calloc(ChunkSize, sizeof(uint8_t)));
+bool SmartBuffer::append(uint8_t* buf, size_t length) {
+	if (0 == len) {
+		ptr = static_cast<uint8_t*>(calloc(length, sizeof(uint8_t)));
+		headPtr = ptr;
 	}
 	else {
-		chunksPtr = static_cast<uint8_t*>(realloc(chunksPtr, chunksCount * ChunkSize * sizeof(uint8_t)));
+		ptr = static_cast<uint8_t*>(realloc(ptr, len + length * sizeof(uint8_t)));
 	}
 
-	if (NULL == chunksPtr) {
-		free(chunksPtr);
+	if (NULL == ptr) {
+		free(ptr);
 		return false;
 	}
+
+	memcpy(headPtr, buf, length * sizeof(uint8_t));
+	headPtr += length;
+	len += length;
+
 	return true;
 }
 
-int SmartBuffer::size() const {
-	return chunksCount * ChunkSize;
+int SmartBuffer::length() const {
+	return len;
 }
 
 SmartBuffer::operator const uint8_t* () const {
-	return chunksPtr;
+	return ptr;
+}
+
+SmartBuffer::operator uint8_t* () {
+	return ptr;
 }

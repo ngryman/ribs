@@ -16,16 +16,16 @@ public:
 	SmartBuffer();
 	~SmartBuffer();
 
-	bool append(uint8_t* buf);
-	int size() const;
+	bool append(uint8_t* buf, size_t length);
+	int length() const;
 
 	operator const uint8_t* () const;
-
-	static const int ChunkSize;
+	operator uint8_t* ();
 
 private:
-	uint8_t* chunksPtr;
-	int chunksCount;
+	uint8_t* ptr;
+	uint8_t* headPtr;
+	size_t len;
 };
 
 }

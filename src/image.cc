@@ -23,7 +23,6 @@ Image::Image(Handle<Object>& wrapper) {
 }
 
 Image::~Image() {
-	pixDestroy(&data);
 	V8::AdjustAmountOfExternalAllocatedMemory(-length());
 };
 
@@ -40,19 +39,19 @@ NAN_METHOD(Image::New) {
 	NanReturnValue(args.This());
 }
 
-Local<Object> Image::New(const char* filename, Pix* data) {
+Local<Object> Image::New(const char* filename, uint32_t width, uint32_t height, pixel_t* data) {
 	NanScope();
 
 	// create a new instance an feed it
 	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
 	Image* image = Unwrap<Image>(instance);
 	image->filename = filename;
+	image->width = width;
+	image->height = height;
 	image->data = data;
-	pixGetDimensions(image->data, &image->width, &image->height, NULL);
 
 	// Let v8 handle [] accessor
-	uint8_t* bytes = reinterpret_cast<uint8_t*>(pixGetData(image->data));
-	instance->SetIndexedPropertiesToPixelData(bytes, image->length());
+	instance->SetIndexedPropertiesToPixelData(image->data, image->length());
 //	uint32_t* pixels = reinterpret_cast<uint32_t*>(pixGetData(image->data));
 //	instance->SetIndexedPropertiesToExternalArrayData(pixels, kExternalUnsignedIntArray, image->length());
 
@@ -164,7 +163,7 @@ void OnDecoded(ImageDecoder::Result* result) {
 	}
 	else {
 		// create the image instance with data
-		Local<Object> instance = Image::New(result->filename, result->data);
+		Local<Object> instance = Image::New(result->filename, result->width, result->height, result->data);
 
 		// execute callback with newly created image
 		argv[argc++] = Local<Value>::New(Null());

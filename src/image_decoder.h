@@ -15,7 +15,9 @@ class ImageDecoder {
 public:
 	struct Result {
 		const char* filename;
-		Pix* data;
+		uint32_t width;
+		uint32_t height;
+		pixel_t* data;
 		NanCallback* callback;
 		char error[128];
 	};

@@ -22,7 +22,6 @@
 			["OS=='mac'", {
 				"libraries": [
 					"-L../deps/leptonica/lib",
-					#"-llept",
 					"-lgif",
 					"-ljpeg",
 					"-lpng",
@@ -35,8 +34,6 @@
 			}],
 			["OS=='win'", {
 				"libraries": [
-					# TODO: check if -L works here
-					"-l../deps/leptonica/lib/liblept.lib",
 					"-l../deps/leptonica/lib/giflib.lib",
 					"-l../deps/leptonica/lib/libjpeg.lib",
 					"-l../deps/leptonica/lib/libpng.lib",

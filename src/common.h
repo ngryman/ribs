@@ -13,11 +13,11 @@
 #include <node_version.h>
 
 #include <fcntl.h>
-
-#include "leptonica/allheaders.h"
 #include "nan.h"
 
 namespace ribs {
+
+typedef uint8_t pixel_t;
 
 class Image;
 

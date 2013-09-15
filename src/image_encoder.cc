@@ -27,7 +27,7 @@ struct Baton {
 //	SmartBuffer buffer;
 	// decoder stuff
 	uv_work_t work;
-	Pix* data;
+	pixel_t* data;
 };
 
 static void BeginEncode(Baton * baton);
@@ -48,8 +48,6 @@ static void Done(Baton* baton);
 //#endif
 
 void ImageEncoder::Initialize(void) {
-	// ensure that leptonica do write png alpha channel
-	l_pngSetWriteAlpha(1);
 }
 
 void ImageEncoder::Encode(const char* filename, int32_t quality, bool progressive, const Image* image, Callback callback, NanCallback* jsCallback) {
@@ -98,9 +96,9 @@ void EncodeAsync(uv_work_t* req) {
 	Baton* baton = static_cast<Baton*>(req->data);
 
 	// let leptonica write image data for us
-	if (0 != pixWriteImpliedFormat(baton->filename, baton->data, baton->quality, baton->progressive)) {
-		RibsError(baton->result.error, "can't encode file", "unknown image format");
-	}
+//	if (0 != pixWriteImpliedFormat(baton->filename, baton->data, baton->quality, baton->progressive)) {
+//		RibsError(baton->result.error, "can't encode file", "unknown image format");
+//	}
 };
 
 void OnEncoded(uv_work_t* req) {

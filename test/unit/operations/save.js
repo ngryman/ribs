@@ -32,7 +32,6 @@ var testSave = curry(function(filename, quality, progressive, expectedErr, done)
 		filename = path.join(TMP_DIR, filename);
 		// randomize filename in order to avoid conflict with existing fixtures
 		filename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
-
 		save({
 			filename: filename,
 			quality: quality,
