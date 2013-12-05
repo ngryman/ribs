@@ -19,7 +19,7 @@
 
 Responsive images is the next big challenge.
 
-Some [client-side patterns] already exist along with [build tasks] in order to **procude**, **optimize**, **manage** and
+Some [client-side patterns] already exist along with [build tasks] in order to **produce**, **optimize**, **manage** and
 **pick** the right image for the right screen size.
 
 In the wild, this is not as much used as it should be. AFAIK this is probably because it asks a certain amount of time
