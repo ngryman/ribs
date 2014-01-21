@@ -1,6 +1,6 @@
 # ribs
 
-**R**esponsive **I**mages **B**acked **S**erver-side, yummy!
+**R**esponsive **I**mages **B**aked **S**erver-side, yummy!
 
 <p align="center">
   <img width="703" height="404" src="http://farm8.staticflickr.com/7347/9538576837_488e0d89db_o.jpg" alt="Responsive image example">
