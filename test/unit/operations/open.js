@@ -30,7 +30,8 @@ var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, imag
 		image.should.be.instanceof(Image);
 		image.should.have.property('width', 8);
 		image.should.have.property('height', 8);
-		image.should.have.lengthOf(image.width * image.height * 4);
+		image.should.have.property('channels', 3);
+		image.should.have.lengthOf(image.width * image.height * image.channels);
 
 		var pixels = raw(filename, alpha);
 		for (var i = 0, len = image.length; i < len; i++) {
