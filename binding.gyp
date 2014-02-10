@@ -1,66 +1,33 @@
-	{
-	"conditions": [
-		["OS=='win'", {
-			"variables": {
-			}
-		}]
-	],
-	"targets": [{
-		"target_name": "ribs",
-		"sources": [
-			"src/image.cc",
-			"src/image_decoder.cc",
-			"src/image_encoder.cc",
-			"src/smart_buffer.cc",
-			"src/init.cc"
-		],
-		"include_dirs": [
-			"deps/leptonica/include",
-			"<!(node -p -e \"require('path').dirname(require.resolve('nan'))\")"
-		],
-		"conditions": [
-			["OS=='mac'", {
-				"libraries": [
-					"-L../deps/leptonica/lib",
-					"-lgif",
-					"-ljpeg",
-					"-lpng",
-					"-ltiff",
-					"-lwebp",
-				],
-				"cflags": [
-					"-Wall"
-				]
-			}],
-			["OS=='win'", {
-				"libraries": [
-					"-l../deps/leptonica/lib/giflib.lib",
-					"-l../deps/leptonica/lib/libjpeg.lib",
-					"-l../deps/leptonica/lib/libpng.lib",
-					"-l../deps/leptonica/lib/libtiff.lib",
-					"-l../deps/leptonica/lib/zlib.lib",
-				],
-				"msvs_settings": {
-					"VCCLCompilerTool": {
-						"DisableSpecificWarnings": [ "4244", "4267", "4305", "4506", "4530" ],
-						# does not work, to specity in common.gypi
-						# fixed with utils/fix_msvs_settings.js
-						"RuntimeLibrary": 2,
+{
+	'targets': [{
+		'target_name': 'ribs',
 
-						# warning: C4530
-						# can't ovveride default exception handling, we have to modify %USERPROFILE%\.node-gyp\__NODE_RELASE__\common.gypi
-						#  https://github.com/TooTallNate/node-gyp/issues/26
-						#"ExceptionHandling": "Sync"
-					},
-					"VCLinkerTool": {
-						# does not work, even in common.gypi
-						# fixed with utils/fix_msvs_settings.js
-						"ImageHasSafeExceptionHandlers": "false"
-					}
-				}
-			}]
+		'sources': [
+			'src/image.cc',
+			'src/init.cc'
 		],
-		"cflags": [ "-fexceptions" ],
-		"cflags_cc": [ "-fexceptions" ]
+
+		'include_dirs': [
+			'<!@(pkg-config opencv --cflags-only-I | sed s/-I//g)',
+			'<!(node -p -e \'require("path").dirname(require.resolve("nan"))\')'
+		],
+
+		'libraries': [
+			'<!@(pkg-config opencv --libs)'
+		],
+
+		'cflags': [
+			'-Wall',
+			'-std=c++11',
+			'<!@(pkg-config opencv --cflags-only-other)'
+		],
+
+		# negate defaults cflags defined in common.gpyi
+		#
+		#   https://github.com/TooTallNate/node-gyp/issues/26
+		'cflags_cc!': [
+			'-fno-rtti',
+			'-fno-exceptions'
+		]
 	}]
 }
