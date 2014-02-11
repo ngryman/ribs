@@ -24,6 +24,14 @@ namespace ribs {
 
 typedef uint8_t pixel_t;
 
+inline static std::string FromV8String(v8::Local<v8::Value> v8Str) {
+	size_t size;
+	char* cstr = NanCString(v8Str, &size);
+	std::string cppstr(cstr);
+	delete[] cstr;
+	return cppstr;
+}
+
 }
 
 #endif
