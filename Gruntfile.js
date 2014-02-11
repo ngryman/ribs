@@ -7,8 +7,10 @@
 'use strict';
 
 module.exports = function(grunt) {
-	// loads npm tasks
+	// load npm tasks
 	require('load-grunt-tasks')(grunt);
+    // load time grunt
+    require('time-grunt')(grunt);
 
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
