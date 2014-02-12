@@ -23,10 +23,9 @@ Some [client-side patterns] already exist along with [build tasks] in order to *
 **pick** the right image for the right screen size.
 
 In the wild, this is not as much used as it should be. AFAIK this is probably because it asks a certain amount of time
-to choose and apply a technique and it too much tools in the process. The fact is, developpers don't take enough time
-for this and tend to neglect this part of an application.
+to choose and apply a technique and it involves too much tools in the process. The fact is, developpers don't take enough time for this and tend to neglect this part of an application.
 
-I believe in the *on-the-fly* way of thinking that the Web cam offer. So, for this problem, just ask the image you want,
+I believe in the *on-the-fly* way of thinking that the Web offers. So, for this problem, just ask the image you want,
 and you will receive it already processed, end of story.
 This also have to garanty that you:
 - do not **load more than your are going to show**.
