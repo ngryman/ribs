@@ -11,27 +11,55 @@
 
 namespace ribs {
 
+/**
+ * Abstract class representing a RIBS operation.
+ * An operation may be seen as a worker class using libuv as infrastructure for threading.
+ * This worker acts on an input and produces an output.
+ */
 class Operation {
 public:
-	NAN_METHOD(Process);
+	void Process(void);
 
-	virtual ~Operation() {}
+	Operation(_NAN_METHOD_ARGS);
+	virtual ~Operation();
 
-private:
-	virtual bool                  CheckArguments(_NAN_METHOD_ARGS) = 0;
-	virtual Baton*                PreProcess(_NAN_METHOD_ARGS)     = 0;
-	virtual void                  DoProcess(Baton* baton)          = 0;
-	virtual v8::Local<v8::Object> OutputValue(Baton* baton)        = 0;
-	virtual void                  PostProcess(Baton* baton)        = 0;
+protected:
+	/**
+	 * Operation implementation.
+	 * This is where all the work is done to grasp the input and produce an output.
+	 * This method is called in another thread, managed by libuv.
+	 */
+	virtual void DoProcess() = 0;
 
-	friend void ProcessAsync(uv_work_t* req);
-	friend void AfterProcessAsync(uv_work_t* req);
+	/**
+	 * Return the output value produced by the operation.
+	 * This will directly passed to the JavaScript callback if the operation succeeds.
+	 * This method is necessary as we can't interact with v8 in the DoProcess method. This cause segmentation faults,
+	 * probably because v8 is not thread safe or something like this.
+	 */
+	virtual v8::Local<v8::Object> OutputValue() = 0;
+
+	std::string  error;
+	NanCallback* callback;
+	uv_work_t    req;
+
+	static void ProcessAsync(uv_work_t* req);
+	static void AfterProcessAsync(uv_work_t* req);
 };
 
-#define RIBS_OPERATION(name)           \
-	NanScope();                        \
-	auto op = new name ## Operation(); \
-	op->Process(args);                 \
+/**
+ * Helps calling a specific operation.
+ */
+#define RIBS_OPERATION(name)                                             \
+	NanScope();                                                          \
+	Operation* op;                                                       \
+	try {                                                                \
+		op = new name ## Operation(args);                                \
+	}                                                                    \
+	catch (const std::string e) {                                        \
+		return ThrowException(Exception::Error(String::New(e.c_str()))); \
+	}                                                                    \
+	op->Process();                                                       \
 	NanReturnUndefined();
 
 }

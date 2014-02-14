@@ -10,52 +10,33 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
-namespace ribs {
-
-void ProcessAsync(uv_work_t* req);
-void AfterProcessAsync(uv_work_t* req);
-
-}
-
-NAN_METHOD(Operation::Process) {
-	NanScope();
-
-	NanCallback* callback = NULL;
-
-	// if no callback is specified, return;
-	if (!args[args.Length() - 1]->IsFunction()) NanReturnUndefined();
-
-	// if no input is specified we throw a JavaScript exception.
-	if (!CheckArguments(args)) {
-		return ThrowException(Exception::Error(String::New("invalid input data")));
-	}
-
-	// create callback
+Operation::Operation(_NAN_METHOD_ARGS) {
+	// assign mandatory callback
+	if (!args[args.Length() - 1]->IsFunction()) throw "no callback specified";
 	callback = new NanCallback(args[args.Length() - 1].As<Function>());
 
-	// populate baton for further processing
-	Baton* baton     = PreProcess(args);
-	baton->operation = this;
-	baton->callback  = callback;
-	baton->req.data  = baton;
+	// reference this operation
+	req.data = this;
+}
 
+Operation::~Operation() {
+	delete callback;
+}
+
+void Operation::Process(void) {
 	// here we go!
-	uv_queue_work(uv_default_loop(), &baton->req, ProcessAsync, (uv_after_work_cb)AfterProcessAsync);
-
-	// make the compiler happy ^_^
-	NanReturnUndefined();
+	uv_queue_work(uv_default_loop(), &req, ProcessAsync, (uv_after_work_cb)AfterProcessAsync);
 }
 
-void ribs::ProcessAsync(uv_work_t* req) {
-	auto baton = static_cast<Baton*>(req->data);
-
-	baton->operation->DoProcess(baton);
+void Operation::ProcessAsync(uv_work_t* req) {
+	auto op = static_cast<Operation*>(req->data);
+	op->DoProcess();
 }
 
-void ribs::AfterProcessAsync(uv_work_t* req) {
+void Operation::AfterProcessAsync(uv_work_t* req) {
 	NanScope();
 
-	auto baton = static_cast<Baton*>(req->data);
+	auto op = static_cast<Operation*>(req->data);
 
 	int argc = 0;
 	Local<Value> argv[2];
@@ -63,27 +44,25 @@ void ribs::AfterProcessAsync(uv_work_t* req) {
 	// execute callback with error.
 	// note that we explicitly pass undefined to the 2nd argument.
 	// this is to respect the arity of the function and allow curry for example.
-	if (!baton->error.empty()) {
-		argv[argc++] = Exception::Error(String::New(baton->error.c_str()));
+	if (!op->error.empty()) {
+		argv[argc++] = Exception::Error(String::New(op->error.c_str()));
 		argv[argc++] = Local<Value>::New(Undefined());
 	}
 	else {
-		// execute callback with out object
+		// execute callback with the output object
 		argv[argc++] = Local<Value>::New(Null());
-		argv[argc++] = baton->operation->OutputValue(baton);
+		argv[argc++] = op->OutputValue();
 	}
 
 	TryCatch tryCatch;
 
-	baton->callback->Call(argc, argv);
+	// pass the hand to the JavaScript part
+	op->callback->Call(argc, argv);
+
+	// after serving your purpose, we now delete you.
+	delete op;
 
 	if (tryCatch.HasCaught()) {
 		FatalException(tryCatch);
 	}
-
-	baton->operation->PostProcess(baton);
-
-	delete baton->callback;
-	delete baton->operation;
-	delete baton;
 }

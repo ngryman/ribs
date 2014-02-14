@@ -12,12 +12,15 @@
 namespace ribs {
 
 class DecodeOperation : public Operation {
+public:
+	DecodeOperation(_NAN_METHOD_ARGS);
+
 private:
-	bool                  CheckArguments(_NAN_METHOD_ARGS);
-	Baton*                PreProcess(_NAN_METHOD_ARGS);
-	void                  DoProcess(Baton* baton);
-	v8::Local<v8::Object> OutputValue(Baton* baton);
-	void                  PostProcess(Baton* baton);
+	void                  DoProcess();
+	v8::Local<v8::Object> OutputValue();
+
+	cv::Mat inMat;
+	cv::Mat outMat;
 };
 
 }

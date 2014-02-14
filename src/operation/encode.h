@@ -12,12 +12,17 @@
 namespace ribs {
 
 class EncodeOperation : public Operation {
+public:
+	EncodeOperation(_NAN_METHOD_ARGS);
+
 private:
-	bool                  CheckArguments(_NAN_METHOD_ARGS);
-	Baton*                PreProcess(_NAN_METHOD_ARGS);
-	void                  DoProcess(Baton* baton);
-	v8::Local<v8::Object> OutputValue(Baton* baton);
-	void                  PostProcess(Baton* baton);
+	void                  DoProcess();
+	v8::Local<v8::Object> OutputValue();
+
+	Image*             image;
+	std::vector<uchar> outVec;
+	std::string        ext;
+	uint32_t           quality;
 };
 
 }
