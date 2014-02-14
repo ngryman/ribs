@@ -25,7 +25,6 @@
   "dependencies": {
     "lodash": "~2.4.1",
     "async": "~0.2.9",
-    "curry": "~1.2.0",
     "nan": "~0.8.0"
   },
   "devDependencies": {
