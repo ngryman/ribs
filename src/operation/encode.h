@@ -4,17 +4,17 @@
  * LGPL Licensed
  */
 
-#ifndef __RIBS_OPERATION_DECODE_H__
-#define __RIBS_OPERATION_DECODE_H__
+#ifndef __RIBS_OPERATION_ENCODE_H__
+#define __RIBS_OPERATION_ENCODE_H__
 
 #include "../operation.h"
 
 namespace ribs {
 
-class DecodeOperation : public Operation {
+class EncodeOperation : public Operation {
 public:
 
-	virtual ~DecodeOperation() {}
+	virtual ~EncodeOperation() {}
 
 private:
 	bool CheckArguments(_NAN_METHOD_ARGS);

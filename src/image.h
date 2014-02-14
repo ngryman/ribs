@@ -22,6 +22,7 @@ public:
 	inline uint32_t Height() const { return mat.size().height; }
 	inline int Length() const { return mat.total() * Channels(); }
 	inline int Channels() const { return mat.channels(); }
+	inline cv::Mat& Matrix() { return mat; }
 
 private:
 	Image(v8::Handle<v8::Object> wrapper);

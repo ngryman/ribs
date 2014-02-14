@@ -23,15 +23,15 @@ NAN_METHOD(Operation::Process) {
 	NanCallback* callback = NULL;
 
 	// if no callback is specified, return;
-	if (!args[1]->IsFunction()) NanReturnUndefined();
+	if (!args[args.Length() - 1]->IsFunction()) NanReturnUndefined();
 
 	// if no input is specified we throw a JavaScript exception.
-	if (!CheckInput(args[0])) {
+	if (!CheckArguments(args)) {
 		return ThrowException(Exception::Error(String::New("invalid input data")));
 	}
 
 	// create callback
-	callback = new NanCallback(args[1].As<Function>());
+	callback = new NanCallback(args[args.Length() - 1].As<Function>());
 
 	// populate baton for further processing
 	Baton* baton     = PreProcess(args);
