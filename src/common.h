@@ -28,16 +28,16 @@ class Image;
 class Operation;
 
 /**
- * Baton holds data necessary to run async operations.
+ * Baton holds necessary data to run async operations.
  * TODO: move to operation.h when refactored
  */
 struct Baton {
-	void* in;
-	void* out;
-	std::string error;
-	Operation* operation;
+	void*        in;
+	void*        out;
+	std::string  error;
+	Operation*   operation;
 	NanCallback* callback;
-	uv_work_t req;
+	uv_work_t    req;
 };
 
 inline static std::string FromV8String(v8::Local<v8::Value> v8Str) {

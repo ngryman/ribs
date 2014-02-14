@@ -24,14 +24,14 @@ Baton* DecodeOperation::PreProcess(_NAN_METHOD_ARGS) {
 	auto  inMat = new cv::Mat(length, 1, CV_8UC1, buffer);
 
 	// creates and populate baton
-	Baton* baton = new Baton();
+	auto baton = new Baton();
 	baton->in = reinterpret_cast<void*>(inMat);
 
 	return baton;
 }
 
 void DecodeOperation::DoProcess(Baton* baton) {
-	cv::Mat* inMat = reinterpret_cast<cv::Mat*>(baton->in);
+	auto      inMat = reinterpret_cast<cv::Mat*>(baton->in);
 	cv::Mat* outMat = NULL;
 
 	try {
@@ -58,9 +58,9 @@ v8::Local<v8::Object> DecodeOperation::OutputValue(Baton* baton) {
 }
 
 void DecodeOperation::PostProcess(Baton* baton) {
-	cv::Mat* inMat = reinterpret_cast<cv::Mat*>(baton->in);
+	auto inMat = reinterpret_cast<cv::Mat*>(baton->in);
 	delete inMat;
 
-	cv::Mat* outMat = reinterpret_cast<cv::Mat*>(baton->out);
+	auto outMat = reinterpret_cast<cv::Mat*>(baton->out);
 	delete outMat;
 }

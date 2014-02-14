@@ -18,11 +18,11 @@ public:
 	virtual ~Operation() {}
 
 private:
-	virtual bool CheckArguments(_NAN_METHOD_ARGS) = 0;
-	virtual Baton* PreProcess(_NAN_METHOD_ARGS) = 0;
-	virtual void DoProcess(Baton* baton) = 0;
-	virtual v8::Local<v8::Object> OutputValue(Baton* baton) = 0;
-	virtual void PostProcess(Baton* baton) = 0;
+	virtual bool                  CheckArguments(_NAN_METHOD_ARGS) = 0;
+	virtual Baton*                PreProcess(_NAN_METHOD_ARGS)     = 0;
+	virtual void                  DoProcess(Baton* baton)          = 0;
+	virtual v8::Local<v8::Object> OutputValue(Baton* baton)        = 0;
+	virtual void                  PostProcess(Baton* baton)        = 0;
 
 	friend void ProcessAsync(uv_work_t* req);
 	friend void AfterProcessAsync(uv_work_t* req);

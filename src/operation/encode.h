@@ -12,16 +12,12 @@
 namespace ribs {
 
 class EncodeOperation : public Operation {
-public:
-
-	virtual ~EncodeOperation() {}
-
 private:
-	bool CheckArguments(_NAN_METHOD_ARGS);
-	Baton* PreProcess(_NAN_METHOD_ARGS);
-	void DoProcess(Baton* baton);
+	bool                  CheckArguments(_NAN_METHOD_ARGS);
+	Baton*                PreProcess(_NAN_METHOD_ARGS);
+	void                  DoProcess(Baton* baton);
 	v8::Local<v8::Object> OutputValue(Baton* baton);
-	void PostProcess(Baton* baton);
+	void                  PostProcess(Baton* baton);
 };
 
 }
