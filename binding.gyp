@@ -4,6 +4,8 @@
 
 		'sources': [
 			'src/image.cc',
+			'src/operation.cc',
+			'src/operation/decode.cc',
 			'src/init.cc'
 		],
 

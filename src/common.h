@@ -24,6 +24,22 @@ namespace ribs {
 
 typedef uint8_t pixel_t;
 
+class Image;
+class Operation;
+
+/**
+ * Baton holds data necessary to run async operations.
+ * TODO: move to operation.h when refactored
+ */
+struct Baton {
+	void* in;
+	void* out;
+	std::string error;
+	Operation* operation;
+	NanCallback* callback;
+	uv_work_t req;
+};
+
 inline static std::string FromV8String(v8::Local<v8::Value> v8Str) {
 	size_t size;
 	char* cstr = NanCString(v8Str, &size);

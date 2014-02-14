@@ -5,6 +5,7 @@
  */
 
 #include "image.h"
+#include "operation/decode.h"
 
 using namespace std;
 using namespace v8;
@@ -13,22 +14,11 @@ using namespace ribs;
 
 Persistent<FunctionTemplate> Image::constructorTemplate;
 
-static void DecodeAsync(uv_work_t* req);
-static void AfterDecodeAsync(uv_work_t* req);
 static void EncodeAsync(uv_work_t* req);
 static void AfterEncodeAsync(uv_work_t* req);
 
-struct Baton {
-	cv::Mat mat;
-	NanCallback* callback;
-	uv_work_t req;
-};
-
-struct DecodeBaton : Baton {
-	cv::Mat res;
-};
-
 struct EncodeBaton : Baton {
+	cv::Mat mat;
 	vector<uchar> res;
 	string ext;
 	uint32_t quality;
@@ -100,57 +90,10 @@ NAN_GETTER(Image::GetChannels) {
 NAN_METHOD(Image::Decode) {
 	NanScope();
 
-	NanCallback* callback = NULL;
+	auto op = new DecodeOperation();
+	op->Process(args);
 
-	// if no input buffer is specified we throw a JavaScript exception.
-	if (!Buffer::HasInstance(args[0])) {
-		return ThrowException(Exception::Error(String::New("invalid input data")));
-	}
-	// if a callback is specified we will decode asynchronously.
-	// if not, we will do it synchronously and return the resulting image.
-	if (args[1]->IsFunction()) {
-		callback = new NanCallback(args[1].As<Function>());
-	}
-
-	// convert the node buffer to an OCV matrix.
-	// we do this because OCV only accepts matrix as input for imdecode.
-	// however this should not have any performance input as the matrix does not copy data.
-	pixel_t* buffer = reinterpret_cast<pixel_t*>(Buffer::Data(args[0]->ToObject()));
-	size_t   length = Buffer::Length(args[0]->ToObject());
-	cv::Mat  tmpMat(length, 1, CV_8UC1, buffer);
-
-	// async
-
-	if (callback) {
-		DecodeBaton* baton = new DecodeBaton();
-		baton->mat = tmpMat;
-		baton->callback = callback;
-		baton->req.data = baton;
-
-		uv_queue_work(uv_default_loop(), &baton->req, DecodeAsync, (uv_after_work_cb)AfterDecodeAsync);
-
-		NanReturnUndefined();
-	}
-
-	// sync
-
-	cv::Mat dstMat;
-
-	try {
-		// decode
-		dstMat = cv::imdecode(tmpMat, CV_LOAD_IMAGE_UNCHANGED);
-	}
-	catch (...) {
-		// OCV uses assertion to handle errors, thus the message is not very explicit.
-		// we simply do nothing and check destination matrix.
-	}
-	if (dstMat.empty()) {
-		ThrowException(Exception::Error(String::New("invalid file")));
-	}
-
-	// create and return a new image object
-	Local<Object> instance = Image::New(dstMat);
-	NanReturnValue(instance);
+	NanReturnUndefined();
 }
 
 NAN_METHOD(Image::Encode) {
@@ -242,55 +185,6 @@ void Image::Initialize(Handle<Object> target) {
 	target->Set(NanSymbol("Image"), constructorTemplate->GetFunction());
 
 	// TODO return?
-}
-
-void DecodeAsync(uv_work_t* req) {
-	DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
-
-	try {
-		// decode
-		baton->res = cv::imdecode(baton->mat, CV_LOAD_IMAGE_UNCHANGED);
-	}
-	catch (...) {
-		// OCV uses assertion to handle errors, thus the message is not very explicit.
-		// we simply do nothing and let the AfterDecodeAsync function tell it's an invalid file.
-	}
-}
-
-void AfterDecodeAsync(uv_work_t* req) {
-	NanScope();
-
-	DecodeBaton* baton = static_cast<DecodeBaton*>(req->data);
-
-	int argc = 0;
-	Local<Value> argv[2];
-
-	// execute callback with error.
-	// note that we explicitly pass undefined to the 2nd argument.
-	// this is to respect the arity of the function and allow curry for example.
-	if (baton->res.empty()) {
-		argv[argc++] = Exception::Error(String::New("invalid file"));
-		argv[argc++] = Local<Value>::New(Undefined());
-	}
-	else {
-		// create a new image object
-		Local<Object> instance = Image::New(baton->res);
-
-		// execute callback with the newly created image
-		argv[argc++] = Local<Value>::New(Null());
-		argv[argc++] = instance;
-	}
-
-	TryCatch tryCatch;
-
-	baton->callback->Call(argc, argv);
-
-	if (tryCatch.HasCaught()) {
-		FatalException(tryCatch);
-	}
-
-	delete baton->callback;
-	delete baton;
 }
 
 void EncodeAsync(uv_work_t* req) {

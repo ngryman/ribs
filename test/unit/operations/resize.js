@@ -12,7 +12,8 @@
 
 var open = require('../../../lib/operations/open'),
 	resize = require('../../../lib/operations/resize'),
-	Image = require('../../..').Image;
+	Image = require('../../..').Image,
+	path = require('path');
 
 /**
  * Tests constants.
@@ -27,8 +28,11 @@ var W = 16,
  * Tests helper functions.
  */
 
-var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
-	open('../fixtures/in-24-a.png', function(err, image) {
+var testResize = _.curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
+	var filename = path.join(__dirname, '..', '..', 'fixtures', '0124.png');
+	open(filename, function(err, image) {
+		should.not.exist(err);
+
 		resize(params, image, function(err, image) {
 			if (expectedErr) {
 				err.should.be.instanceof(Error);
@@ -45,11 +49,13 @@ var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeig
 	});
 });
 
-var testMatrix = curry(function(expect, width, height, done) {
-	optify({ width: width, height: height }, function(opts, i, done) {
-		testResize(opts, null, expect[i * 2], expect[(i + 1) * 2], done);
-	}, done);
-});
+var testMatrix = function(expect, width, height) {
+	return function(done) {
+		optify({ width: width, height: height }, function(opts, i, done) {
+			testResize(opts, null, expect[i * 2], expect[(i + 1) * 2], done);
+		}, done);
+	};
+};
 
 // TODO check pixel data
 
@@ -144,7 +150,7 @@ describe('resize operation', function() {
 		height: null
 	}, null, W, H));
 
-	it('should do nothing when both params is null', testResize(null, null, W, H));
+	it('should do nothing when both params are null', testResize(null, null, W, H));
 
 	it('should pass an error when width is not valid', testResize({
 		width: 'woot'

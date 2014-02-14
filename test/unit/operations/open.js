@@ -103,5 +103,5 @@ describe('open operation', function() {
 		false
 	));
 
-	it('should pass an error when fil is not valid', testOpen('/dev/null', 'invalid file', false));
+	it('should pass an error when file is not valid', testOpen('/dev/null', 'invalid file', false));
 });
