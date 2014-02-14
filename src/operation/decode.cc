@@ -11,8 +11,8 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
-bool DecodeOperation::CheckInput(v8::Local<v8::Value> in) {
-	return Buffer::HasInstance(in);
+bool DecodeOperation::CheckArguments(_NAN_METHOD_ARGS) {
+	return Buffer::HasInstance(args[0]);
 }
 
 Baton* DecodeOperation::PreProcess(_NAN_METHOD_ARGS) {

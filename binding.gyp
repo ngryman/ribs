@@ -6,6 +6,7 @@
 			'src/image.cc',
 			'src/operation.cc',
 			'src/operation/decode.cc',
+			'src/operation/encode.cc',
 			'src/init.cc'
 		],
 
