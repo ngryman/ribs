@@ -40,13 +40,22 @@ struct Baton {
 	uv_work_t    req;
 };
 
-inline static std::string FromV8String(v8::Local<v8::Value> v8Str) {
+inline std::string FromV8String(v8::Local<v8::Value> v8Str) {
 	size_t size;
 	char* cstr = NanCString(v8Str, &size);
 	std::string cppstr(cstr);
 	delete[] cstr;
 	return cppstr;
 }
+
+/**
+ * Utility macros
+ */
+
+#define RIBS_GETTER(type, getter)                    \
+	NanScope();                                      \
+	auto instance = Unwrap<type>(args.This());       \
+	NanReturnValue(Number::New(instance->getter()));
 
 }
 

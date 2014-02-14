@@ -56,15 +56,11 @@ Local<Object> Image::New(cv::Mat& mat) {
 }
 
 NAN_GETTER(Image::GetWidth) {
-	NanScope();
-	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->Width()));
+	RIBS_GETTER(Image, Width);
 }
 
 NAN_GETTER(Image::GetHeight) {
-	NanScope();
-	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->Height()));
+	RIBS_GETTER(Image, Height);
 }
 
 NAN_GETTER(Image::GetLength) {
@@ -73,9 +69,7 @@ NAN_GETTER(Image::GetLength) {
 }
 
 NAN_GETTER(Image::GetChannels) {
-	NanScope();
-	Image* image = Unwrap<Image>(args.This());
-	NanReturnValue(Number::New(image->Channels()));
+	RIBS_GETTER(Image, Channels);
 }
 
 NAN_METHOD(Image::Decode) {
@@ -87,8 +81,6 @@ NAN_METHOD(Image::Encode) {
 }
 
 void Image::Initialize(Handle<Object> target) {
-	NanScope();
-
 	// constructor
 	Local<FunctionTemplate> t = FunctionTemplate::New(New);
 	NanAssignPersistent(FunctionTemplate, constructorTemplate, t);
@@ -108,6 +100,4 @@ void Image::Initialize(Handle<Object> target) {
 
 	// export
 	target->Set(NanSymbol("Image"), constructorTemplate->GetFunction());
-
-	// TODO return?
 }

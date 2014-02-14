@@ -15,6 +15,8 @@ int errorHandler(int status, const char* fnName, const char* message, const char
 }
 
 extern "C" void init(Handle<Object> target) {
+	NanScope();
+
 	Image::Initialize(target);
 
 	// mute OCV errors, let us handle those
