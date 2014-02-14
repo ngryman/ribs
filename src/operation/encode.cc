@@ -13,7 +13,7 @@ using namespace node;
 using namespace ribs;
 
 struct EncodeBaton : Baton {
-	string ext;
+	string   ext;
 	uint32_t quality;
 };
 

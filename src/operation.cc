@@ -47,7 +47,7 @@ NAN_METHOD(Operation::Process) {
 }
 
 void ribs::ProcessAsync(uv_work_t* req) {
-	Baton* baton = static_cast<Baton*>(req->data);
+	auto baton = static_cast<Baton*>(req->data);
 
 	baton->operation->DoProcess(baton);
 }
@@ -55,7 +55,7 @@ void ribs::ProcessAsync(uv_work_t* req) {
 void ribs::AfterProcessAsync(uv_work_t* req) {
 	NanScope();
 
-	Baton* baton = static_cast<Baton*>(req->data);
+	auto baton = static_cast<Baton*>(req->data);
 
 	int argc = 0;
 	Local<Value> argv[2];

@@ -41,7 +41,7 @@ Local<Object> Image::New(cv::Mat& mat) {
 
 	// create a new instance an feed it
 	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
-	Image* image = Unwrap<Image>(instance);
+	auto image = Unwrap<Image>(instance);
 	image->mat = mat;
 
 	// Let v8 handle [] accessor
