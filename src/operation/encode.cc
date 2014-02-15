@@ -21,7 +21,7 @@ EncodeOperation::EncodeOperation(_NAN_METHOD_ARGS) : Operation(args) {
 	auto filename = FromV8String(args[0]);
 	if (filename.empty()) throw "invalid filename";
 
-	// stores params for further processing
+	// store params for further processing
 	ext     = filename.substr(filename.find_last_of('.'));
 	quality = args[1]->Uint32Value();
 }
@@ -50,6 +50,6 @@ void EncodeOperation::DoProcess() {
 	}
 }
 
-v8::Local<v8::Object> EncodeOperation::OutputValue() {
+Local<Value> EncodeOperation::OutputValue() {
 	return NanNewBufferHandle(reinterpret_cast<char*>(&outVec[0]), outVec.size());
 }

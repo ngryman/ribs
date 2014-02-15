@@ -16,8 +16,8 @@ public:
 	EncodeOperation(_NAN_METHOD_ARGS);
 
 private:
-	void                  DoProcess();
-	v8::Local<v8::Object> OutputValue();
+	void                 DoProcess();
+	v8::Local<v8::Value> OutputValue();
 
 	Image*             image;
 	std::vector<uchar> outVec;

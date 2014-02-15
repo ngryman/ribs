@@ -40,6 +40,6 @@ void DecodeOperation::DoProcess() {
 	}
 }
 
-v8::Local<v8::Object> DecodeOperation::OutputValue() {
+Local<Value> DecodeOperation::OutputValue() {
 	return Image::New(outMat);
 }

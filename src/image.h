@@ -23,6 +23,7 @@ public:
 	inline int      Length()   const { return mat.total() * Channels(); }
 	inline int      Channels() const { return mat.channels(); }
 	inline cv::Mat& Matrix()         { return mat; }
+	void            Matrix(cv::Mat& newMat);
 
 private:
 	Image(v8::Handle<v8::Object> wrapper);
@@ -34,8 +35,10 @@ private:
 	static NAN_GETTER(GetHeight);
 	static NAN_GETTER(GetChannels);
 	static NAN_GETTER(GetLength);
+
 	static NAN_METHOD(Decode);
 	static NAN_METHOD(Encode);
+	static NAN_METHOD(Resize);
 
 	cv::Mat mat;
 };
