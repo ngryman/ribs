@@ -7,6 +7,7 @@
 #include "image.h"
 #include "operation/decode.h"
 #include "operation/encode.h"
+#include "operation/resize.h"
 
 using namespace std;
 using namespace v8;
@@ -55,6 +56,13 @@ Local<Object> Image::New(cv::Mat& mat) {
 	NanReturnValue(instance);
 }
 
+void Image::Matrix(cv::Mat& newMat) {
+	// invoke destructor to decrement reference counter on this matrix
+	~mat;
+
+	mat = newMat;
+}
+
 NAN_GETTER(Image::GetWidth) {
 	RIBS_GETTER(Image, Width);
 }
@@ -80,6 +88,10 @@ NAN_METHOD(Image::Encode) {
 	RIBS_OPERATION(Encode);
 }
 
+NAN_METHOD(Image::Resize) {
+	RIBS_OPERATION(Resize);
+}
+
 void Image::Initialize(Handle<Object> target) {
 	// constructor
 	Local<FunctionTemplate> t = FunctionTemplate::New(New);
@@ -94,6 +106,7 @@ void Image::Initialize(Handle<Object> target) {
 	prototype->SetAccessor(NanSymbol("length"), GetLength);
 	prototype->SetAccessor(NanSymbol("channels"), GetChannels);
 	NODE_SET_PROTOTYPE_METHOD(constructorTemplate, "encode", Encode);
+	NODE_SET_PROTOTYPE_METHOD(constructorTemplate, "resize", Resize);
 
 	// object
 	NODE_SET_METHOD(constructorTemplate->GetFunction(), "decode", Decode);

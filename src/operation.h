@@ -37,7 +37,7 @@ protected:
 	 * This method is necessary as we can't interact with v8 in the DoProcess method. This cause segmentation faults,
 	 * probably because v8 is not thread safe or something like this.
 	 */
-	virtual v8::Local<v8::Object> OutputValue() = 0;
+	virtual v8::Local<v8::Value> OutputValue() = 0;
 
 	std::string  error;
 	NanCallback* callback;
