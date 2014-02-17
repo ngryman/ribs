@@ -12,9 +12,7 @@ using namespace node;
 using namespace ribs;
 
 ResizeOperation::~ResizeOperation() {
-	if (imageHandle.IsEmpty()) return;
-	imageHandle.Dispose();
-	imageHandle.Clear();
+	if (!imageHandle.IsEmpty()) NanDisposePersistent(imageHandle);
 }
 
 ResizeOperation::ResizeOperation(_NAN_METHOD_ARGS) : Operation(args) {
