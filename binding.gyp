@@ -8,6 +8,7 @@
 			'src/operation/decode.cc',
 			'src/operation/encode.cc',
 			'src/operation/resize.cc',
+			'src/operation/crop.cc',
 			'src/init.cc'
 		],
 
