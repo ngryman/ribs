@@ -19,11 +19,13 @@ var computeFormula = require('../../lib/utils').computeFormula;
 var testFormula = curry(function(formula, expected, done) {
 	try {
 		var res = computeFormula(formula);
-		res.should.equal(expected);
 	}
 	catch (err) {
 		err.message.should.equal(expected);
+		return done();
 	}
+
+	res.should.equal(expected);
 
 	done();
 });
@@ -55,7 +57,7 @@ describe('formulas', function() {
 
 	it('should round down a fixed scalar to a multiple of several scalars', testFormula('100r66r20', 60));
 
-	it('should throw an error when passing null', testFormula(null, 'invalid formula: null'));
+	it('should return 0 when passing null', testFormula(null, 0));
 
 	it('should throw an error when passing an invalid value', testFormula('woot', 'invalid formula: woot'));
 });
