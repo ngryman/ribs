@@ -11,17 +11,10 @@
 
 namespace ribs {
 
-class DecodeOperation : public Operation {
-public:
-	DecodeOperation(_NAN_METHOD_ARGS);
-
-private:
-	void                 DoProcess();
-	v8::Local<v8::Value> OutputValue();
-
+OPERATION(Decode,
 	cv::Mat inMat;
 	cv::Mat outMat;
-};
+);
 
 }
 

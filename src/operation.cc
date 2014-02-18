@@ -23,14 +23,14 @@ Operation::~Operation() {
 	delete callback;
 }
 
-void Operation::Process(void) {
+void Operation::Enqueue() {
 	// here we go!
 	uv_queue_work(uv_default_loop(), &req, ProcessAsync, (uv_after_work_cb)AfterProcessAsync);
 }
 
 void Operation::ProcessAsync(uv_work_t* req) {
 	auto op = static_cast<Operation*>(req->data);
-	op->DoProcess();
+	op->Process();
 }
 
 void Operation::AfterProcessAsync(uv_work_t* req) {

@@ -11,11 +11,7 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
-ResizeOperation::~ResizeOperation() {
-	if (!imageHandle.IsEmpty()) NanDisposePersistent(imageHandle);
-}
-
-ResizeOperation::ResizeOperation(_NAN_METHOD_ARGS) : Operation(args) {
+OPERATION_PREPARE(Resize, {
 	// check against mandatory image input (from this)
 	image = ObjectWrap::Unwrap<Image>(args.This());
 	if (NULL == image) throw "invalid input image";
@@ -26,9 +22,13 @@ ResizeOperation::ResizeOperation(_NAN_METHOD_ARGS) : Operation(args) {
 	// store width & height
 	width  = args[0]->Uint32Value();
 	height = args[1]->Uint32Value();
-}
+})
 
-void ResizeOperation::DoProcess() {
+OPERATION_CLEANUP(Resize, {
+	if (!imageHandle.IsEmpty()) NanDisposePersistent(imageHandle);
+})
+
+OPERATION_PROCESS(Resize, {
 	try {
 		cv::Mat res;
 
@@ -40,8 +40,8 @@ void ResizeOperation::DoProcess() {
 	catch (const cv::Exception& e) {
 		error = "invalid image";
 	}
-}
+})
 
-Local<Value> ResizeOperation::OutputValue() {
+OPERATION_VALUE(Resize, {
 	return NanPersistentToLocal(imageHandle);
-}
+})
