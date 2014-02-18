@@ -35,6 +35,13 @@ OPERATION_PROCESS(Encode, {
 		// quality
 		if (quality > 0) {
 			params.push_back(".jpg" == ext ? CV_IMWRITE_JPEG_QUALITY : CV_IMWRITE_PNG_COMPRESSION);
+
+			// normalize png quality for OCV.
+			// RIBS takes a [0,100] value, OCV takes a [0,9] value.
+			if (".png" == ext) {
+				quality = quality * 90 / 1000;
+			}
+
 			params.push_back(quality);
 		}
 
