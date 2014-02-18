@@ -39,6 +39,7 @@ OPERATION_PROCESS(Crop, {
 		image->Matrix(res);
 	}
 	catch (const cv::Exception& e) {
+		std::cerr << e.what() << std::endl;
 		error = "invalid image";
 	}
 })
