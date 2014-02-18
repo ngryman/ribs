@@ -30,12 +30,13 @@ var W = 8,
  * Tests helper functions.
  */
 
-var testResize = _.curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
+var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
 	var filename = path.join(__dirname, '..', '..', 'fixtures', '0124.png');
 	open(filename, function(err, image) {
 		should.not.exist(err);
 
 		// adds a reference to pipeline hooks (mimic pipeline behavior)
+		params = params || {};
 		params.hooks = Pipeline.hooks;
 
 		resize(params, image, function(err, image) {
@@ -69,19 +70,16 @@ var testResize = _.curry(function(params, expectedErr, expectedWidth, expectedHe
  * @param height
  * @returns {Function}
  */
-var testMatrix = function(expect, width, height) {
+var testMatrix = curry(function(expect, width, height, done) {
 	expect.push(W, H);
-
-	return function(done) {
-		optify({ width: width, height: height }, function(opts, i, done) {
-			testResize(opts, null, expect[i * 2], expect[i * 2 + 1], done);
-		}, function() {
-			// indirection here because optify passes the resulting matrix as argument.
-			// mocha then thinks it's an error.
-			done();
-		});
-	};
-};
+	optify({ width: width, height: height }, function(opts, i, done) {
+		testResize(opts, null, expect[i * 2], expect[i * 2 + 1])(done);
+	}, function() {
+		// indirection here because optify passes the resulting matrix as argument.
+		// mocha then thinks it's an error.
+		done();
+	});
+});
 
 // TODO check pixel data
 
@@ -192,17 +190,17 @@ describe('resize operation', function() {
 
 	it('should pass an error when width is not valid', testResize({
 		width: 'woot'
-	}, 'width has an invalid value', W, H));
+	}, 'invalid formula: woot', W, H));
 
 	it('should pass an error when height is not valid', testResize({
 		height: 'woot'
-	}, 'height has an invalid value', W, H));
+	}, 'invalid formula: woot', W, H));
 
 	it('should pass an error when width has an invalid type', testResize({
 		width: { 0 : 0 }
-	}, 'width should a string or number', W, H));
+	}, 'width should be a number or string', W, H));
 
 	it('should pass an error when height has an invalid type', testResize({
 		height: { 0 : 0 }
-	}, 'height should a string or number', W, H));
+	}, 'height should be a number or string', W, H));
 });
