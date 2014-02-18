@@ -36,6 +36,7 @@
     "sinon-chai": "~2.5.0",
     "sinon": "~1.8.1",
     "optify": "~0.0.2",
-    "time-grunt": "~0.2.9"
+    "time-grunt": "~0.2.9",
+    "curry": "~1.2.0"
   }
 }
