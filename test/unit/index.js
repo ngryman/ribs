@@ -1,5 +1,7 @@
 //require('./pipeline');
 //require('./ribs');
-require('./operations/open.js');
-require('./operations/save.js');
-require('./operations/resize.js');
+//require('./formula');
+//require('./operations/open');
+//require('./operations/save');
+//require('./operations/resize');
+require('./operations/crop');
