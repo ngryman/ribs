@@ -11,20 +11,12 @@
 
 namespace ribs {
 
-class ResizeOperation : public Operation {
-public:
-	ResizeOperation(_NAN_METHOD_ARGS);
-	~ResizeOperation();
-
-private:
-	void                 DoProcess();
-	v8::Local<v8::Value> OutputValue();
-
-	Image*               image;
+OPERATION(Resize,
+	Image*   image;
 	v8::Persistent<v8::Object> imageHandle;
-	uint32_t             width;
-	uint32_t             height;
-};
+	uint32_t width;
+	uint32_t height;
+);
 
 }
 

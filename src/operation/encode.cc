@@ -12,7 +12,7 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
-EncodeOperation::EncodeOperation(_NAN_METHOD_ARGS) : Operation(args) {
+OPERATION_PREPARE(Encode, {
 	// check against mandatory image input (from this)
 	image = ObjectWrap::Unwrap<Image>(args.This());
 	if (NULL == image) throw "invalid input image";
@@ -24,9 +24,11 @@ EncodeOperation::EncodeOperation(_NAN_METHOD_ARGS) : Operation(args) {
 	// store params for further processing
 	ext     = filename.substr(filename.find_last_of('.'));
 	quality = args[1]->Uint32Value();
-}
+})
 
-void EncodeOperation::DoProcess() {
+OPERATION_CLEANUP(Encode, {})
+
+OPERATION_PROCESS(Encode, {
 	try {
 		vector<int> params;
 
@@ -48,8 +50,8 @@ void EncodeOperation::DoProcess() {
 	if (outVec.empty()) {
 		error = "invalid file";
 	}
-}
+})
 
-Local<Value> EncodeOperation::OutputValue() {
+OPERATION_VALUE(Encode, {
 	return NanNewBufferHandle(reinterpret_cast<char*>(&outVec[0]), outVec.size());
-}
+})

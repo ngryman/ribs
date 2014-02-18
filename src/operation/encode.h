@@ -11,19 +11,12 @@
 
 namespace ribs {
 
-class EncodeOperation : public Operation {
-public:
-	EncodeOperation(_NAN_METHOD_ARGS);
-
-private:
-	void                 DoProcess();
-	v8::Local<v8::Value> OutputValue();
-
+OPERATION(Encode,
 	Image*             image;
 	std::vector<uchar> outVec;
 	std::string        ext;
 	uint32_t           quality;
-};
+);
 
 }
 

@@ -18,7 +18,7 @@ namespace ribs {
  */
 class Operation {
 public:
-	void Process(void);
+	void Enqueue();
 
 	Operation(_NAN_METHOD_ARGS);
 	virtual ~Operation();
@@ -29,7 +29,7 @@ protected:
 	 * This is where all the work is done to grasp the input and produce an output.
 	 * This method is called in another thread, managed by libuv.
 	 */
-	virtual void DoProcess() = 0;
+	virtual void Process() = 0;
 
 	/**
 	 * Return the output value produced by the operation.
@@ -50,16 +50,37 @@ protected:
 /**
  * Helps calling a specific operation.
  */
+
+#define _OP_NAME(name) name ## Operation
+#define _OP_METHOD(name, method, ret, args, stub) ret _OP_NAME(name)::method(args) stub
+
+#define OPERATION(name, stub)                 \
+	class _OP_NAME(name) : public Operation { \
+	public:                                   \
+		_OP_NAME(name)(_NAN_METHOD_ARGS);     \
+		virtual ~_OP_NAME(name)();            \
+                                              \
+	private:                                  \
+		void                 Process();       \
+		v8::Local<v8::Value> OutputValue();   \
+		stub                                  \
+	};
+
+#define OPERATION_PREPARE(name, stub) _OP_METHOD(name, _OP_NAME(name), , _NAN_METHOD_ARGS, : Operation(args) stub)
+#define OPERATION_CLEANUP(name, stub) _OP_METHOD(name, ~_OP_NAME(name), , void, stub)
+#define OPERATION_PROCESS(name, stub) _OP_METHOD(name, Process, void, void, stub)
+#define OPERATION_VALUE(name, stub)   _OP_METHOD(name, OutputValue, Local<Value>, void, stub)
+
 #define RIBS_OPERATION(name)                                             \
 	NanScope();                                                          \
 	Operation* op;                                                       \
 	try {                                                                \
-		op = new name ## Operation(args);                                \
+		op = new _OP_NAME(name)(args);                                   \
 	}                                                                    \
 	catch (const std::string e) {                                        \
 		return ThrowException(Exception::Error(String::New(e.c_str()))); \
 	}                                                                    \
-	op->Process();                                                       \
+	op->Enqueue();                                                       \
 	NanReturnUndefined();
 
 }

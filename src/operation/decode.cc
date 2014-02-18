@@ -11,7 +11,7 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
-DecodeOperation::DecodeOperation(_NAN_METHOD_ARGS) : Operation(args) {
+OPERATION_PREPARE(Decode, {
 	// check against mandatory buffer input
 	if (!Buffer::HasInstance(args[0])) throw "invalid input buffer";
 
@@ -22,9 +22,11 @@ DecodeOperation::DecodeOperation(_NAN_METHOD_ARGS) : Operation(args) {
 	auto length = Buffer::Length(args[0]->ToObject());
 
 	inMat = cv::Mat(length, 1, CV_8UC1, buffer);
-}
+})
 
-void DecodeOperation::DoProcess() {
+OPERATION_CLEANUP(Decode, {})
+
+OPERATION_PROCESS(Decode, {
 	try {
 		// decode
 		outMat = cv::Mat(cv::imdecode(inMat, CV_LOAD_IMAGE_UNCHANGED));
@@ -38,8 +40,8 @@ void DecodeOperation::DoProcess() {
 	if (outMat.empty()) {
 		error = "invalid file";
 	}
-}
+})
 
-Local<Value> DecodeOperation::OutputValue() {
+OPERATION_VALUE(Decode, {
 	return Image::New(outMat);
-}
+})
