@@ -95,7 +95,8 @@ customization.
 The **API** would be very similar to **Sencha.io Src**:
 
 ```
-http://yourdomain.tld
+http://[s[shard]].yourdomain.tld
+	[/flush]
 	[/data]
 	[/format[quality]]
 	[/orientation]
@@ -105,7 +106,9 @@ http://yourdomain.tld
 ```
 Where:
 
-- `data` *(optional)*. If data then Sencha.io Src returns a data URL. Also takes a callback suffix and arguments for JSON-P use.
+- `shard` *(optional)*. A number between 1 and 4, to distribute loading across subdomains (`s1`, `s2`, `s3`, `s4`).
+- `flush` *(optional)*. If `flush` then original image is refetched and its cached copy updated.
+- `data` *(optional)*. If `data` then returns a data URL. Also takes a callback suffix and arguments for JSON-P use.
 - `format` *(optional)*. This is either jpg or png. Defaults to the original image format.
 - `quality` *(optional)*. When the format is jpg, a compression value from 1 to 100. Defaults to 85.
 - `orientation` *(optional)*. If 'landscape' or 'portrait', this will swap X/Y constraints if required. Defaults to no effect. 'detect' is experimental to use window.orientation if present.
