@@ -11,6 +11,7 @@
  */
 
 global._ = require('lodash');
+global.curry = require('curry');
 global.async = require('async');
 global.optify = require('optify');
 global.chai = require('chai');
