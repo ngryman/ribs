@@ -144,12 +144,18 @@ describe('save operation', function() {
 
 		// seems buggy for 8-bit PNG with alpha channel, posted a question here:
 		//   http://answers.opencv.org/question/28220/alpha-channel-for-8-bit-png/
-		xit('should save 8-bit with alpha channel', testSave('018a.png', null));
-		xit('should open interlaced 8-bit with alpha channel', testSave('018ai.png', null));
+		xit('should save 8-bit with alpha channel', testSave('018a.png', 0, false, null));
+		xit('should open interlaced 8-bit with alpha channel', testSave('018ai.png', 0, false, null));
 
-		it('should save 24-bit', testSave('0124.png', 0, false, null));
-		it('should save 24-bit with alpha channel', testSave('0124a.png', 0, false, null));
-		it('should save interlaced 24-bit with alpha channel', testSave('0124ai.png', 0, false, null));
+		it('should save 24-bit when quality is 100', testSave('0124.png', 100, false, null));
+		it('should save 24-bit when quality is 50', testSave('0124.png', 50, false, null));
+		it('should save 24-bit when quality is 0', testSave('0124.png', 0, false, null));
+		it('should save 24-bit with alpha channel when quality is 100', testSave('0124a.png', 100, false, null));
+		it('should save 24-bit with alpha channel when quality is 50', testSave('0124a.png', 50, false, null));
+		it('should save 24-bit with alpha channel when quality is 0', testSave('0124a.png', 0, false, null));
+		it('should save interlaced 24-bit with alpha channel when quality is 100', testSave('0124ai.png', 100, false, null));
+		it('should save interlaced 24-bit with alpha channel when quality is 50', testSave('0124ai.png', 50, false, null));
+		it('should save interlaced 24-bit with alpha channel when quality is 0', testSave('0124ai.png', 0, false, null));
 	});
 
 	// gif are not supported by OCV
