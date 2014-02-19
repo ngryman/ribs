@@ -1,4 +1,8 @@
-# ribs
+# ribs [![Version](http://img.shields.io/badge/version-0.0.0-brightgreen.svg)](https://github.com/ngryman/ribs/blob/master/CHANGELOG.md)
+
+[![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs)
+[![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs)
+[![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
 
 **R**esponsive **I**mages **B**aked **S**erver-side, yummy!
 
