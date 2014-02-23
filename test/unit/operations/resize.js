@@ -21,7 +21,8 @@ var open = require('../../../lib/operations/open'),
  * Tests constants.
  */
 
-var W = 8,
+var SRC_IMAGE = path.resolve(__dirname + '/../../fixtures/0124.png'),
+	W = 8,
 	H = 8,
 	W_2 = W / 2,
 	H_2 = H / 2 << 0;
@@ -31,8 +32,7 @@ var W = 8,
  */
 
 var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
-	var filename = path.join(__dirname, '..', '..', 'fixtures', '0124.png');
-	open(filename, function(err, image) {
+	open(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
 		// adds a reference to pipeline hooks (mimic pipeline behavior)

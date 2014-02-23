@@ -20,22 +20,6 @@ var Pipeline = require('../../lib/pipeline');
  * Tests helper functions.
  */
 
-function parametize(include, test, callback) {
-	var seq = [
-		{ 1 : 1 },
-		'1',
-		1,
-		function() {}
-	]
-	.filter(function(param) { return ~include.indexOf(typeof param); })
-	.map(function(param) {
-			return function(callback) {
-				test(param, callback);
-			};
-		});
-	async.series(seq, callback);
-}
-
 function operation() {
 	var spy = sinon.spy();
 	return {
@@ -135,7 +119,7 @@ describe('Pipeline', function() {
 
 			it('should bubble an error when name is not valid', function(done) {
 				var p = this.pipeline;
-				parametize(['object', 'number'], function(param, done) {
+				helpers.withParams([{}, 1337], function(param, done) {
 					var op1 = add(), op2 = add(param);
 					p.use(op1.name).use(op2.name).done(checkError(op2, op2.name, 'name should be', done));
 				}, done);
@@ -188,7 +172,7 @@ describe('Pipeline', function() {
 
 			it("should bubble an error when one of the bulk's name is not valid", function(done) {
 				var p = this.pipeline;
-				parametize(['object', 'number'], function(param, done) {
+				helpers.withParams([{}, 1337], function(param, done) {
 					var op1 = add(), op2 = add(param);
 					p.use([
 						{ operation: op1.name },

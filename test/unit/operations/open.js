@@ -17,6 +17,12 @@ var open = require('../../../lib/operations/open'),
 	path = require('path');
 
 /**
+ * Tests constants.
+ */
+
+var SRC_DIR = path.resolve(__dirname + '/../../fixtures/');
+
+/**
  * Tests helper functions.
  */
 
@@ -44,7 +50,7 @@ var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, imag
 var testOpen = function(filename, expectedErr, alpha) {
 	return function(done) {
 		if (filename && '/' != filename[0]) {
-			filename = path.join(__dirname, '..', '..', 'fixtures', filename);
+			filename = path.join(SRC_DIR, filename);
 		}
 		open(filename, checkPixels(filename, expectedErr, alpha, done));
 	};
@@ -57,13 +63,21 @@ var testOpen = function(filename, expectedErr, alpha) {
 describe('open operation', function() {
 	describe('with jpg files', function() {
 		it('should open when quality is 100%', testOpen('01100.jpg', null, false));
+
 		it('should open when quality is 50%', testOpen('0150.jpg', null, false));
+
 		it('should open when quality is 0%', testOpen('010.jpg', null, false));
+
 		it('should open when progressive and quality is 100%', testOpen('01100p.jpg', null, false));
+
 		it('should open when progressive and quality is 50%', testOpen('0150p.jpg', null, false));
+
 		it('should open when progressive and quality is 0%', testOpen('010p.jpg', null, false));
+
 		it('should open when optimized and quality is 100%', testOpen('01100o.jpg', null, false));
+
 		it('should open when optimized and quality is 50%', testOpen('0150o.jpg', null, false));
+
 		it('should open when optimized and quality is 0%', testOpen('010o.jpg', null, false));
 	});
 
@@ -76,7 +90,9 @@ describe('open operation', function() {
 		xit('should open interlaced 8-bit with alpha channel', testOpen('018-ai.png', null, true));
 
 		it('should open 24-bit', testOpen('0124.png', null, false));
+
 		it('should open 24-bit with alpha channel', testOpen('0124a.png', null, true));
+
 		it('should open interlaced 24-bit with alpha channel', testOpen('0124ai.png', null, true));
 	});
 
@@ -84,12 +100,19 @@ describe('open operation', function() {
 	//   http://stackoverflow.com/questions/11494119/error-in-opencv-2-4-2-opencv-error-bad-flag
 	xdescribe('with gif files', function() {
 		it('should open standard', testOpen('01.gif', null, false));
+
 		it('should open interlaced', testOpen('01i.gif', null, false));
+
 		it('should open with alpha channel', testOpen('01a.gif', null, true));
+
 		it('should open interlaced with alpha channel', testOpen('01ai.gif', null, true));
 	});
 
-	it('should pass an error when filename is not valid', testOpen(null, 'filename should not be null nor undefined', false));
+	it('should pass an error when filename is not valid', testOpen(
+		null,
+		'filename should not be null nor undefined',
+		false
+	));
 
 	it('should throw an error when next is not valid', function() {
 		(function() {

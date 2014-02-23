@@ -77,8 +77,8 @@ protected:
 	try {                                                                \
 		op = new _OP_NAME(name)(args);                                   \
 	}                                                                    \
-	catch (const std::string e) {                                        \
-		return ThrowException(Exception::Error(String::New(e.c_str()))); \
+	catch (const std::exception& e) {                                    \
+		return ThrowException(Exception::Error(String::New(e.what())));  \
 	}                                                                    \
 	op->Enqueue();                                                       \
 	NanReturnUndefined();

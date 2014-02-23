@@ -38,7 +38,7 @@ OPERATION_PROCESS(Decode, {
 
 	// empty matrix, set error
 	if (outMat.empty()) {
-		error = "invalid file";
+		error = "operation error: decode";
 	}
 })
 
