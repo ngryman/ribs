@@ -17,5 +17,7 @@ global.optify = require('optify');
 global.chai = require('chai');
 global.sinon = require('sinon');
 global.should = global.chai.should();
+global.helpers = require('./helpers');
+global.Image = require('../lib/image');
 
 global.chai.use(require('sinon-chai'));

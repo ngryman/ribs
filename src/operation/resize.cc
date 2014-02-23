@@ -38,7 +38,7 @@ OPERATION_PROCESS(Resize, {
 		image->Matrix(res);
 	}
 	catch (const cv::Exception& e) {
-		error = "invalid image";
+		error = "operation error: resize";
 	}
 })
 

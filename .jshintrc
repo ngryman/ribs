@@ -45,6 +45,9 @@
 	"trailing": true,
 	"white": false,
 	"globals": {
+		"Image": true,
+		"helpers": true,
+		"curry": true,
 		"_": true,
 		"setImmediate": true,
 		"async": true,

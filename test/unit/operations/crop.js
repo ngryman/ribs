@@ -21,7 +21,8 @@ var open = require('../../../lib/operations/open'),
  * Tests constants.
  */
 
-var W = 8,
+var SRC_IMAGE = path.resolve(__dirname + '/../../fixtures/0124.png'),
+	W = 8,
 	H = 8,
 	W_2 = W / 2,
 	H_2 = H / 2,
@@ -34,8 +35,7 @@ var W = 8,
  */
 
 var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
-	var filename = path.join(__dirname, '..', '..', 'fixtures', '0124.png');
-	open(filename, function(err, image) {
+	open(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
 		var originParams;
@@ -70,35 +70,6 @@ var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight
 		});
 	});
 });
-
-/**
- *
- * @param expect
- * It should always defined so that the results will be in that order:
- *   [width    , height   ]
- *   [undefined, height   ]
- *   [width    , undefined]
- *   [undefined, undefined]
- *
- * As the last possibility is redundant, it append automatically expected values
- *
- * @param width
- * @param height
- * @returns {Function}
- */
-var testMatrix = function(expect, width, height) {
-	expect.push(W, H);
-
-	return function(done) {
-		optify({ width: width, height: height }, function(opts, i, done) {
-			testCrop(opts, null, expect[i * 2], expect[i * 2 + 1], done);
-		}, function() {
-			// indirection here because optify passes the resulting matrix as argument.
-			// mocha then thinks it's an error.
-			done();
-		});
-	};
-};
 
 // TODO check pixel data
 

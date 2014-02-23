@@ -11,8 +11,7 @@ using namespace node;
 using namespace ribs;
 
 Operation::Operation(_NAN_METHOD_ARGS) {
-	// assign mandatory callback
-	if (!args[args.Length() - 1]->IsFunction()) throw "no callback specified";
+	// assign callback
 	callback = new NanCallback(args[args.Length() - 1].As<Function>());
 
 	// reference this operation
@@ -45,12 +44,12 @@ void Operation::AfterProcessAsync(uv_work_t* req) {
 	// note that we explicitly pass undefined to the 2nd argument.
 	// this is to respect the arity of the function and allow curry for example.
 	if (!op->error.empty()) {
-		argv[argc++] = Exception::Error(String::New(op->error.c_str()));
-		argv[argc++] = Local<Value>::New(Undefined());
+		argv[argc++] = Exception::Error(NanSymbol(op->error.c_str()));
+		argv[argc++] = NanNewLocal<Value>(Undefined());
 	}
 	else {
 		// execute callback with the output object
-		argv[argc++] = Local<Value>::New(Null());
+		argv[argc++] = NanNewLocal<Value>(Null());
 		argv[argc++] = op->OutputValue();
 	}
 

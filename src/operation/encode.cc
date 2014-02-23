@@ -13,16 +13,17 @@ using namespace node;
 using namespace ribs;
 
 OPERATION_PREPARE(Encode, {
-	// check against mandatory image input (from this)
 	image = ObjectWrap::Unwrap<Image>(args.This());
-	if (NULL == image) throw "invalid input image";
-
-	// check against mandatory file name
 	auto filename = FromV8String(args[0]);
-	if (filename.empty()) throw "invalid filename";
 
 	// store params for further processing
-	ext     = filename.substr(filename.find_last_of('.'));
+	auto index = filename.find_last_of('.');
+	if (string::npos == index) throw invalid_argument("invalid filename: " + filename);
+
+	// check if image is empty
+	if (image->Matrix().empty()) throw invalid_argument("empty image");
+
+	ext     = filename.substr(index);
 	quality = args[1]->Uint32Value();
 })
 
@@ -55,7 +56,7 @@ OPERATION_PROCESS(Encode, {
 
 	// empty matrix, set error
 	if (outVec.empty()) {
-		error = "invalid file";
+		error = "operation error: encode";
 	}
 })
 

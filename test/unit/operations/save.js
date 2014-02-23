@@ -27,37 +27,31 @@ var SRC_DIR = path.resolve(__dirname + '/../../fixtures/'),
  * Tests helper functions.
  */
 
-var testSave = function(filename, quality, progressive, expectedErr) {
-	return function(done) {
-		open(path.join(SRC_DIR, filename), function(err, image) {
-			filename = path.join(TMP_DIR, filename);
+var testSaveParams = helpers.testOperationParams(save);
+var testSaveImage = helpers.testOperationImage(save, { filename: '' });
+var testSaveNext = helpers.testOperationNext(save, { filename: '' });
 
-			// randomize filename in order to avoid conflict with existing fixtures
-			filename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
+var testSave = curry(function(filename, quality, progressive, done) {
+	open(path.join(SRC_DIR, filename), function(err, image) {
+		filename = path.join(TMP_DIR, filename);
+		// append `-save` to filename in order to avoid conflicts
+		filename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
 
-			save({
-				filename: filename,
-				quality: quality,
-				progressive: progressive
-			}, image, function(err) {
-				if (expectedErr) {
-					err.should.be.instanceof(Error);
-					err.message.should.equal(expectedErr);
-					done();
-				}
-				else {
-					should.not.exist(err);
-					fs.existsSync(filename).should.be.true;
-					open(filename, function(err, savedImage) {
-						similarity(savedImage, image).should.be.true;
-						fs.unlinkSync(filename);
-						done();
-					});
-				}
+		save({
+			filename: filename,
+			quality: quality,
+			progressive: progressive
+		}, image, function(err) {
+			should.not.exist(err);
+			fs.existsSync(filename).should.be.true;
+			open(filename, function(err, savedImage) {
+				similarity(savedImage, image).should.be.true;
+				fs.unlinkSync(filename);
+				done();
 			});
 		});
-	};
-};
+	});
+});
 
 /**
  * Fast and quite unprecise way to compare two image and tell if they are similar.
@@ -96,74 +90,99 @@ describe('save operation', function() {
 		fs.rmdirSync(TMP_DIR);
 	});
 
-	describe('(filename, image, next)', function() {
-		it('should pass an error when params are not valid', function(done) {
-			save(null, null, function(err) {
-				err.should.be.instanceof(Error);
-				err.message.should.equal('params should not be null nor undefined');
-				done();
-			});
-		});
-
-		it('should pass an error when image is not valid', function(done) {
-			save('/dev/null', null, function(err) {
-				err.should.be.instanceof(Error);
-				err.message.should.equal('image should not be null nor undefined');
-				done();
-			});
-		});
-
-		it('should throw an error when next is not valid', function() {
-			(function() {
-				save('/dev/null', new Image(), 'lolilol');
-			}).should.throw('next should be a function');
-		});
-	});
-
 	describe('(params, image, next)', function() {
-		it('should pass an error when filename is not valid', function(done) {
-			save({ filename: null }, new Image(), function(err) {
-				err.should.be.instanceof(Error);
-				err.message.should.equal('filename should not be null nor undefined');
+		it('should fail when params has an invalid type', testSaveParams(
+			'', ['string', 'object'], false, null
+		));
+
+		it('should fail when params.filename has an invalid type', testSaveParams(
+			'filename', ['string'], false, null
+		));
+
+		it('should fail when params.filename does not have an extension', function(done) {
+			save({ filename: '/dev/null' }, new Image(), function(err) {
+				helpers.checkError(err, 'invalid filename: /dev/null');
 				done();
 			});
 		});
+
+		it ('should fail when params.quality has an invalid type', testSaveParams(
+			'quality', ['number'], true, { filename: '' }
+		));
+
+		it ('should fail when params.progressive has an invalid type', testSaveParams(
+			'progressive', ['boolean'], true, { filename: '' }
+		));
+
+		it('should fail when image has an invalid type', testSaveImage());
+
+		it('should fail when image is not an instance of Image', function(done) {
+			save({ filename: 'yolo.jpg' }, {}, function(err) {
+				helpers.checkError(err, 'invalid type: image should be an instance of Image');
+				done();
+			});
+		});
+
+		it('should fail when image is an empty image', function(done) {
+			save({ filename: 'yolo.jpg' }, new Image(), function(err) {
+				helpers.checkError(err, 'empty image');
+				done();
+			});
+		});
+
+		it('should throw an error when next is not a valid type', testSaveNext());
 	});
 
 	describe('with jpg files', function() {
-		it('should save when quality is 100%', testSave('01100.jpg', 100, false, null));
-		it('should save when quality is 50%', testSave('0150.jpg', 50, false, null));
-		it('should save when quality is 0%', testSave('010.jpg', 0, false, null));
-		it('should save when progressive and quality is 100%', testSave('01100p.jpg', 100, true, null));
-		it('should save when progressive and quality is 50%', testSave('0150p.jpg', 50, true, null));
-		it('should save when progressive and quality is 0%', testSave('010p.jpg', 0, true, null));
+		it('should save when quality is 100%', testSave('01100.jpg', 100, false));
+
+		it('should save when quality is 50%', testSave('0150.jpg', 50, false));
+
+		it('should save when quality is 0%', testSave('010.jpg', 0, false));
+
+		it('should save when progressive and quality is 100%', testSave('01100p.jpg', 100, true));
+
+		it('should save when progressive and quality is 50%', testSave('0150p.jpg', 50, true));
+
+		it('should save when progressive and quality is 0%', testSave('010p.jpg', 0, true));
 	});
 
 	describe('with png files', function() {
-		it('should save 8-bit', testSave('018.png', 0, false, null));
+		it('should save 8-bit', testSave('018.png', 0, false));
 
 		// seems buggy for 8-bit PNG with alpha channel, posted a question here:
 		//   http://answers.opencv.org/question/28220/alpha-channel-for-8-bit-png/
-		xit('should save 8-bit with alpha channel', testSave('018a.png', 0, false, null));
-		xit('should open interlaced 8-bit with alpha channel', testSave('018ai.png', 0, false, null));
+		xit('should save 8-bit with alpha channel', testSave('018a.png', 0, false));
+		xit('should open interlaced 8-bit with alpha channel', testSave('018ai.png', 0, false));
 
-		it('should save 24-bit when quality is 100', testSave('0124.png', 100, false, null));
-		it('should save 24-bit when quality is 50', testSave('0124.png', 50, false, null));
-		it('should save 24-bit when quality is 0', testSave('0124.png', 0, false, null));
-		it('should save 24-bit with alpha channel when quality is 100', testSave('0124a.png', 100, false, null));
-		it('should save 24-bit with alpha channel when quality is 50', testSave('0124a.png', 50, false, null));
-		it('should save 24-bit with alpha channel when quality is 0', testSave('0124a.png', 0, false, null));
-		it('should save interlaced 24-bit with alpha channel when quality is 100', testSave('0124ai.png', 100, false, null));
-		it('should save interlaced 24-bit with alpha channel when quality is 50', testSave('0124ai.png', 50, false, null));
-		it('should save interlaced 24-bit with alpha channel when quality is 0', testSave('0124ai.png', 0, false, null));
+		it('should save 24-bit when quality is 100', testSave('0124.png', 100, false));
+
+		it('should save 24-bit when quality is 50', testSave('0124.png', 50, false));
+
+		it('should save 24-bit when quality is 0', testSave('0124.png', 0, false));
+
+		it('should save 24-bit with alpha channel when quality is 100', testSave('0124a.png', 100, false));
+
+		it('should save 24-bit with alpha channel when quality is 50', testSave('0124a.png', 50, false));
+
+		it('should save 24-bit with alpha channel when quality is 0', testSave('0124a.png', 0, false));
+
+		it('should save interlaced 24-bit with alpha channel when quality is 100', testSave('0124ai.png', 100, false));
+
+		it('should save interlaced 24-bit with alpha channel when quality is 50', testSave('0124ai.png', 50, false));
+
+		it('should save interlaced 24-bit with alpha channel when quality is 0', testSave('0124ai.png', 0, false));
 	});
 
 	// gif are not supported by OCV
 	//   http://stackoverflow.com/questions/11494119/error-in-opencv-2-4-2-opencv-error-bad-flag
 	xdescribe('with gif files', function() {
-		it('should save standard', testSave('01.gif', 0, false, null));
-		it('should save interlaced', testSave('01i.gif', 0, false, null));
-		it('should save with alpha channel', testSave('01a.gif', 0, false, null));
-		it('should save interlaced with alpha channel', testSave('01ai.gif', 0, false, null));
+		it('should save standard', testSave('01.gif', 0, false));
+
+		it('should save interlaced', testSave('01i.gif', 0, false));
+
+		it('should save with alpha channel', testSave('01a.gif', 0, false));
+
+		it('should save interlaced with alpha channel', testSave('01ai.gif', 0, false));
 	});
 });
