@@ -12,23 +12,41 @@
 #include <node_object_wrap.h>
 #include <node_version.h>
 
+#include <nan.h>
+
 #include <fcntl.h>
-#include "nan.h"
+#include <string>
+
+#include <cv.h>
+#include <highgui.h>
 
 namespace ribs {
 
 typedef uint8_t pixel_t;
 
 class Image;
+class Operation;
 
-inline static const char* FromV8String(v8::Local<v8::Value> v8Str) {
-	// https://github.com/rvagg/nan/issues/29
-	return NanFromV8String(v8Str, Nan::UTF8, NULL, NULL, 0, v8::String::HINT_MANY_WRITES_EXPECTED);
+inline std::string FromV8String(v8::Local<v8::Value> v8Str) {
+	size_t size;
+	char* cstr = NanCString(v8Str, &size);
+	std::string cppstr(cstr);
+	delete[] cstr;
+	return cppstr;
 }
 
-inline static void RibsError(char* error, const char* message, const char* description) {
-	sprintf(error, "%s: %s", message, description);
-}
+/**
+ * Utility macros
+ */
+
+/**
+ * Helps defining a simple accessor / getter.
+ */
+
+#define RIBS_GETTER(type, getter)                    \
+	NanScope();                                      \
+	auto instance = Unwrap<type>(args.This());       \
+	NanReturnValue(Number::New(instance->getter()));
 
 }
 

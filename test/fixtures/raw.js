@@ -9,10 +9,8 @@ function fromPm(filename) {
 	var data = fs.readFileSync(filename, 'utf8');
 	// header size
 	var headerSize = Math.max(2, Number(data.substr(1, 2)));
-	// remove header
-	data = data.split('\n').slice(headerSize).join('');
-	// converts to array of pixels
-	data = data.split(' ');
+	// remove header & convert to array of pixels
+	data = data.split('\n').slice(headerSize);
 	// remove last empty pixel (trailing whitespace)
 	if ('' == data[data.length - 1]) data.pop();
 
@@ -21,18 +19,24 @@ function fromPm(filename) {
 
 function raw(filename, alpha) {
 	var basename = path.basename(filename, path.extname(filename)),
-		alphaFilename = basename.substr(0, 2) + (alpha ? 'a' : '') + '.pbm',
-		pixelsFilename = basename + '.ppm',
-		a = fromPm(alphaFilename),
-		rgb = fromPm(pixelsFilename);
+        pixelsFilename = basename + '.ppm',
+        rgb = fromPm(pixelsFilename), a;
 
-	// merge 24bit pixels and 8 bit alpha channel
-	var rgba = new Array(a.length * 4);
-	for (var i = 0, len = a.length; i < len; i++) {
-		rgba[i * 4 + 0] = Number(rgb[i * 3 + 2]);
-		rgba[i * 4 + 1] = Number(rgb[i * 3 + 1]);
-		rgba[i * 4 + 2] = Number(rgb[i * 3]);
-		rgba[i * 4 + 3] = '1' == a[i] ? 255 : 0;
+    if (alpha) {
+        var alphaFilename = basename.substr(0, 2) + (alpha ? 'a' : '') + '.pbm';
+        a = fromPm(alphaFilename);
+    }
+
+    var length = rgb.length / 3;
+    var channels = alpha ? 4 : 3;
+
+	// convert to RGB(A)
+	var rgba = new Array(length * channels);
+	for (var i = 0; i < length; i++) {
+		rgba[i * channels + 0] = Number(rgb[i * 3 + 2]);
+		rgba[i * channels + 1] = Number(rgb[i * 3 + 1]);
+		rgba[i * channels + 2] = Number(rgb[i * 3]);
+		if (alpha) rgba[i * channels + 3] = '1' == a[i] ? 255 : 0;
 	}
 
 	return rgba;

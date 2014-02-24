@@ -7,8 +7,10 @@
 'use strict';
 
 module.exports = function(grunt) {
-	// loads npm tasks
+	// load npm tasks
 	require('load-grunt-tasks')(grunt);
+    // load time grunt
+    require('time-grunt')(grunt);
 
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
@@ -46,13 +48,10 @@ module.exports = function(grunt) {
 		mochaTest: {
 			options: {
 				reporter: 'spec',
-//				bail: true,
+				bail: true,
 				require: ['./test/common']
 			},
 			unit: {
-				options: {
-					reporter: 'dot'
-				},
 				src: ['<%= config.unit %>']
 			},
 			spec: ['<%= config.spec %>'],

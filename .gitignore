@@ -3,9 +3,6 @@ build/
 node_modules/
 npm-debug.log
 
-# cache
-.sass-cache
-
 # intellij
 .idea/
 *.iml

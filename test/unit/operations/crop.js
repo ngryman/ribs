@@ -12,23 +12,46 @@
 
 var open = require('../../../lib/operations/open'),
 	crop = require('../../../lib/operations/crop'),
-	Image = require('../../..').Image;
+	hooks = require('../../../lib/hooks'),
+	Pipeline = require('../../../lib/pipeline'),
+	Image = require('../../..').Image,
+	path = require('path');
 
 /**
  * Tests constants.
  */
 
-var W = 16,
-	H = 9,
+var W = 8,
+	H = 8,
 	W_2 = W / 2,
-	H_2 = H / 2 << 0;
+	H_2 = H / 2,
+	ANCHORS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l', [W / 4, H / 4], [W / 4 * 3, H / 4 * 3]],
+	DIRECTIONS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l'],
+	SIZES = [[W_2, H_2], [W, H], [2 * W, 2 * H]];
 
 /**
  * Tests helper functions.
  */
 
 var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
-	open('../fixtures/in-24-a.png', function(err, image) {
+	var filename = path.join(__dirname, '..', '..', 'fixtures', '0124.png');
+	open(filename, function(err, image) {
+		should.not.exist(err);
+
+		var originParams;
+
+		// adds a reference to pipeline hooks (mimic pipeline behavior)
+		if (params) {
+			params.hooks = Pipeline.hooks;
+
+			originParams = _.extend({}, params);
+
+			// we test the minimum between original size and computed one.
+			// However when original size is a falsy value, it is set to the original image size.
+			originParams.width = originParams.width || image.width;
+			originParams.height = originParams.height || image.height;
+		}
+
 		crop(params, image, function(err, image) {
 			if (expectedErr) {
 				err.should.be.instanceof(Error);
@@ -36,7 +59,10 @@ var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight
 			}
 			else {
 				should.not.exist(err);
+				expectedWidth = Math.min(originParams.width, params.width);
+				expectedHeight = Math.min(originParams.height, params.height);
 			}
+
 			image.should.be.instanceof(Image);
 			image.should.have.property('width', expectedWidth);
 			image.should.have.property('height', expectedHeight);
@@ -45,11 +71,34 @@ var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight
 	});
 });
 
-var matrixTest = curry(function(expect, width, height, x, y, done) {
-	optify({ width: width, height: height, x: x, y: y }, function(opts, i, done) {
-		testCrop(opts, null, expect[i++], expect[i++], done);
-	}, done);
-});
+/**
+ *
+ * @param expect
+ * It should always defined so that the results will be in that order:
+ *   [width    , height   ]
+ *   [undefined, height   ]
+ *   [width    , undefined]
+ *   [undefined, undefined]
+ *
+ * As the last possibility is redundant, it append automatically expected values
+ *
+ * @param width
+ * @param height
+ * @returns {Function}
+ */
+var testMatrix = function(expect, width, height) {
+	expect.push(W, H);
+
+	return function(done) {
+		optify({ width: width, height: height }, function(opts, i, done) {
+			testCrop(opts, null, expect[i * 2], expect[i * 2 + 1], done);
+		}, function() {
+			// indirection here because optify passes the resulting matrix as argument.
+			// mocha then thinks it's an error.
+			done();
+		});
+	};
+};
 
 // TODO check pixel data
 
@@ -58,7 +107,39 @@ var matrixTest = curry(function(expect, width, height, x, y, done) {
  */
 
 describe('crop operation', function() {
-	it('should crop from center to given width and height', testCrop({
+	before(function() {
+		Pipeline.hook('crop', 'constraints', hooks.cropConstraintsHook);
+	});
+
+	SIZES.forEach(function(size) {
+		describe('for size "' + size + '"', function() {
+			ANCHORS.forEach(function(anchor) {
+				describe('with anchor "' + anchor + '"', function() {
+					DIRECTIONS.forEach(function(direction) {
+						it('should crop using "' + direction + '" direction', function(done) {
+							var params = {
+								width: size[0],
+								height: size[1],
+								mode: direction
+							};
+
+							if ('string' == typeof anchor) {
+								params.anchor = anchor;
+							}
+							else {
+								params.x = anchor[0];
+								params.y = anchor[1];
+							}
+
+							testCrop(params, null, size[0], size[1], done);
+						});
+					});
+				});
+			});
+		});
+	});
+
+	it('should crop from center by default', testCrop({
 		width: W_2,
 		height: H_2
 	}, null, W_2, H_2));
@@ -67,117 +148,43 @@ describe('crop operation', function() {
 		width: W_2.toString(),
 		height: H_2.toString()
 	}, null, W_2, H_2));
-	
-	it('should crop from given x and y to given width and height', testCrop({
-		width: W_2,
-		height: H_2,
-		x: W / 4,
-		y: H / 4 << 0
-	}, null, W_2, H_2));
-
-	it('should clamp crop area to the original size', testCrop({
-		width: W_2,
-		height: H_2,
-		x: 0,
-		y: 0
-	}, null, W / 4, H / 4 << 0));
-
-	it('should clamp crop center to the original bounds', testCrop({
-		width: W_2,
-		height: H_2,
-		x: W * 2,
-		y: H * 2
-	}, null, W / 4, H / 4 << 0));
-
-	it('should add a padding to source size given a negative value', matrixTest([
-		W - 20, 80,
-		124, H - 20,
-		124, H - 20
-	], -10, -10));
-
-	it('should add a padding to source size given a string negative value', testCrop({
-		width: '-10',
-		height: '-10'
-	}, null, 124, H - 20));
-
-	it('should add a padding to a constant given a 2-op subtraction', matrixTest([
-		80, 45,
-		142, 80,
-		80, 45
-	], '100-10', '100-10'));
-
-	it('should crop to the given percentage of source size', matrixTest([
-		W_2, H_2,
-		48, 27,
-		48, 27
-	], 'x50', 'x30'));
-
-	it('should crop to the given percentage of a constant', matrixTest([
-		50, 28,
-		89, 50,
-		50, 28
-	], '100x50', '100x50'));
-
-	it('should add a margin to source size given a addition', matrixTest([
-		W, H,
-		W, H,
-		W, H
-	], 'a50', 'a50'));
-
-	it('should add a margin to a constant given a 2-op addition', matrixTest([
-		150, 84,
-		W, H,
-		150, 84
-	], '100a50', '100a50'));
-
-	it('should round down source size to a given multiple', matrixTest([
-		150, 84,
-		89, 50,
-		107, 60
-	], 'r50', 'r50'));
-
-	it('should round down a constant to a given multiple', matrixTest([
-		107, 60,
-		107, 60,
-		107, 60
-	], '100r50', '100r50'));
 
 	it('should do nothing when both sizes are null', testCrop({
 		width: null,
 		height: null
 	}, null, W, H));
 
-	it('should do nothing when both params is null', testCrop(null, null, W, H));
+	it('should pass an error when params is null', testCrop(null, 'params should not be null nor undefined', W, H));
 
 	it('should pass an error when width is not valid', testCrop({
 		width: 'woot'
-	}, 'width has an invalid value', W, H));
+	}, 'invalid formula: woot', W, H));
 
 	it('should pass an error when height is not valid', testCrop({
 		height: 'woot'
-	}, 'height has an invalid value', W, H));
+	}, 'invalid formula: woot', W, H));
 
 	it('should pass an error when x is not valid', testCrop({
 		x: 'woot'
-	}, 'x has an invalid value', W, H));
+	}, 'invalid formula: woot', W, H));
 
 	it('should pass an error when y is not valid', testCrop({
 		y: 'woot'
-	}, 'y has an invalid value', W, H));
+	}, 'invalid formula: woot', W, H));
 
 	it('should pass an error when width has an invalid type', testCrop({
 		width: { 0 : 0 }
-	}, 'width should a string or number', W, H));
+	}, 'width should be a number or string', W, H));
 
 	it('should pass an error when height has an invalid type', testCrop({
 		height: { 0 : 0 }
-	}, 'height should a string or number', W, H));
+	}, 'height should be a number or string', W, H));
 
 	it('should pass an error when x has an invalid type', testCrop({
 		x: { 0 : 0 }
-	}, 'x should a string or number', W, H));
+	}, 'x should be a number or string', W, H));
 
 	it('should pass an error when y has an invalid type', testCrop({
 		y: { 0 : 0 }
-	}, 'y should a string or number', W, H));
+	}, 'y should be a number or string', W, H));
 });

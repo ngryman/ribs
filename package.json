@@ -1,40 +1,42 @@
 {
-	"name": "ribs",
-	"version": "0.0.0",
-	"description": "Responsive Images Backed Server-side.",
-	"main": "index.js",
-	"scripts": {
-		"test": "grunt test"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/ngryman/ribs.git"
-	},
-	"keywords": [
-		"responsive",
-		"image",
-		"responsive images",
-		"art direction",
-		"resize",
-		"crop",
-		"optimize",
-		"canvas"
-	],
-	"author": "Nicolas Gryman <ngryman@gmail.com>",
-	"license": "LGPL",
-	"dependencies": {
-		"lodash": "~2.0.0",
-		"async": "~0.2.9",
-		"nan": "~0.4.0"
-	},
-	"devDependencies": {
-		"grunt": "~0.4.1",
-		"load-grunt-tasks": "~0.1.0",
-		"grunt-contrib-jshint": "~0.6.2",
-		"grunt-mocha-test": "~0.6.3",
-		"chai": "~1.7.2",
-		"sinon-chai": "~2.4.0",
-		"sinon": "~1.7.3",
-		"optify": "~0.0.2"
-	}
+  "name": "ribs",
+  "version": "0.0.0",
+  "description": "Responsive Images Backed Server-side.",
+  "main": "index.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ngryman/ribs.git"
+  },
+  "keywords": [
+    "responsive",
+    "image",
+    "responsive images",
+    "art direction",
+    "resize",
+    "crop",
+    "optimize",
+    "canvas"
+  ],
+  "author": "Nicolas Gryman <ngryman@gmail.com> (http://ngryman.sh)",
+  "license": "LGPL",
+  "dependencies": {
+    "lodash": "~2.4.1",
+    "async": "~0.2.9",
+    "nan": "~0.8.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "load-grunt-tasks": "~0.3.0",
+    "grunt-contrib-jshint": "~0.8.0",
+    "grunt-mocha-test": "~0.9.0",
+    "chai": "~1.9.0",
+    "sinon-chai": "~2.5.0",
+    "sinon": "~1.8.1",
+    "optify": "~0.0.2",
+    "time-grunt": "~0.2.9",
+    "curry": "~1.2.0"
+  }
 }
