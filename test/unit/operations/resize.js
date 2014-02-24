@@ -22,14 +22,17 @@ var open = require('../../../lib/operations/open'),
  */
 
 var SRC_IMAGE = path.resolve(__dirname + '/../../fixtures/0124.png'),
-	W = 8,
-	H = 8,
-	W_2 = W / 2,
-	H_2 = H / 2 << 0;
+	W = 8, H = 8,
+	W_2 = W / 2, H_2 = H / 2,
+	W_3 = Math.round(W / 3), H_3 = Math.round(H / 3);
 
 /**
  * Tests helper functions.
  */
+
+var testResizeParams = helpers.testOperationParams(resize);
+var testResizeImage = helpers.testOperationImage(resize, { filename: '' });
+var testResizeNext = helpers.testOperationNext(resize, { filename: '' });
 
 var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
 	open(SRC_IMAGE, function(err, image) {
@@ -40,8 +43,7 @@ var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeig
 
 		resize(params, image, function(err, image) {
 			if (expectedErr) {
-				err.should.be.instanceof(Error);
-				err.message.should.equal(expectedErr);
+				helpers.checkError(err, expectedErr);
 			}
 			else {
 				should.not.exist(err);
@@ -91,114 +93,149 @@ describe('resize operation', function() {
 		Pipeline.hook('resize', 'constraints', hooks.resizeConstraintsHook);
 	});
 
-	xit('should resize to given width and height', testResize({
-		width: W_2,
-		height: H_2
-	}, null, W_2, H_2));
+	describe('(params, image, next)', function() {
+		it('should fail when params has an invalid type', testResizeParams(
+			'', ['string', 'object'], true, null
+		));
 
-	xit('should resize to given width and height when strings are specified', testResize({
-		width: W_2.toString(),
-		height: H_2.toString()
-	}, null, W_2, H_2));
+		it('should do nothing when params is null', testResize(null, null, W, H));
 
-	xit('should not upscale when superior sizes are specified', testMatrix([
-		W, H,
-		W, H,
-		W, H
-	], W * 2, H * 2));
+		it('should fail when params.width has an invalid type', testResizeParams(
+			'width', ['number', 'string'], true, {}
+		));
 
-	xit('should keep aspect ratio when sizes compute to a different aspect ratio', testMatrix([
-		W_2, H_2,
-		W_2, H_2,
-		W_2, H_2
-	], W_2, H_2));
-	
-	xit('should keep aspect ratio relative to the smaller size', testMatrix([
-		W / 3 << 0, W / 3 << 0,
-		H_2, H_2,
-		W / 3 << 0, W / 3 << 0
-	], W / 3 << 0, H_2));
+		it('should fail when params.height has an invalid type', testResizeParams(
+			'height', ['number', 'string'], true, {}
+		));
 
-	xit('should add a padding to source size given a negative value', testMatrix([
-		W - 2, H - 2,
-		W - 2, H - 2,
-		W - 2, H - 2
-	], -1, -1));
+		it('should fail when image has an invalid type', testResizeImage());
 
-	xit('should add a padding to source size given a string negative value', testResize({
-		width: '-1',
-		height: '-1'
-	}, null, W - 2, H - 2));
+		it('should fail when image is not an instance of Image', function(done) {
+			resize({ width: W_2 }, {}, function(err) {
+				helpers.checkError(err, 'invalid type: image should be an instance of Image');
+				done();
+			});
+		});
 
-	xit('should add a padding to a constant given a 2-op subtraction', testMatrix([
-		W_2, H_2,
-		W_2, H_2,
-		W_2, H_2
-	], '6-1', '6-1'));
+		it('should do nothing when image is an empty image', function(done) {
+			resize({ width: W_2 }, new Image(), function(err, image) {
+				image.should.be.instanceof(Image);
+				image.should.have.property('width', 0);
+				image.should.have.property('height', 0);
+				done();
+			});
+		});
 
-	xit('should resize to the given percentage of source size', testMatrix([
-		2, 2,
-		2, 2,
-		4, 4
-	], 'x50', 'x30'));
+		it('should fail when next has an invalid type', testResizeNext());
+	});
 
-	xit('should resize to the given percentage of a constant', testMatrix([
-		3, 3,
-		3, 3,
-		3, 3
-	], '6x50', '6x50'));
+	describe('with scalar params', function() {
+		it('should resize to given size', testResize({
+			width: W_2,
+			height: H_2
+		}, null, W_2, H_2));
 
-	// TODO: this should really add a margin
-	xit('should add a margin to source size given a addition', testMatrix([
-		W, H,
-		W, H,
-		W, H
-	], 'a1', 'a1'));
+		it('should not upscale', testMatrix([
+			W, H,
+			W, H,
+			W, H
+		], W * 2, H * 2));
 
-	xit('should add a margin to a constant given a 2-op addition', testMatrix([
-		5, 5,
-		5, 5,
-		5, 5
-	], '3a1', '3a1'));
+		it('should keep aspect ratio relative to the smaller size', testMatrix([
+			W_3, H_3,
+			W_2, H_2,
+			W_3, H_3
+		], W_3, H_2));
 
-	xit('should round down source size to a given multiple', testMatrix([
-		5, 5,
-		5, 5,
-		5, 5
-	], 'r5', 'r5'));
+		it('should round floating values', testMatrix([
+			W_3, H_3,
+			W_3, H_3,
+			W_3, H_3
+		], W / 3, H / 3));
 
-	xit('should not resize if source size is a multiple of a given round', testMatrix([
-		W, H,
-		W, H,
-		W, H
-	], 'r4', 'r4'));
+		it('should add a padding to source size given a negative value', testMatrix([
+			W - 2, H - 2,
+			W - 2, H - 2,
+			W - 2, H - 2
+		], -1, -1));
 
-	xit('should round down a constant to a given multiple', testMatrix([
-		3, 3,
-		3, 3,
-		3, 3
-	], '5r3', '5r3'));
+		it('should replace a 0 value with origin value', testMatrix([
+			W_2, H_2,
+			W_2, H_2,
+			W, H
+		], 0, H_2));
 
-	xit('should do nothing when both sizes are null', testResize({
-		width: null,
-		height: null
-	}, null, W, H));
+		it('should do nothing when size is 0', testMatrix([
+			W, H,
+			W, H,
+			W, H
+		], 0, 0));
+	});
 
-	it('should pass an error when params is null', testResize(null, 'params should not be null nor undefined', W, H));
+	describe('with formulas params', function() {
+		it('should resize to given size', testResize({
+			width: W_2.toString(),
+			height: H_2.toString()
+		}, null, W_2, H_2));
 
-	xit('should pass an error when width is not valid', testResize({
-		width: 'woot'
-	}, 'invalid formula: woot', W, H));
+		it('should add a padding to source size given a negative value', testMatrix([
+			W - 2, H - 2,
+			W - 2, H - 2,
+			W - 2, H - 2
+		], -1, -1));
 
-	xit('should pass an error when height is not valid', testResize({
-		height: 'woot'
-	}, 'invalid formula: woot', W, H));
+		it('should add a padding to a given constant', testMatrix([
+			W_2, H_2,
+			W_2, H_2,
+			W_2, H_2
+		], '6-1', '6-1'));
 
-	xit('should pass an error when width has an invalid type', testResize({
-		width: { 0 : 0 }
-	}, 'width should be a number or string', W, H));
+		it('should resize to the given percentage of source size', testMatrix([
+			2, 2,
+			2, 2,
+			4, 4
+		], 'x50', 'x30'));
 
-	xit('should pass an error when height has an invalid type', testResize({
-		height: { 0 : 0 }
-	}, 'height should be a number or string', W, H));
+		it('should resize to a given percentage of a constant', testMatrix([
+			3, 3,
+			3, 3,
+			3, 3
+		], '6x50', '6x50'));
+
+		it('should add a margin to source size given a addition', testMatrix([
+			W, H,
+			W, H,
+			W, H
+		], 'a1', 'a1'));
+
+		it('should add a margin to a given constant', testMatrix([
+			5, 5,
+			5, 5,
+			5, 5
+		], '3a1', '3a1'));
+
+		it('should round down source size to a given multiple', testMatrix([
+			5, 5,
+			5, 5,
+			5, 5
+		], 'r5', 'r5'));
+
+		it('should not resize if source size is a multiple', testMatrix([
+			W, H,
+			W, H,
+			W, H
+		], 'r4', 'r4'));
+
+		it('should round down a constant to a given multiple', testMatrix([
+			3, 3,
+			3, 3,
+			3, 3
+		], '5r3', '5r3'));
+
+		it('should be cool with a complex formula', testMatrix([
+			5, 5,
+			5, 5,
+			5, 5
+		], '-1x50-1a2', '-1x50-1a2'));
+	});
 });
