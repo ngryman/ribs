@@ -20,7 +20,7 @@
     "optimize",
     "canvas"
   ],
-  "author": "Nicolas Gryman <ngryman@gmail.com>",
+  "author": "Nicolas Gryman <ngryman@gmail.com> (http://ngryman.sh)",
   "license": "LGPL",
   "dependencies": {
     "lodash": "~2.4.1",
