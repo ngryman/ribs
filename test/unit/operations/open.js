@@ -13,7 +13,6 @@
 var open = require('../../../lib/operations/open'),
 	Image = require('../../..').Image,
 	raw = require('../../fixtures/raw'),
-	fs = require('fs'),
 	path = require('path');
 
 /**
@@ -25,6 +24,16 @@ var SRC_DIR = path.resolve(__dirname + '/../../fixtures/');
 /**
  * Tests helper functions.
  */
+
+var testOpenFilename = helpers.testOperationArg(open, [null], 0);
+var testOpenNext = helpers.testOperationNext(open, { filename: '' });
+
+var testOpen = curry(function(filename, expectedErr, alpha, done) {
+	if (filename && '/' != filename[0]) {
+		filename = path.join(SRC_DIR, filename);
+	}
+	open(filename, checkPixels(filename, expectedErr, alpha, done));
+});
 
 var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, image) {
 	if (expectedErr) {
@@ -47,20 +56,42 @@ var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, imag
 	done();
 });
 
-var testOpen = function(filename, expectedErr, alpha) {
-	return function(done) {
-		if (filename && '/' != filename[0]) {
-			filename = path.join(SRC_DIR, filename);
-		}
-		open(filename, checkPixels(filename, expectedErr, alpha, done));
-	};
-};
-
 /**
  * Test suite.
  */
 
 describe('open operation', function() {
+	describe('(params, image, next)', function() {
+		it('should fail when filename has an invalid type', testOpenFilename(
+			'filename', ['string'], false
+		));
+
+		it('should fail when filename does not exists', testOpen(
+			'vaynerox',
+			"ENOENT, open '"  + path.join(SRC_DIR, 'vaynerox') + "'",
+			false
+		));
+
+		it('should fail when filename is a path to an invalid image', function(done) {
+			open('/dev/null', function(err) {
+				helpers.checkError(err, 'operation error: decode');
+				done();
+			});
+		});
+
+		it('should fail when next has an invalid type', function(done) {
+			helpers.invalidTypes(['function'], false, function(arg, done) {
+				try {
+					open('/dev/null', arg);
+				}
+				catch (err) {
+					helpers.checkTypeError(err, ['function'], 'next', arg);
+					done();
+				}
+			}, done);
+		});
+	});
+
 	describe('with jpg files', function() {
 		it('should open when quality is 100%', testOpen('01100.jpg', null, false));
 
@@ -107,24 +138,15 @@ describe('open operation', function() {
 
 		it('should open interlaced with alpha channel', testOpen('01ai.gif', null, true));
 	});
-
-	it('should pass an error when filename is not valid', testOpen(
-		null,
-		'filename should not be null nor undefined',
-		false
-	));
-
-	it('should throw an error when next is not valid', function() {
-		(function() {
-			open(path.resolve(__dirname + '/../../fixtures/in.gif'), 'lolilol');
-		}).should.throw('next should be a function');
-	});
-
-	it('should pass an error when file is not found', testOpen(
-		'dev/null',
-		"ENOENT, open '"  + path.join(__dirname, '..', '..', 'fixtures', '/dev/null') + "'",
-		false
-	));
-
-	it('should pass an error when file is not valid', testOpen('/dev/null', 'invalid file', false));
+//	it('should throw an error when next is not valid', function() {
+//		(function() {
+//			open(path.resolve(__dirname + '/../../fixtures/in.gif'), 'lolilol');
+//		}).should.throw('next should be a function');
+//	});
+//
+//	it('should pass an error when file is not found', testOpen(
+//		'dev/null',
+//		"ENOENT, open '"  + path.join(__dirname, '..', '..', 'fixtures', '/dev/null') + "'",
+//		false
+//	));
 });
