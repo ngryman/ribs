@@ -48,13 +48,10 @@ module.exports = function(grunt) {
 		mochaTest: {
 			options: {
 				reporter: 'spec',
-//				bail: true,
+				bail: true,
 				require: ['./test/common']
 			},
 			unit: {
-				options: {
-					reporter: 'dot'
-				},
 				src: ['<%= config.unit %>']
 			},
 			spec: ['<%= config.spec %>'],
