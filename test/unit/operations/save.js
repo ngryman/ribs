@@ -96,7 +96,7 @@ describe('save operation', function() {
 		));
 
 		it('should fail when params.filename has an invalid type', testSaveParams(
-			'filename', ['string'], false, null
+			'filename', ['string'], false, {}
 		));
 
 		it('should fail when params.filename does not have an extension', function(done) {
@@ -130,7 +130,7 @@ describe('save operation', function() {
 			});
 		});
 
-		it('should throw an error when next is not a valid type', testSaveNext());
+		it('should fail when next has an invalid type', testSaveNext());
 	});
 
 	describe('with jpg files', function() {

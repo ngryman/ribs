@@ -55,39 +55,55 @@ helpers.checkTypeError = function(err, types, argName, arg) {
 	helpers.checkError(err, message);
 };
 
-helpers.testOperationParams = curry(function(op, argName, types, nullable, params, done) {
+helpers.testOperationParams = curry(function(op, argName, types, nullable, args, done) {
 	argName = argName || 'params';
+	args = [args, new Image()];
 
-	return helpers.invalidTypes(types, nullable, function(param, done) {
-		if ('params' != argName) {
-			param = params || {};
-			param[argName] = param;
-		}
-
-		op.call(null, param, new Image(), function(err) {
-			helpers.checkTypeError(err, types, argName, param);
-			done();
-		});
-	}, done);
+	return helpers.testOperationArg(op, args, 0, argName, types, nullable, done);
 });
 
-helpers.testOperationImage = curry(function(op, params, done) {
-	return helpers.invalidTypes(['object'], false, function(param, done) {
-		op.call(null, params, param, function(err) {
-			helpers.checkTypeError(err, ['object'], 'image', param);
-			done();
-		});
-	}, done);
+helpers.testOperationImage = curry(function(op, args, done) {
+	args = [args, null];
+
+	return helpers.testOperationArg(op, args, 1, 'image', ['object'], false, done);
 });
 
-helpers.testOperationNext = curry(function(op, params, done) {
-	return helpers.invalidTypes(['object'], false, function(param, done) {
+helpers.testOperationNext = curry(function(op, args, done) {
+	return helpers.invalidTypes(['function'], false, function(arg, done) {
 		try {
-			op.call(null, params, new Image(), param);
+			op.call(null, args, new Image(), arg);
 		}
 		catch (err) {
-			helpers.checkTypeError(err, ['function'], 'next', param);
+			helpers.checkTypeError(err, ['function'], 'next', arg);
 			done();
 		}
+	}, done);
+});
+
+helpers.testOperationArg = curry(function(op, args, pos, argName, types, nullable, done) {
+	// store if arg at pos has a value
+	var initialVal = args[pos];
+
+	// append callback placeholder at the end of arguments
+	args.push(null);
+
+	return helpers.invalidTypes(types, nullable, function(arg, done) {
+		// set the value of arg at pos in args list
+		if (initialVal) {
+			args[pos][argName] = arg;
+		}
+		else {
+			args[pos] = arg;
+		}
+
+		// replace placeholder with a callback with the correct closure.
+		// Does my sentence even means something?
+		args[args.length - 1] = function(err) {
+			helpers.checkTypeError(err, types, argName, arg);
+			done();
+		};
+
+		// invoke operation with lovely crafted arguments
+		op.apply(null, args);
 	}, done);
 });
