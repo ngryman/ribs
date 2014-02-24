@@ -14,7 +14,6 @@ using namespace ribs;
 OPERATION_PREPARE(Crop, {
 	// check against mandatory image input (from this)
 	image = ObjectWrap::Unwrap<Image>(args.This());
-	if (NULL == image) throw "invalid input image";
 
 	// create a persistent object during the process to avoid v8 to dispose the JavaScript image object.
 	NanAssignPersistent(Object, imageHandle, args.This());

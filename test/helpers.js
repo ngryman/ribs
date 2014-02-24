@@ -45,12 +45,10 @@ helpers.checkError = function(err, message) {
 helpers.checkTypeError = function(err, types, argName, arg) {
 	var message;
 
-	if (null == arg) {
+	if (null == arg)
 		message = 'invalid type: ' + argName + ' should not be null nor undefined';
-	}
-	else {
+	else
 		message = 'invalid type: ' + argName + ' should be a ' + types.join(' or ');
-	}
 
 	helpers.checkError(err, message);
 };
@@ -89,12 +87,10 @@ helpers.testOperationArg = curry(function(op, args, pos, argName, types, nullabl
 
 	return helpers.invalidTypes(types, nullable, function(arg, done) {
 		// set the value of arg at pos in args list
-		if (initialVal) {
+		if (initialVal)
 			args[pos][argName] = arg;
-		}
-		else {
+		else
 			args[pos] = arg;
-		}
 
 		// replace placeholder with a callback with the correct closure.
 		// Does my sentence even means something?
