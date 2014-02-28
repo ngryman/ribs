@@ -26,46 +26,36 @@ var SRC_IMAGE = path.resolve(__dirname + '/../../fixtures/0124.png'),
 	H = 8,
 	W_2 = W / 2,
 	H_2 = H / 2,
-	ANCHORS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l', [W / 4, H / 4], [W / 4 * 3, H / 4 * 3]],
-	DIRECTIONS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l'],
-	SIZES = [[W_2, H_2], [W, H], [2 * W, 2 * H]];
+	LANDMARKS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l', [W / 3 | 0, H / 2]],
+	ANCHORS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l'],
+	SIZES = [[W_2, H_2], [W * 2, H * 2]];
 
 /**
  * Tests helper functions.
  */
 
+var testCropParams = helpers.testOperationParams(crop);
+var testCropImage = helpers.testOperationImage(crop, {});
+var testCropNext = helpers.testOperationNext(crop, {});
+
 var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
 	open(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
-		var originParams;
-
 		// adds a reference to pipeline hooks (mimic pipeline behavior)
-		if (params) {
-			params.hooks = Pipeline.hooks;
-
-			originParams = _.extend({}, params);
-
-			// we test the minimum between original size and computed one.
-			// However when original size is a falsy value, it is set to the original image size.
-			originParams.width = originParams.width || image.width;
-			originParams.height = originParams.height || image.height;
-		}
+		if (params) params.hooks = Pipeline.hooks;
 
 		crop(params, image, function(err, image) {
 			if (expectedErr) {
-				err.should.be.instanceof(Error);
-				err.message.should.equal(expectedErr);
+				helpers.checkError(err, expectedErr);
 			}
 			else {
 				should.not.exist(err);
-				expectedWidth = Math.min(originParams.width, params.width);
-				expectedHeight = Math.min(originParams.height, params.height);
 			}
 
 			image.should.be.instanceof(Image);
-			image.should.have.property('width', expectedWidth);
-			image.should.have.property('height', expectedHeight);
+			image.should.have.property('width', Math.min(expectedWidth, image.width));
+			image.should.have.property('height', Math.min(expectedHeight, image.height));
 			done();
 		});
 	});
@@ -82,80 +72,136 @@ describe('crop operation', function() {
 		Pipeline.hook('crop', 'constraints', hooks.cropConstraintsHook);
 	});
 
-	SIZES.forEach(function(size) {
-		describe('for size "' + size + '"', function() {
-			ANCHORS.forEach(function(anchor) {
-				describe('with anchor "' + anchor + '"', function() {
-					DIRECTIONS.forEach(function(direction) {
-						it('should crop using "' + direction + '" direction', function(done) {
-							var params = {
-								width: size[0],
-								height: size[1],
-								mode: direction
-							};
+	describe('(params, image, next)', function() {
+		it('should fail when params has an invalid type', testCropParams(
+			'', ['string', 'object'], true, null
+		));
 
-							if ('string' == typeof anchor) {
-								params.anchor = anchor;
-							}
-							else {
-								params.x = anchor[0];
-								params.y = anchor[1];
-							}
+		it('should do nothing when params is null', testCrop(null, null, W, H));
 
-							testCrop(params, null, size[0], size[1], done);
+		it('should fail when params.width has an invalid type', testCropParams(
+			'width', ['number', 'string'], true, {}
+		));
+
+		it('should fail when params.height has an invalid type', testCropParams(
+			'height', ['number', 'string'], true, {}
+		));
+
+		it('should fail when params.x has an invalid type', testCropParams(
+			'x', ['number', 'string'], true, {}
+		));
+
+		it('should fail when params.y has an invalid type', testCropParams(
+			'y', ['number', 'string'], true, {}
+		));
+
+		it('should fail when params.anchor has an invalid type', testCropParams(
+			'anchor', ['string'], true, {}
+		));
+
+		it('should fail when params.mode has an invalid type', testCropParams(
+			'mode', ['string'], true, {}
+		));
+
+		it('should fail when image has an invalid type', testCropImage());
+
+		it('should fail when image is not an instance of Image', function(done) {
+			crop({ width: W_2 }, {}, function(err) {
+				helpers.checkError(err, 'invalid type: image should be an instance of Image');
+				done();
+			});
+		});
+
+		it('should do nothing when image is an empty image', function(done) {
+			crop({ width: W_2 }, new Image(), function(err, image) {
+				image.should.be.instanceof(Image);
+				image.should.have.property('width', 0);
+				image.should.have.property('height', 0);
+				done();
+			});
+		});
+
+		it('should fail when next has an invalid type', testCropNext());
+	});
+
+	describe('with scalar params', function() {
+		it('should crop to given size from center', testCrop({
+			width: W_2,
+			height: H_2
+		}, null, W_2, H_2));
+
+		SIZES.forEach(function(size) {
+			describe('for size "' + size + '"', function() {
+				LANDMARKS.forEach(function(landmark) {
+					describe('with landmark point "' + landmark + '"', function() {
+						ANCHORS.forEach(function(anchor) {
+							it('should crop with anchor "' + anchor + '"', function(done) {
+								var params = {
+									width: size[0],
+									height: size[1],
+									anchor: anchor
+								};
+
+								if ('string' == typeof landmark) {
+									params.landmark = landmark;
+								}
+								else {
+									params.x = landmark[0];
+									params.y = landmark[1];
+								}
+
+								testCrop(params, null, size[0], size[1], done);
+							});
 						});
 					});
 				});
 			});
 		});
+
+//		it('should not upscale', testMatrix([
+//			W, H,
+//			W, H,
+//			W, H
+//		], W * 2, H * 2));
+//
+//		it('should keep aspect ratio relative to the smaller size', testMatrix([
+//			W_3, H_3,
+//			W_2, H_2,
+//			W_3, H_3
+//		], W_3, H_2));
+//
+//		it('should round floating values', testMatrix([
+//			W_3, H_3,
+//			W_3, H_3,
+//			W_3, H_3
+//		], W / 3, H / 3));
+//
+//		it('should add a padding to source size given a negative value', testMatrix([
+//			W - 2, H - 2,
+//			W - 2, H - 2,
+//			W - 2, H - 2
+//		], -1, -1));
+//
+//		it('should replace a 0 value with origin value', testMatrix([
+//			W_2, H_2,
+//			W_2, H_2,
+//			W, H
+//		], 0, H_2));
+//
+//		it('should do nothing when size is 0', testMatrix([
+//			W, H,
+//			W, H,
+//			W, H
+//		], 0, 0));
 	});
-
-	it('should crop from center by default', testCrop({
-		width: W_2,
-		height: H_2
-	}, null, W_2, H_2));
-
-	it('should crop to given width and height when strings are specified', testCrop({
-		width: W_2.toString(),
-		height: H_2.toString()
-	}, null, W_2, H_2));
-
-	it('should do nothing when both sizes are null', testCrop({
-		width: null,
-		height: null
-	}, null, W, H));
-
-	it('should pass an error when params is null', testCrop(null, 'params should not be null nor undefined', W, H));
-
-	it('should pass an error when width is not valid', testCrop({
-		width: 'woot'
-	}, 'invalid formula: woot', W, H));
-
-	it('should pass an error when height is not valid', testCrop({
-		height: 'woot'
-	}, 'invalid formula: woot', W, H));
-
-	it('should pass an error when x is not valid', testCrop({
-		x: 'woot'
-	}, 'invalid formula: woot', W, H));
-
-	it('should pass an error when y is not valid', testCrop({
-		y: 'woot'
-	}, 'invalid formula: woot', W, H));
-
-	it('should pass an error when width has an invalid type', testCrop({
-		width: { 0 : 0 }
-	}, 'width should be a number or string', W, H));
-
-	it('should pass an error when height has an invalid type', testCrop({
-		height: { 0 : 0 }
-	}, 'height should be a number or string', W, H));
-
-	it('should pass an error when x has an invalid type', testCrop({
-		x: { 0 : 0 }
-	}, 'x should be a number or string', W, H));
-
-	it('should pass an error when y has an invalid type', testCrop({
-		y: { 0 : 0 }
-	}, 'y should be a number or string', W, H));
+//
+//	it('should crop from center by default', testCrop({
+//		width: W_2,
+//		height: H_2
+//	}, null, W_2, H_2));
+//
+//	it('should crop to given width and height when strings are specified', testCrop({
+//		width: W_2.toString(),
+//		height: H_2.toString()
+//	}, null, W_2, H_2));
 });
