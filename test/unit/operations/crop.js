@@ -61,7 +61,31 @@ var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight
 	});
 });
 
-// TODO check pixel data
+/**
+ *
+ * @param expect
+ * It should always defined so that the results will be in that order:
+ *   [width    , height   ]
+ *   [undefined, height   ]
+ *   [width    , undefined]
+ *   [undefined, undefined]
+ *
+ * As the last possibility is redundant, it append automatically expected values
+ *
+ * @param width
+ * @param height
+ * @returns {Function}
+ */
+var testMatrix = curry(function(expect, width, height, done) {
+	expect.push(W, H);
+	optify({ width: width, height: height }, function(opts, i, done) {
+		testCrop(opts, null, expect[i * 2], expect[i * 2 + 1])(done);
+	}, function() {
+		// indirection here because optify passes the resulting matrix as argument.
+		// mocha then thinks it's an error.
+		done();
+	});
+});
 
 /**
  * Test suite.
@@ -133,9 +157,9 @@ describe('crop operation', function() {
 		SIZES.forEach(function(size) {
 			describe('for size "' + size + '"', function() {
 				LANDMARKS.forEach(function(landmark) {
-					describe('with landmark point "' + landmark + '"', function() {
-						ANCHORS.forEach(function(anchor) {
-							it('should crop with anchor "' + anchor + '"', function(done) {
+					it('should crop with landmark point "' + landmark + '" and each anchor', function(done) {
+						var seq = ANCHORS.map(function(anchor) {
+							return function(done) {
 								var params = {
 									width: size[0],
 									height: size[1],
@@ -151,57 +175,81 @@ describe('crop operation', function() {
 								}
 
 								testCrop(params, null, size[0], size[1], done);
-							});
+							};
 						});
+						async.series(seq, done);
 					});
 				});
 			});
 		});
-
-//		it('should not upscale', testMatrix([
-//			W, H,
-//			W, H,
-//			W, H
-//		], W * 2, H * 2));
-//
-//		it('should keep aspect ratio relative to the smaller size', testMatrix([
-//			W_3, H_3,
-//			W_2, H_2,
-//			W_3, H_3
-//		], W_3, H_2));
-//
-//		it('should round floating values', testMatrix([
-//			W_3, H_3,
-//			W_3, H_3,
-//			W_3, H_3
-//		], W / 3, H / 3));
-//
-//		it('should add a padding to source size given a negative value', testMatrix([
-//			W - 2, H - 2,
-//			W - 2, H - 2,
-//			W - 2, H - 2
-//		], -1, -1));
-//
-//		it('should replace a 0 value with origin value', testMatrix([
-//			W_2, H_2,
-//			W_2, H_2,
-//			W, H
-//		], 0, H_2));
-//
-//		it('should do nothing when size is 0', testMatrix([
-//			W, H,
-//			W, H,
-//			W, H
-//		], 0, 0));
 	});
-//
-//	it('should crop from center by default', testCrop({
-//		width: W_2,
-//		height: H_2
-//	}, null, W_2, H_2));
-//
-//	it('should crop to given width and height when strings are specified', testCrop({
-//		width: W_2.toString(),
-//		height: H_2.toString()
-//	}, null, W_2, H_2));
+
+	describe('with formulas params', function() {
+		it('should crop to given size from center', testCrop({
+			width: W_2.toString(),
+			height: H_2.toString()
+		}, null, W_2, H_2));
+
+		it('should add a padding to source size given a negative value', testMatrix([
+			W - 2, H - 2,
+			W, H - 2,
+			W - 2, H
+		], -1, -1));
+
+		it('should add a padding to a given constant', testMatrix([
+			W_2, H_2,
+			W, H_2,
+			W_2, H
+		], '6-1', '6-1'));
+
+		it('should crop to the given percentage of source size', testMatrix([
+			W_2, 2,
+			W, 2,
+			W_2, H
+		], 'x50', 'x30'));
+
+		it('should crop to a given percentage of a constant', function(done) {
+			testMatrix([
+				3, 3,
+				W, 3,
+				3, H
+			], '6x50', '6x50', done);
+		});
+
+		it('should add a margin to source size given a addition', testMatrix([
+			W, H,
+			W, H,
+			W, H
+		], 'a1', 'a1'));
+
+		it('should add a margin to a given constant', testMatrix([
+			5, 5,
+			W, 5,
+			5, H
+		], '3a1', '3a1'));
+
+		it('should round down source size to a given multiple', testMatrix([
+			5, 5,
+			W, 5,
+			5, H
+		], 'r5', 'r5'));
+
+		it('should not resize if source size is a multiple', testMatrix([
+			W, H,
+			W, H,
+			W, H
+		], 'r4', 'r4'));
+
+		it('should round down a constant to a given multiple', testMatrix([
+			3, 3,
+			W, 3,
+			3, H
+		], '5r3', '5r3'));
+
+		it('should be cool with a complex formula', testMatrix([
+			5, 5,
+			W, 5,
+			5, H
+		], '-1x50-1a2', '-1x50-1a2'));
+	});
 });
