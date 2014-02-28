@@ -31,8 +31,8 @@ var SRC_IMAGE = path.resolve(__dirname + '/../../fixtures/0124.png'),
  */
 
 var testResizeParams = helpers.testOperationParams(resize);
-var testResizeImage = helpers.testOperationImage(resize, { filename: '' });
-var testResizeNext = helpers.testOperationNext(resize, { filename: '' });
+var testResizeImage = helpers.testOperationImage(resize, {});
+var testResizeNext = helpers.testOperationNext(resize, {});
 
 var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
 	open(SRC_IMAGE, function(err, image) {
@@ -48,6 +48,7 @@ var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeig
 			else {
 				should.not.exist(err);
 			}
+
 			image.should.be.instanceof(Image);
 			image.should.have.property('width', expectedWidth);
 			image.should.have.property('height', expectedHeight);
