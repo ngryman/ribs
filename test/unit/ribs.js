@@ -13,11 +13,19 @@
 var ribs = require('../..'),
 	Image = ribs.Image,
 	Pipeline = ribs.Pipeline,
-	fs = require('fs');
+	fs = require('fs'),
+	path = require('path');
 
 /**
  * Tests constants.
  */
+
+var SRC_DIR = path.resolve(__dirname + '/../fixtures/'),
+	SRC_IMAGE = path.join(SRC_DIR, '0124.png'),
+	TMP_DIR = path.resolve(SRC_DIR, 'tmp'),
+	TMP_FILE = path.join(TMP_DIR, '0124-ribs.png'),
+	W = 8,
+	H = 8;
 
 /**
  * Tests helper functions.
@@ -28,6 +36,15 @@ var ribs = require('../..'),
  */
 
 describe('ribs', function() {
+	before(function() {
+		try { fs.mkdirSync(TMP_DIR); }
+		catch(err) { /* let cry */ }
+	});
+
+	after(function() {
+		fs.rmdirSync(TMP_DIR);
+	});
+
 	describe('()', function() {
 		it('should return a new instance of Pipeline', function() {
 			ribs().should.be.instanceof(Pipeline);
@@ -38,7 +55,7 @@ describe('ribs', function() {
 	describe('(filename)', function() {
 		it('should implicitly call open operation', function(done) {
 			ribs('NaNaNaN.jpg').done(function(err) {
-				err.message.should.equal('no such file or directory');
+				err.message.should.equal("ENOENT, open 'NaNaNaN.jpg'");
 				done();
 			});
 		});
@@ -46,28 +63,28 @@ describe('ribs', function() {
 
 	describe('(src, dst)', function() {
 		it('should implicitly call open & save operation', function(done) {
-			var dst = 'fixtures/null';
-			ribs('fixtures/in-24-a.png', dst).done(function() {
-				fs.existsSync(dst).should.be.truthy;
-				fs.unlinkSync(dst);
+			ribs(SRC_IMAGE, TMP_FILE).done(function() {
+				fs.existsSync(TMP_FILE).should.be.true;
+				fs.unlinkSync(TMP_FILE);
 				done();
 			});
 		});
 
 		it('should call open first and save last', function(done) {
-			var dst = 'fixtures/null', called = false;
-			ribs('fixtures/in-24-a.png', dst)
-				.use(function(image, next) {
+			var called = false;
+			ribs(SRC_IMAGE, TMP_FILE)
+				.use(function(params, image, next) {
 					image.should.be.instanceof(Image);
-					image.should.have.property('width', 16);
-					image.should.have.property('height', 9);
-					fs.existsSync(dst).should.be.falsy;
+					image.should.have.property('width', W);
+					image.should.have.property('height', H);
+					fs.existsSync(TMP_FILE).should.be.false;
 					called = true;
 					next(null, image);
 				})
 				.done(function() {
-					fs.existsSync(dst).should.be.truthy;
-					called.should.equal(1);
+					fs.existsSync(TMP_FILE).should.be.true;
+					fs.unlinkSync(TMP_FILE);
+					called.should.equal(true);
 					done();
 				});
 		});
@@ -79,23 +96,38 @@ describe('ribs', function() {
 			ribs.open().should.not.equal(ribs.open());
 		});
 
-		it('should implicitly call open operation', function(done) {
+		it('should call open operation', function(done) {
 			ribs.open('NaNaNaN.jpg').done(function(err) {
-				err.message.should.equal('no such file or directory');
+				err.message.should.equal("ENOENT, open 'NaNaNaN.jpg'");
 				done();
 			});
 		});
 	});
 
-	describe('#hook', function() {
-		it('should proxy Pipeline#hook', function(done) {
+	describe('#save', function() {
+		it('should return an instance of Pipeline', function() {
+			ribs.open().save().should.be.instanceof(Pipeline);
+			ribs.open().save().should.not.equal(ribs.open());
+		});
 
+		it('should call save operation', function(done) {
+			ribs.open(SRC_IMAGE).save(TMP_FILE).done(function() {
+				fs.existsSync(TMP_FILE).should.be.true;
+				fs.unlinkSync(TMP_FILE);
+				done();
+			});
 		});
 	});
 
-	describe('#add', function() {
-		it('should proxy Pipeline#add', function(done) {
-
-		});
-	});
+//	describe('#hook', function() {
+//		it('should proxy Pipeline#hook', function(done) {
+//
+//		});
+//	});
+//
+//	describe('#add', function() {
+//		it('should proxy Pipeline#add', function(done) {
+//
+//		});
+//	});
 });
