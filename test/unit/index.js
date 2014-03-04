@@ -1,7 +1,7 @@
 //require('./pipeline');
-//require('./ribs');
+require('./ribs');
 //require('./utils');
 //require('./operations/open');
 //require('./operations/save');
 //require('./operations/resize');
-require('./operations/crop');
+//require('./operations/crop');
