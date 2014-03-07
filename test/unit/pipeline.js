@@ -13,10 +13,6 @@
 var Pipeline = require('../../lib/pipeline');
 
 /**
- * Tests constants.
- */
-
-/**
  * Tests helper functions.
  */
 
