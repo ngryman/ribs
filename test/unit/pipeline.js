@@ -20,7 +20,7 @@ function operation() {
 	var spy = sinon.spy();
 	return {
 		spy: spy,
-		operation: function(params, next) {
+		operation: function(params, hooks, next) {
 			params.should.be.an('object');
 			next.should.be.a('function');
 			spy();
@@ -106,7 +106,7 @@ describe('Pipeline', function() {
 
 			it('should pass shared params when no params are specified', function(done) {
 				var p = this.pipeline,
-					checkSharedParams = function(params, next) {
+					checkSharedParams = function(params, hooks, next) {
 						params.should.equal(p.sharedParams);
 						next();
 					};
@@ -159,7 +159,7 @@ describe('Pipeline', function() {
 
 			it('should pass shared params when no params are specified', function(done) {
 				var p = this.pipeline,
-					checkSharedParams = function(params, next) {
+					checkSharedParams = function(params, hooks, next) {
 						params.should.equal(p.sharedParams);
 						next();
 					};

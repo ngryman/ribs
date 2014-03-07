@@ -73,7 +73,7 @@ describe('ribs', function() {
 		it('should call open first and save last', function(done) {
 			var called = false;
 			ribs(SRC_IMAGE, TMP_FILE)
-				.use(function(params, image, next) {
+				.use(function(params, hooks,  image, next) {
 					image.should.be.instanceof(Image);
 					image.should.have.property('width', W);
 					image.should.have.property('height', H);
