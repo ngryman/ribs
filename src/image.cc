@@ -47,7 +47,7 @@ Local<Object> Image::New(cv::Mat& mat) {
 	image->mat = mat;
 
 	// Let v8 handle [] accessor
-	instance->SetIndexedPropertiesToPixelData(mat.data, image->Length());
+	instance->SetIndexedPropertiesToPixelData(image->Pixels(), image->Length());
 //	instance->SetIndexedPropertiesToExternalArrayData(pixels, kExternalUnsignedIntArray, image->Length());
 
 	// give a hint to GC about the amount of memory attached to this object

@@ -17,7 +17,7 @@ public:
 	static NAN_METHOD(New);
 	static v8::Local<v8::Object> New(cv::Mat& mat);
 
-	inline pixel_t* pixels()   const { return mat.data; }
+	inline pixel_t* Pixels()   const { return mat.data; }
 	inline uint32_t Width()    const { return mat.size().width; }
 	inline uint32_t Height()   const { return mat.size().height; }
 	inline int      Length()   const { return mat.total() * Channels(); }
