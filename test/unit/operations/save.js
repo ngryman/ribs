@@ -32,7 +32,7 @@ var testSaveImage = helpers.testOperationImage(save, { filename: '' });
 var testSaveNext = helpers.testOperationNext(save, { filename: '' });
 
 var testSave = curry(function(filename, quality, progressive, done) {
-	open(path.join(SRC_DIR, filename), function(err, image) {
+	open(path.join(SRC_DIR, filename), null, function(err, image) {
 		filename = path.join(TMP_DIR, filename);
 		// append `-save` to filename in order to avoid conflicts
 		filename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
@@ -41,10 +41,10 @@ var testSave = curry(function(filename, quality, progressive, done) {
 			filename: filename,
 			quality: quality,
 			progressive: progressive
-		}, image, function(err) {
+		}, null, image, function(err) {
 			should.not.exist(err);
 			fs.existsSync(filename).should.be.true;
-			open(filename, function(err, savedImage) {
+			open(filename, null, function(err, savedImage) {
 				similarity(savedImage, image).should.be.true;
 				fs.unlinkSync(filename);
 				done();
@@ -90,7 +90,7 @@ describe('save operation', function() {
 		fs.rmdirSync(TMP_DIR);
 	});
 
-	describe('(params, image, next)', function() {
+	describe('(params, hooks, image, next)', function() {
 		it('should fail when params has an invalid type', testSaveParams(
 			'', ['string', 'object'], false, null
 		));
@@ -100,7 +100,7 @@ describe('save operation', function() {
 		));
 
 		it('should fail when params.filename does not have an extension', function(done) {
-			save({ filename: '/dev/null' }, new Image(), function(err) {
+			save({ filename: '/dev/null' }, null, new Image(), function(err) {
 				helpers.checkError(err, 'invalid filename: /dev/null');
 				done();
 			});
@@ -117,14 +117,14 @@ describe('save operation', function() {
 		it('should fail when image has an invalid type', testSaveImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			save({ filename: 'yolo.jpg' }, {}, function(err) {
+			save({ filename: 'yolo.jpg' }, null, {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should fail when image is an empty image', function(done) {
-			save({ filename: 'yolo.jpg' }, new Image(), function(err) {
+			save({ filename: 'yolo.jpg' }, null, new Image(), function(err) {
 				helpers.checkError(err, 'empty image');
 				done();
 			});

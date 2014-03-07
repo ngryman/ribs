@@ -11,6 +11,7 @@
  */
 
 var open = require('../../../lib/operations/open'),
+	resize = require('../../../lib/operations/resize'),
 	crop = require('../../../lib/operations/crop'),
 	hooks = require('../../../lib/hooks'),
 	Pipeline = require('../../../lib/pipeline'),
@@ -39,10 +40,13 @@ var testCropImage = helpers.testOperationImage(crop, {});
 var testCropNext = helpers.testOperationNext(crop, {});
 
 var testCrop = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
-	open(SRC_IMAGE, null, function(err, image) {
+	open(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
-		crop(params, Pipeline.hooks, image, function(err, image) {
+		// adds a reference to pipeline hooks (mimic pipeline behavior)
+		if (params) params.hooks = Pipeline.hooks;
+
+		crop(params, image, function(err, image) {
 			if (expectedErr) {
 				helpers.checkError(err, expectedErr);
 			}
@@ -88,21 +92,15 @@ var testMatrix = curry(function(expect, width, height, done) {
  * Test suite.
  */
 
-describe('crop operation', function() {
-	before(function() {
-		Pipeline.hook('crop', 'constraints', hooks.cropConstraintsHook);
-	});
+describe('art direction operation', function() {
+//	before(function() {
+//		Pipeline.hook('crop', 'constraints', hooks.cropConstraintsHook);
+//	});
 
-	describe('(params, hooks, image, next)', function() {
+	describe('(params, image, next)', function() {
 		it('should fail when params has an invalid type', testCropParams(
-			'', ['string', 'number', 'object', 'array'], true, null
+			'', ['string', 'object'], true, null
 		));
-
-		it('should accept params as a scalar', testCrop(W_2, null, W_2, H));
-
-		it('should accept params as a string', testCrop(W_2.toString(), null, W_2, H));
-
-		it('should accept params as an array', testCrop([W_2, H_2], null, W_2, H_2));
 
 		it('should do nothing when params is null', testCrop(null, null, W, H));
 
@@ -122,25 +120,25 @@ describe('crop operation', function() {
 			'y', ['number', 'string'], true, {}
 		));
 
-		it('should fail when params.landmark has an invalid type', testCropParams(
-			'landmark', ['string'], true, {}
-		));
-
 		it('should fail when params.anchor has an invalid type', testCropParams(
 			'anchor', ['string'], true, {}
+		));
+
+		it('should fail when params.mode has an invalid type', testCropParams(
+			'mode', ['string'], true, {}
 		));
 
 		it('should fail when image has an invalid type', testCropImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			crop({ width: W_2 }, Pipeline.hooks, {}, function(err) {
+			crop({ width: W_2 }, {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should do nothing when image is an empty image', function(done) {
-			crop({ width: W_2 }, Pipeline.hooks, new Image(), function(err, image) {
+			crop({ width: W_2 }, new Image(), function(err, image) {
 				image.should.be.instanceof(Image);
 				image.should.have.property('width', 0);
 				image.should.have.property('height', 0);

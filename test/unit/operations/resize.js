@@ -35,13 +35,10 @@ var testResizeImage = helpers.testOperationImage(resize, {});
 var testResizeNext = helpers.testOperationNext(resize, {});
 
 var testResize = curry(function(params, expectedErr, expectedWidth, expectedHeight, done) {
-	open(SRC_IMAGE, function(err, image) {
+	open(SRC_IMAGE, null, function(err, image) {
 		should.not.exist(err);
 
-		// adds a reference to pipeline hooks (mimic pipeline behavior)
-		if (params) params.hooks = Pipeline.hooks;
-
-		resize(params, image, function(err, image) {
+		resize(params, Pipeline.hooks, image, function(err, image) {
 			if (expectedErr) {
 				helpers.checkError(err, expectedErr);
 			}
@@ -94,10 +91,16 @@ describe('resize operation', function() {
 		Pipeline.hook('resize', 'constraints', hooks.resizeConstraintsHook);
 	});
 
-	describe('(params, image, next)', function() {
+	describe('(params, hooks, image, next)', function() {
 		it('should fail when params has an invalid type', testResizeParams(
-			'', ['string', 'object'], true, null
+			'', ['string', 'number', 'object', 'array'], true, null
 		));
+
+		it('should accept params as a scalar', testResize(W_2, null, W_2, H_2));
+
+		it('should accept params as a string', testResize(W_2.toString(), null, W_2, H_2));
+
+		it('should accept params as an array', testResize([W_2, H_2], null, W_2, H_2));
 
 		it('should do nothing when params is null', testResize(null, null, W, H));
 
@@ -112,14 +115,14 @@ describe('resize operation', function() {
 		it('should fail when image has an invalid type', testResizeImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			resize({ width: W_2 }, {}, function(err) {
+			resize({ width: W_2 }, Pipeline.hooks, {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should do nothing when image is an empty image', function(done) {
-			resize({ width: W_2 }, new Image(), function(err, image) {
+			resize({ width: W_2 }, Pipeline.hooks, new Image(), function(err, image) {
 				image.should.be.instanceof(Image);
 				image.should.have.property('width', 0);
 				image.should.have.property('height', 0);
