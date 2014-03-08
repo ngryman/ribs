@@ -18,6 +18,10 @@ function fromPm(filename) {
 }
 
 function raw(filename, alpha) {
+	// filename can be a stream
+	if ('object' == typeof filename)
+		filename = filename.path;
+
 	var basename = path.basename(filename, path.extname(filename)),
         pixelsFilename = basename + '.ppm',
         rgb = fromPm(pixelsFilename), a;

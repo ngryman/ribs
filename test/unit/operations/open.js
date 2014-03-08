@@ -13,7 +13,8 @@
 var open = require('../../../lib/operations/open'),
 	Image = require('../../..').Image,
 	raw = require('../../fixtures/raw'),
-	path = require('path');
+	path = require('path'),
+	fs = require('fs');
 
 /**
  * Tests constants.
@@ -26,12 +27,12 @@ var SRC_DIR = path.resolve(__dirname + '/../../fixtures/');
  */
 
 var testOpenFilename = helpers.testOperationArg(open, [null, null], 0);
-var testOpenNext = helpers.testOperationNext(open, { filename: '' });
 
 var testOpen = curry(function(filename, expectedErr, alpha, done) {
-	if (filename && '/' != filename[0]) {
+	if ('string' == typeof filename && filename && '/' != filename[0]) {
 		filename = path.join(SRC_DIR, filename);
 	}
+
 	open(filename, null, checkPixels(filename, expectedErr, alpha, done));
 });
 
@@ -63,7 +64,11 @@ var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, imag
 describe('open operation', function() {
 	describe('(params, hooks, image, next)', function() {
 		it('should fail when filename has an invalid type', testOpenFilename(
-			'filename', ['string'], false
+			'filename', ['string', 'object'], false
+		));
+
+		it('should accept a readable stream', testOpen(
+			fs.createReadStream(path.join(SRC_DIR, '0124.png')), null, false
 		));
 
 		it('should fail when filename does not exists', testOpen(
