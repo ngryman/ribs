@@ -20,7 +20,7 @@ var open = require('../../../lib/operations/open'),
  * Tests constants.
  */
 
-var SRC_DIR = path.resolve(__dirname + '/../../../fixtures/');
+var SRC_DIR = path.resolve(__dirname + '/../../fixtures/');
 
 /**
  * Tests helper functions.
@@ -31,6 +31,9 @@ var testOpenFilename = helpers.testOperationArg(open, [null, null], 0);
 var testOpen = curry(function(filename, expectedErr, alpha, done) {
 	if ('string' == typeof filename && filename && '/' != filename[0]) {
 		filename = path.join(SRC_DIR, filename);
+	}
+	else if ('function' == typeof filename) {
+		filename = filename();
 	}
 
 	open(filename, null, checkPixels(filename, expectedErr, alpha, done));
@@ -68,7 +71,7 @@ describe('open operation', function() {
 		));
 
 		it('should accept a readable stream', testOpen(
-			fs.createReadStream(path.join(SRC_DIR, '0124.png')), null, false
+			fs.createReadStream.bind(null, path.join(SRC_DIR, '0124.png')), null, false
 		));
 
 		it('should fail when filename does not exists', testOpen(

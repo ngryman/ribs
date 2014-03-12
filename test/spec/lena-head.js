@@ -26,8 +26,17 @@ var SRC_DIR = path.resolve(__dirname + '/../fixtures/'),
  */
 
 describe('lena\'s head', function() {
+	before(function() {
+		try { fs.mkdirSync(TMP_DIR); }
+		catch(err) { /* let cry */ }
+	});
+
+	after(function() {
+		try { fs.rmdirSync(TMP_DIR); }
+		catch(err) { /* let cry */ }
+	});
+
 	it('should be resize and crop', function(done) {
-		fs.mkdirSync(TMP_DIR);
 		ribs(
 			path.join(SRC_DIR, 'lena.bmp'),
 			path.join(TMP_DIR, 'lena-head.png')
@@ -38,7 +47,6 @@ describe('lena\'s head', function() {
 			ribs.open(path.join(SRC_DIR, 'lena-head.png')).done(function(err, image) {
 				helpers.similarity(savedImage, image).should.be.true;
 				fs.unlinkSync(path.join(TMP_DIR, 'lena-head.png'));
-				fs.rmdirSync(TMP_DIR);
 				done();
 			});
 		});

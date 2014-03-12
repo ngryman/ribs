@@ -4,7 +4,7 @@ var fs = require('fs'),
 	path = require('path');
 
 function fromPm(filename) {
-	filename = path.resolve(__dirname + '/' + filename);
+	filename = path.resolve(__dirname + '/fixtures/' + filename);
 
 	var data = fs.readFileSync(filename, 'utf8');
 	// header size

@@ -42,7 +42,7 @@ describe('ribs', function() {
 	});
 
 	after(function() {
-		try { fs.mkdirSync(TMP_DIR); }
+		try { fs.rmdirSync(TMP_DIR); }
 		catch(err) { /* let cry */ }
 	});
 
@@ -124,6 +124,7 @@ describe('ribs', function() {
 		it('should have a reference to the image', function(done) {
 			ribs.open(SRC_IMAGE).save(TMP_FILE).done(function(err, image) {
 				image.should.be.instanceof(Image);
+				fs.unlinkSync(TMP_FILE);
 				done();
 			});
 		});
