@@ -42,5 +42,6 @@ OPERATION_PROCESS(Resize, {
 })
 
 OPERATION_VALUE(Resize, {
+	image->Sync(imageHandle);
 	return NanPersistentToLocal(imageHandle);
 })

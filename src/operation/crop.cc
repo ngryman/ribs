@@ -43,5 +43,6 @@ OPERATION_PROCESS(Crop, {
 })
 
 OPERATION_VALUE(Crop, {
+	image->Sync(imageHandle);
 	return NanPersistentToLocal(imageHandle);
 })

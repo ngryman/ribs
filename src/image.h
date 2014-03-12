@@ -24,6 +24,7 @@ public:
 	inline int      Channels() const { return mat.channels(); }
 	inline cv::Mat& Matrix()         { return mat; }
 	void            Matrix(cv::Mat newMat);
+	void            Sync(v8::Handle<v8::Object> instance);
 
 private:
 	Image(v8::Handle<v8::Object> wrapper);

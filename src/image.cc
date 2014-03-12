@@ -44,11 +44,12 @@ Local<Object> Image::New(cv::Mat& mat) {
 	// create a new instance an feed it
 	Local<Object> instance = constructorTemplate->GetFunction()->NewInstance();
 	auto image = Unwrap<Image>(instance);
-	image->mat = mat;
 
-	// Let v8 handle [] accessor
-	instance->SetIndexedPropertiesToPixelData(image->Pixels(), image->Length());
-//	instance->SetIndexedPropertiesToExternalArrayData(pixels, kExternalUnsignedIntArray, image->Length());
+	// set the matrix
+	image->Matrix(mat);
+
+	// synchronize pixels data with the JavaScript object
+	image->Sync(instance);
 
 	// give a hint to GC about the amount of memory attached to this object
 	// this help GC to know exactly the amount of memory it will free if collecting this object
@@ -61,7 +62,14 @@ void Image::Matrix(cv::Mat newMat) {
 	// invoke destructor to decrement reference counter on this matrix
 	~mat;
 
+	// set new pixel data
 	mat = newMat;
+}
+
+void Image::Sync(Handle<Object> instance) {
+	// Let v8 handle [] accessor
+	instance->SetIndexedPropertiesToPixelData(Pixels(), Length());
+//	instance->SetIndexedPropertiesToExternalArrayData(pixels, kExternalUnsignedIntArray, image->Length());
 }
 
 NAN_GETTER(Image::GetWidth) {
