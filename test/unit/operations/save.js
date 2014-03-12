@@ -60,41 +60,18 @@ var testSave = curry(function(filename, quality, progressive, done) {
 		else
 			params.stream = stream;
 
-		save(params, null, image, function(err) {
+		save(params, null, image, function(err, image) {
 			should.not.exist(err);
 
 			fs.existsSync(dstFilename).should.be.true;
 			open(dstFilename, null, function(err, savedImage) {
-				similarity(savedImage, image).should.be.true;
+				helpers.similarity(savedImage, image).should.be.true;
 				fs.unlinkSync(dstFilename);
 				done();
 			});
 		});
 	});
 });
-
-/**
- * Fast and quite unprecise way to compare two image and tell if they are similar.
- * We use this because JPEG typically loses some quality after open / save.
- * We empirically decide that under an error of 3%, image are similar.
- *
- * @param image1 - First image to compare.
- * @param image2 - Second image to compare.
- * @return {boolean} Either they are similar or not.
- */
-
-function similarity(image1, image2) {
-	var total1 = 0, total2 = 0;
-	for (var i = 0, len = image1.length; i < len; i++) {
-		total1 += image1[i];
-		total2 += image2[i];
-	}
-
-	var diff = Math.abs(total1 - total2);
-	var thresold = Math.max(total1, total2) / 100 * 3;
-
-	return (diff < thresold);
-}
 
 /**
  * Test suite.
