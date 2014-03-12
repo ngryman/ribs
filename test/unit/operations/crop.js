@@ -89,10 +89,6 @@ var testMatrix = curry(function(expect, width, height, done) {
  */
 
 describe('crop operation', function() {
-	before(function() {
-		Pipeline.hook('crop', 'constraints', hooks.cropConstraintsHook);
-	});
-
 	describe('(params, hooks, image, next)', function() {
 		it('should fail when params has an invalid type', testCropParams(
 			'', ['string', 'number', 'object', 'array'], true, null

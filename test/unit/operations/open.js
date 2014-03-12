@@ -12,7 +12,7 @@
 
 var open = require('../../../lib/operations/open'),
 	Image = require('../../..').Image,
-	raw = require('../../fixtures/raw'),
+	raw = require('../../raw'),
 	path = require('path'),
 	fs = require('fs');
 
@@ -20,7 +20,7 @@ var open = require('../../../lib/operations/open'),
  * Tests constants.
  */
 
-var SRC_DIR = path.resolve(__dirname + '/../../fixtures/');
+var SRC_DIR = path.resolve(__dirname + '/../../../fixtures/');
 
 /**
  * Tests helper functions.

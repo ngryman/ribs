@@ -87,10 +87,6 @@ var testMatrix = curry(function(expect, width, height, done) {
  */
 
 describe('resize operation', function() {
-	before(function() {
-		Pipeline.hook('resize', 'constraints', hooks.resizeConstraintsHook);
-	});
-
 	describe('(params, hooks, image, next)', function() {
 		it('should fail when params has an invalid type', testResizeParams(
 			'', ['string', 'number', 'object', 'array'], true, null

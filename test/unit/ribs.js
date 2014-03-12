@@ -42,7 +42,8 @@ describe('ribs', function() {
 	});
 
 	after(function() {
-		fs.rmdirSync(TMP_DIR);
+		try { fs.mkdirSync(TMP_DIR); }
+		catch(err) { /* let cry */ }
 	});
 
 	describe('()', function() {
@@ -114,6 +115,15 @@ describe('ribs', function() {
 			ribs.open(SRC_IMAGE).save(TMP_FILE).done(function() {
 				fs.existsSync(TMP_FILE).should.be.true;
 				fs.unlinkSync(TMP_FILE);
+				done();
+			});
+		});
+	});
+
+	describe('#done', function() {
+		it('should have a reference to the image', function(done) {
+			ribs.open(SRC_IMAGE).save(TMP_FILE).done(function(err, image) {
+				image.should.be.instanceof(Image);
 				done();
 			});
 		});
