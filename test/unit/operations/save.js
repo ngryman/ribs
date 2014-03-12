@@ -32,21 +32,41 @@ var testSaveImage = helpers.testOperationImage(save, { filename: '' });
 var testSaveNext = helpers.testOperationNext(save, { filename: '' });
 
 var testSave = curry(function(filename, quality, progressive, done) {
-	open(path.join(SRC_DIR, filename), null, function(err, image) {
-		filename = path.join(TMP_DIR, filename);
-		// append `-save` to filename in order to avoid conflicts
-		filename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
+	var stream, dstFilename;
 
-		save({
-			filename: filename,
+	if ('string' == typeof filename) {
+		filename = path.join(SRC_DIR, filename);
+
+		// append `-save` to filename in order to avoid conflicts
+		dstFilename = path.join(TMP_DIR, filename);
+		dstFilename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
+	}
+	else if ('function' == typeof filename) {
+		stream = filename();
+		filename = stream.path
+			.replace('tmp/', '')
+			.replace('-save', '');
+		dstFilename = stream.path;
+	}
+
+	open(filename, null, function(err, image) {
+		var params = {
 			quality: quality,
 			progressive: progressive
-		}, null, image, function(err) {
+		};
+
+		if (!stream)
+			params.filename = dstFilename;
+		else
+			params.stream = stream;
+
+		save(params, null, image, function(err) {
 			should.not.exist(err);
-			fs.existsSync(filename).should.be.true;
-			open(filename, null, function(err, savedImage) {
+
+			fs.existsSync(dstFilename).should.be.true;
+			open(dstFilename, null, function(err, savedImage) {
 				similarity(savedImage, image).should.be.true;
-				fs.unlinkSync(filename);
+				fs.unlinkSync(dstFilename);
 				done();
 			});
 		});
@@ -87,7 +107,8 @@ describe('save operation', function() {
 	});
 
 	after(function() {
-		fs.rmdirSync(TMP_DIR);
+		try { fs.rmdirSync(TMP_DIR); }
+		catch(err) { /* let cry */ }
 	});
 
 	describe('(params, hooks, image, next)', function() {
@@ -99,6 +120,10 @@ describe('save operation', function() {
 			'filename', ['string'], false, {}
 		));
 
+		it('should accept a writable stream', testSave(
+			fs.createWriteStream.bind(null, path.join(TMP_DIR, '0124-save.png')), 0, true
+		));
+
 		it('should fail when params.filename does not have an extension', function(done) {
 			save({ filename: '/dev/null' }, null, new Image(), function(err) {
 				helpers.checkError(err, 'invalid filename: /dev/null');
@@ -106,11 +131,11 @@ describe('save operation', function() {
 			});
 		});
 
-		it ('should fail when params.quality has an invalid type', testSaveParams(
+		it('should fail when params.quality has an invalid type', testSaveParams(
 			'quality', ['number'], true, { filename: '' }
 		));
 
-		it ('should fail when params.progressive has an invalid type', testSaveParams(
+		it('should fail when params.progressive has an invalid type', testSaveParams(
 			'progressive', ['boolean'], true, { filename: '' }
 		));
 
