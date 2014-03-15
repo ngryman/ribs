@@ -35,6 +35,7 @@ helpers.invalidTypes = curry(function(types, nullbale, test, done) {
 	var values = _(valuesHash)
 		.map(function(val, type) {
 			if (!~types.indexOf(type)) return val;
+			return null;
 		})
 		.compact()
 		.value();
@@ -111,7 +112,7 @@ helpers.testOperationArg = curry(function(op, args, pos, argName, types, nullabl
 });
 
 /**
- * Fast and quite unprecise way to compare two image and tell if they are similar.
+ * Fast and quite un-precise way to compare two image and tell if they are similar.
  * We use this because JPEG typically loses some quality after open / save.
  * We empirically decide that under an error of 3%, image are similar.
  *
@@ -128,7 +129,7 @@ helpers.similarity = function (image1, image2) {
 	}
 
 	var diff = Math.abs(total1 - total2);
-	var thresold = Math.max(total1, total2) / 100 * 3;
+	var threshold = Math.max(total1, total2) / 100 * 3;
 
-	return (diff < thresold);
+	return (diff < threshold);
 };
