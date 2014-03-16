@@ -12,7 +12,8 @@
 
 var hooks = require('../lib/pipeline').hooks;
 
-var helpers = module.exports = {};
+var helpers = module.exports = {},
+	lastHookParams;
 
 helpers.withParams = curry(function(params, test, done) {
 	var seq = params.map(function(param) {
