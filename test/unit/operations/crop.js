@@ -11,7 +11,6 @@
  */
 
 var ribs = require('../../..'),
-	Pipeline = ribs.Pipeline,
 	Image = ribs.Image,
 	open = ribs.operations.open,
 	crop = ribs.operations.crop,
@@ -40,10 +39,10 @@ var testCropImage = helpers.testOperationImage(crop, {});
 var testCropNext = helpers.testOperationNext(crop, {});
 
 var testCrop = curry(function(params, expect, done) {
-	open(SRC_IMAGE, null, function(err, image) {
+	open(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
-		var finalParams = crop(params, Pipeline.hooks, image, function(err, image) {
+		var finalParams = crop(params, image, function(err, image) {
 			if (expect.err)
 				helpers.checkError(err, expect.err);
 			else
@@ -147,14 +146,14 @@ describe('crop operation', function() {
 		it('should fail when image has an invalid type', testCropImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			crop({ width: W_2 }, Pipeline.hooks, {}, function(err) {
+			crop({ width: W_2 }, {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should do nothing when image is an empty image', function(done) {
-			crop({ width: W_2 }, Pipeline.hooks, new Image(), function(err, image) {
+			crop({ width: W_2 }, new Image(), function(err, image) {
 				image.should.be.instanceof(Image);
 				image.should.have.property('width', 0);
 				image.should.have.property('height', 0);

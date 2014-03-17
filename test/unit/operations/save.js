@@ -49,7 +49,7 @@ var testSave = curry(function(filename, quality, progressive, done) {
 		dstFilename = stream.path;
 	}
 
-	open(filename, null, function(err, image) {
+	open(filename, function(err, image) {
 		var params = {
 			quality: quality,
 			progressive: progressive
@@ -60,11 +60,11 @@ var testSave = curry(function(filename, quality, progressive, done) {
 		else
 			params.stream = stream;
 
-		save(params, null, image, function(err, image) {
+		save(params, image, function(err, image) {
 			should.not.exist(err);
 
 			fs.existsSync(dstFilename).should.be.true;
-			open(dstFilename, null, function(err, savedImage) {
+			open(dstFilename, function(err, savedImage) {
 				helpers.similarity(savedImage, image).should.be.true;
 				fs.unlinkSync(dstFilename);
 				done();
@@ -88,7 +88,7 @@ describe('save operation', function() {
 		catch(err) { /* let cry */ }
 	});
 
-	describe('(params, hooks, image, next)', function() {
+	describe('(params, image, next)', function() {
 		it('should fail when params has an invalid type', testSaveParams(
 			'', ['string', 'object'], false, null
 		));
@@ -102,7 +102,7 @@ describe('save operation', function() {
 		));
 
 		it('should fail when params.filename does not have an extension', function(done) {
-			save({ filename: '/dev/null' }, null, new Image(), function(err) {
+			save({ filename: '/dev/null' }, new Image(), function(err) {
 				helpers.checkError(err, 'invalid filename: /dev/null');
 				done();
 			});
@@ -119,14 +119,14 @@ describe('save operation', function() {
 		it('should fail when image has an invalid type', testSaveImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			save({ filename: 'yolo.jpg' }, null, {}, function(err) {
+			save({ filename: 'yolo.jpg' }, {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should fail when image is an empty image', function(done) {
-			save({ filename: 'yolo.jpg' }, null, new Image(), function(err) {
+			save({ filename: 'yolo.jpg' }, new Image(), function(err) {
 				helpers.checkError(err, 'empty image');
 				done();
 			});

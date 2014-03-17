@@ -6,14 +6,7 @@
 
 'use strict';
 
-/**
- * Module dependencies.
- */
-
-var hooks = require('../lib/pipeline').hooks;
-
-var helpers = module.exports = {},
-	lastHookParams;
+var helpers = module.exports = {};
 
 helpers.withParams = curry(function(params, test, done) {
 	var seq = params.map(function(param) {
@@ -63,21 +56,21 @@ helpers.checkTypeError = function(err, types, argName, arg) {
 
 helpers.testOperationParams = curry(function(op, argName, types, nullable, args, done) {
 	argName = argName || 'params';
-	args = [args, hooks, new Image()];
+	args = [args, new Image()];
 
 	return helpers.testOperationArg(op, args, 0, argName, types, nullable, done);
 });
 
 helpers.testOperationImage = curry(function(op, args, done) {
-	args = [args, hooks, null];
+	args = [args, null];
 
-	return helpers.testOperationArg(op, args, 2, 'image', ['object'], false, done);
+	return helpers.testOperationArg(op, args, 1, 'image', ['object'], false, done);
 });
 
 helpers.testOperationNext = curry(function(op, args, done) {
 	return helpers.invalidTypes(['function'], false, function(arg, done) {
 		try {
-			op.call(null, args, hooks, new Image(), arg);
+			op.call(null, args, new Image(), arg);
 		}
 		catch (err) {
 			helpers.checkTypeError(err, ['function'], 'next', arg);

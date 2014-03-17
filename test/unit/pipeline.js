@@ -20,7 +20,7 @@ function operation() {
 	var spy = sinon.spy();
 	return {
 		spy: spy,
-		operation: function testOperation(params, hooks, next) {
+		operation: function testOperation(params, next) {
 			params.should.be.an('object');
 			next.should.be.a('function');
 			spy();
@@ -106,7 +106,7 @@ describe('Pipeline', function() {
 
 			it('should pass shared params when no params are specified', function(done) {
 				var p = this.pipeline,
-					checkSharedParams = function(params, hooks, next) {
+					checkSharedParams = function(params, next) {
 						params.should.equal(p.sharedParams);
 						next();
 					};
@@ -159,7 +159,7 @@ describe('Pipeline', function() {
 
 			it('should pass shared params when no params are specified', function(done) {
 				var p = this.pipeline,
-					checkSharedParams = function(params, hooks, next) {
+					checkSharedParams = function(params, next) {
 						params.should.equal(p.sharedParams);
 						next();
 					};
@@ -219,7 +219,7 @@ describe('Pipeline', function() {
 		});
 
 		it('should invoke operations bound with the pipeline instance', function(done) {
-			var p = this.pipeline.use(function(params, hooks, next) {
+			var p = this.pipeline.use(function(params, next) {
 				this.should.equal(p);
 				next();
 			}).done(function() {
@@ -290,7 +290,7 @@ describe('Pipeline', function() {
 			this.pipeline.on('warning', function(warn) {
 				warn.should.equal('high voltage');
 			});
-			this.pipeline.use(function(params, hooks, next) {
+			this.pipeline.use(function(params, next) {
 				this.emit('warning', 'high voltage');
 				next();
 			}).done(done);

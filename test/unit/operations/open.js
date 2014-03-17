@@ -26,7 +26,7 @@ var SRC_DIR = path.resolve(__dirname + '/../../fixtures/');
  * Tests helper functions.
  */
 
-var testOpenFilename = helpers.testOperationArg(open, [null, null], 0);
+var testOpenFilename = helpers.testOperationArg(open, [null], 0);
 
 var testOpen = curry(function(filename, expectedErr, alpha, done) {
 	if ('string' == typeof filename && filename && '/' != filename[0]) {
@@ -36,7 +36,7 @@ var testOpen = curry(function(filename, expectedErr, alpha, done) {
 		filename = filename();
 	}
 
-	open(filename, null, checkPixels(filename, expectedErr, alpha, done));
+	open(filename, checkPixels(filename, expectedErr, alpha, done));
 });
 
 var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, image) {
@@ -65,7 +65,7 @@ var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, imag
  */
 
 describe('open operation', function() {
-	describe('(params, hooks, image, next)', function() {
+	describe('(params, image, next)', function() {
 		it('should fail when filename has an invalid type', testOpenFilename(
 			'filename', ['string', 'object'], false
 		));
@@ -81,7 +81,7 @@ describe('open operation', function() {
 		));
 
 		it('should fail when filename is a path to an invalid image', function(done) {
-			open('/dev/null', null, function(err) {
+			open('/dev/null', function(err) {
 				helpers.checkError(err, 'operation error: decode');
 				done();
 			});
@@ -90,7 +90,7 @@ describe('open operation', function() {
 		it('should fail when next has an invalid type', function(done) {
 			helpers.invalidTypes(['function'], false, function(arg, done) {
 				try {
-					open('/dev/null', null, arg);
+					open('/dev/null', arg);
 				}
 				catch (err) {
 					helpers.checkTypeError(err, ['function'], 'next', arg);

@@ -11,7 +11,6 @@
  */
 
 var ribs = require('../../..'),
-	Pipeline = ribs.Pipeline,
 	Image = ribs.Image,
 	open = ribs.operations.open,
 	resize = ribs.operations.resize,
@@ -35,10 +34,10 @@ var testResizeImage = helpers.testOperationImage(resize, {});
 var testResizeNext = helpers.testOperationNext(resize, {});
 
 var testResize = curry(function(params, expect, done) {
-	open(SRC_IMAGE, null, function(err, image) {
+	open(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
-		var finalParams = resize(params, Pipeline.hooks, image, function(err, image) {
+		var finalParams = resize(params, image, function(err, image) {
 			if (expect.err)
 				helpers.checkError(err, expect.err);
 			else
@@ -94,7 +93,7 @@ var testMatrix = curry(function(params, expect, done) {
  */
 
 describe('resize operation', function() {
-	describe('(params, hooks, image, next)', function() {
+	describe('(params, image, next)', function() {
 		it('should fail when params has an invalid type', testResizeParams(
 			'', ['string', 'number', 'object', 'array'], true, null
 		));
@@ -126,14 +125,14 @@ describe('resize operation', function() {
 		it('should fail when image has an invalid type', testResizeImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			resize({ width: W_2 }, Pipeline.hooks, {}, function(err) {
+			resize({ width: W_2 }, {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should do nothing when image is an empty image', function(done) {
-			resize({ width: W_2 }, Pipeline.hooks, new Image(), function(err, image) {
+			resize({ width: W_2 }, new Image(), function(err, image) {
 				image.should.be.instanceof(Image);
 				image.should.have.property('width', 0);
 				image.should.have.property('height', 0);
