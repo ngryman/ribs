@@ -1,10 +1,10 @@
 # ribs
 
-[![Version](http://img.shields.io/badge/version-0.0.1-brightgreen.svg)](https://github.com/ngryman/ribs/blob/master/CHANGELOG.md) [![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs) [![Build Status](http://img.shields.io/travis/ngryman/ribs.svg)](https://travis-ci.org/ngryman/ribs) [![Code Climate](http://img.shields.io/codeclimate/github/ngryman/ribs.svg)](https://codeclimate.com/github/ngryman/ribs) [![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs) [![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
+[![Version](http://img.shields.io/badge/version-0.0.2-brightgreen.svg)](https://github.com/ngryman/ribs/blob/master/CHANGELOG.md) [![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs) [![Build Status](http://img.shields.io/travis/ngryman/ribs.svg)](https://travis-ci.org/ngryman/ribs) [![Code Climate](http://img.shields.io/codeclimate/github/ngryman/ribs.svg)](https://codeclimate.com/github/ngryman/ribs) [![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs) [![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
 
 <br>
 
-**R**esponsive **I**mages **B**aked **S**erver-side, yummy!
+<b>R</b>esponsive <b>I</b>mages <b>B</b>aked <b>S</b>erver-side, yummy!
 
 <p align="center">
   <img width="703" height="404" src="http://farm8.staticflickr.com/7347/9538576837_488e0d89db_o.jpg" alt="Responsive image example">
@@ -12,146 +12,100 @@
   <sup>Photo borrowed from talented <a href="http://500px.com/Sphaax">Kevin Racape</a>.</sup>
 </p>
 
-<h2 align="center">
-<a name="----give-a-feedback-on-the-api-proposal--" class="anchor" href="#----give-a-feedback-on-the-api-proposal--"><span class="octicon octicon-link"></span></a>
-  &gt;&gt;
-  <a href="https://github.com/ngryman/ribs/wiki/API">Give a feedback on the API proposal</a>
-  &lt;&lt;
-</h2>
+<br>
+
+***RIBS is still at an early development stage and is not ready for production yet!***.
 
 ## Motivations
 
-Responsive images is the next big challenge.
+Responsive images is the next big challenge!
 
 Some [client-side patterns] already exist along with [build tasks] in order to **produce**, **optimize**, **manage** and
 **pick** the right image for the right screen size.
 
-In the wild, this is not as much used as it should be. AFAIK this is probably because it asks a certain amount of time
-to choose and apply a technique and it involves too much tools in the process. The fact is, developpers don't take enough time for this and tend to neglect this part of an application.
+This have several pitfalls.
+The biggest one is that you often **load more that you are going to show**, wasting bandwidth, load time, device memory and CPU.
 
-I believe in the *on-the-fly* way of thinking that the Web offers. So, for this problem, just ask the image you want,
+In the wild, this is not as much used as it should be. AFAIK this is probably because it asks a certain amount of time
+to choose and implement a solution. It often involves too much tools and management in the process.
+The fact is, developers don't take enough time for this and tend to neglect this part of a modern Web application.
+
+I believe in the *on-the-fly* way of thinking that the Web can offer. So, just ask the image you want,
 and you will receive it already processed, end of story.
-This also have to garanty that you:
+This also guaranties that you:
+
 - do not **load more than your are going to show**.
 - do not **scale the image in CSS**.
 - do not **load important images with javascript**.
 - do not **handle each image sizes manually**.
 - **do simply your workflow**.
 
-From [RESS slides].
+*From [RESS slides]*.
 
-This is pretty much what [Sencha.io Src] offers. It needs to be available in the wild, with a good level of
-customization.
+Some great commercial services already exist to tackle this problem. But none of them is open source.
+This needs to be available in the wild, with a good level of customization, so that Web developers
+can leverage their images responsiveness.
 
 [client-side patterns]: http://css-tricks.com/which-responsive-images-solution-should-you-use
 [build tasks]: https://github.com/gruntjs/grunt-contrib-imagemin
-[Sencha.io Src]: http://www.sencha.com/learn/how-to-use-src-sencha-io
 [RESS slides]: http://fr.slideshare.net/4nd3rsen/ress-responsive-design-server-side-components-10084972
 
-## It must and it will
+## Goals
 
-- Provide **on-the-fly** resized / croped and optimized images (no build phase required).
-- Fit **web app** and also **native apps** needs.
-- **Proxy** existing servers.
-- Be **super easy** to deploy and use.
-- Propose **different points of customization** to be as interop as it can be.
+*RIBS* will:
+
+- Provide **on-the-fly** processed images (no build phase required).
+- Be **fast**!
+- Be **super easy** to use and deploy.
+- **Proxy** existing servers so you can offload image processing.
+- **Optimize and transcode** images.
+- Support **SPDY**.
+- Fit **web apps** but also **native apps** needs.
+- Offer plugins to various existing platforms such as **WordPress**.
+- Propose **different ways to customize it** so you can achieve precisely what you want.
 - Support [art direction], automatically perhaps?.
 
 [art direction]: http://usecases.responsiveimages.org/#art-direction
 
-## Concretely
+## Architecture
 
-**RIBS** will have 3 layers:
-- a **node** library that manipulates images to:
-  - resize them.
-  - convert them on the fly.
-  - crop them.
-  - ... doing image suff.
-- a **connect** / **express** middleware that:
-  - parses URL following an **API** and call the library accordingly.
-  - is able to proxy an image request.
-- a client library to:
-  - automatically set some URL parameters.
-  - load images src.
-  - apply `data-` attributes to customize URL fragments.
+*RIBS* will offer several independent layers, that work well together:
+
+- A native **Node** module that processes images:
+  - **Fast** using [OpenCV] as backend.
+  - **Extensible** via *custom operations*, *hooks* and *events*.
+  - **Smart** ensuring always valid images are produced.
+- An **Express** middleware that:
+  - Expose a **REST API**.
+  - **Proxy** existing servers.
+  - **Cache** processed images smartly.
+  - Support **clustering**.
+- A **client-side** library to:
+  - **Detect** device capabilities.
+  - **Automatically** build URLs.
+
+[OpenCV]: http://opencv.org
 
 ## Roadmap
 
-### First
+ - `✓` Basic *Node* module.<br>
+ - `✓` Command line interface: [ribs-cli].<br>
+ - `✕` Plugins for **Grunt**, **Gulp**, ...<br>
+ - `✕` *Express* middleware.<br>
+ - `✕` Client-side library.<br>
+ - `✕` New awesome features...
 
-- Develop basic **node** library with modularity in mind.
-- Develop basic middleware.
+[ribs-cli]: https://github.com/ngryman/ribs-cli
 
-### Then
+## Documentation
 
-- Delop clien library.
-- Support sharding.
-- Adjust API and existing stuff.
-  - Support `Stream2` API.
-
-### Next
-
-- Implement a good solution to art direction.
-- Propose other middlewares for other servers: **Apache**, **Nginx**, **IIS**, ...
-
-## API
-
-The **API** would be very similar to **Sencha.io Src**:
-
-```
-http://[s[shard]].yourdomain.tld
-	[/flush]
-	[/data]
-	[/format[quality]]
-	[/orientation]
-	[/width[/height]]
-	[/art]
-	/url
-```
-Where:
-
-- `shard` *(optional)*. A number between 1 and 4, to distribute loading across subdomains (`s1`, `s2`, `s3`, `s4`).
-- `flush` *(optional)*. If `flush` then original image is refetched and its cached copy updated.
-- `data` *(optional)*. If `data` then returns a data URL. Also takes a callback suffix and arguments for JSON-P use.
-- `format` *(optional)*. This is either jpg or png. Defaults to the original image format.
-- `quality` *(optional)*. When the format is jpg, a compression value from 1 to 100. Defaults to 85.
-- `orientation` *(optional)*. If 'landscape' or 'portrait', this will swap X/Y constraints if required. Defaults to no effect. 'detect' is experimental to use window.orientation if present.
-- `width` *(optional)*. A width in pixels (which overrides the adaptive- or family-sizing). Can also contain formulaic adjustment.
-- `height` *(optional)*. A height in pixels, if width is also present. Can also contain formulaic adjustment.
-- `art` *(optional)*. A focus point or area in pixels. *To specify*.
-- `url` *(required)*. The absolute path of the original image. It must start with http://
-
-**Formulaic adjustments use the following operators:**
-
-- `-`	deduct value
-- `x`	multiply by percentage
-- `a`	add value
-- `r`	round down to the nearest...
-- `m`	maximum for mobile browser
-- `n`	maximum for non-mobile browser
-
-When using the client library, the following client-side measurements (or their abbreviations) are available at the
-start of the width of height parameters:
-
-**Measurement Abbreviation:**
-
-- screen.width:			`sw`
-- screen.height:		`sh`
-- screen.availWidth:		`saw`
-- screen.availHeight:		`sah`
-- window.outerWidth:		`wow`
-- window.outerHeight:		`woh`
-- window.innerWidth:		`wiw`
-- window.innerHeight:		`wih`
-- document.body.clientWidth:	`bcw`
-- document.body.clientHeight:	`bch`
-- document.body.offsetHeight:	`boh`
-- document.body.offsetWidth:	`bow`
-
-*To specify...*
+ - [API REST](https://github.com/ngryman/ribs/wiki/API-REST)
+ - Middleware
+ - [Node module](https://github.com/ngryman/ribs/wiki/API-Node-module)
+ - [C++](https://github.com/ngryman/ribs/wiki/API-cpp)
 
 ## Contact
 
-- Twitter: https://twitter.com/getribs
-- Mailing list: http://groups.google.com/group/getribs
-- Issues: https://github.com/ngryman/ribs/issues
+ - Twitter: https://twitter.com/getribs
+ - Mailing list: http://groups.google.com/group/getribs
+ - Issues: https://github.com/ngryman/ribs/issues
