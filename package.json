@@ -38,6 +38,6 @@
     "optify": "~0.0.2",
     "time-grunt": "~0.2.9",
     "curry": "~1.2.0",
-	"ribs-fixtures": "https://github.com/ngryman/ribs-fixtures/tarball/master"
+     "ribs-fixtures": "https://github.com/ngryman/ribs-fixtures/tarball/master"
   }
 }
