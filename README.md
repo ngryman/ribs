@@ -1,6 +1,6 @@
 # ribs
 
-[![Version](http://img.shields.io/badge/version-0.0.1-brightgreen.svg)](https://github.com/ngryman/ribs/blob/master/CHANGELOG.md) [![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs) [![Build Status](http://img.shields.io/travis/ngryman/ribs.svg)](https://travis-ci.org/ngryman/ribs) [![Code Climate](http://img.shields.io/codeclimate/github/ngryman/ribs.svg)](https://codeclimate.com/github/ngryman/ribs) [![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs) [![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
+[![Version](http://img.shields.io/badge/version-0.0.2-brightgreen.svg)](https://github.com/ngryman/ribs/blob/master/CHANGELOG.md) [![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs) [![Build Status](http://img.shields.io/travis/ngryman/ribs.svg)](https://travis-ci.org/ngryman/ribs) [![Code Climate](http://img.shields.io/codeclimate/github/ngryman/ribs.svg)](https://codeclimate.com/github/ngryman/ribs) [![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs) [![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
 
 <br>
 
@@ -90,10 +90,10 @@ can leverage their images responsiveness.
 
  - `✓` Basic *Node* module.<br>
  - `✓` Command line interface: [ribs-cli].<br>
- - `◻` Plugins for **Grunt**, **Gulp**, ...<br>
- - `◻` *Express* middleware.<br>
- - `◻` Client-side library.<br>
- - `◻` New awesome features...
+ - `✕` Plugins for **Grunt**, **Gulp**, ...<br>
+ - `✕` *Express* middleware.<br>
+ - `✕` Client-side library.<br>
+ - `✕` New awesome features...
 
 [ribs-cli]: https://github.com/ngryman/ribs-cli
 
