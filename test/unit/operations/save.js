@@ -28,37 +28,34 @@ var SRC_DIR = require('ribs-fixtures').path,
  */
 
 var testSaveParams = helpers.testOperationParams(save);
-var testSaveImage = helpers.testOperationImage(save, { filename: '' });
-var testSaveNext = helpers.testOperationNext(save, { filename: '' });
+var testSaveImage = helpers.testOperationImage(save, { dst: '' });
+var testSaveNext = helpers.testOperationNext(save, { dst: '' });
 
-var testSave = curry(function(filename, quality, progressive, done) {
+var testSave = curry(function(dst, quality, progressive, done) {
 	var stream, dstFilename;
 
-	if ('string' == typeof filename) {
-		filename = path.join(SRC_DIR, filename);
+	if ('string' == typeof dst) {
+		dst = path.join(SRC_DIR, dst);
 
 		// append `-save` to filename in order to avoid conflicts
-		dstFilename = path.join(TMP_DIR, filename);
-		dstFilename = filename.replace(/\.(jpg|png|gif)$/, '-save.$1');
+		dstFilename = path.join(TMP_DIR, dst);
+		dstFilename = dst.replace(/\.(jpg|png|gif)$/, '-save.$1');
 	}
-	else if ('function' == typeof filename) {
-		stream = filename();
-		filename = stream.path
+	else if ('function' == typeof dst) {
+		stream = dst();
+		dst = stream.path
 			.replace('tmp/', '')
 			.replace('-save', '');
 		dstFilename = stream.path;
 	}
 
-	open(filename, function(err, image) {
+	open(dst, function(err, image) {
 		var params = {
 			quality: quality,
 			progressive: progressive
 		};
 
-		if (!stream)
-			params.filename = dstFilename;
-		else
-			params.stream = stream;
+		params.dst = stream || dstFilename;
 
 		save(params, image, function(err, image) {
 			should.not.exist(err);
@@ -93,40 +90,40 @@ describe('save operation', function() {
 			'', ['string', 'object'], false, null
 		));
 
-		it('should fail when params.filename has an invalid type', testSaveParams(
-			'filename', ['string'], false, {}
+		it('should fail when params.dst has an invalid type', testSaveParams(
+			'dst', ['string', 'object'], true, {}
 		));
 
 		it('should accept a writable stream', testSave(
 			fs.createWriteStream.bind(null, path.join(TMP_DIR, '0124-save.png')), 0, true
 		));
 
-		it('should fail when params.filename does not have an extension', function(done) {
-			save({ filename: '/dev/null' }, new Image(), function(err) {
+		it('should fail when params.dst does not have an extension', function(done) {
+			save({ dst: '/dev/null' }, new Image(), function(err) {
 				helpers.checkError(err, 'invalid filename: /dev/null');
 				done();
 			});
 		});
 
 		it('should fail when params.quality has an invalid type', testSaveParams(
-			'quality', ['number'], true, { filename: '' }
+			'quality', ['number'], true, { dst: '' }
 		));
 
 		it('should fail when params.progressive has an invalid type', testSaveParams(
-			'progressive', ['boolean'], true, { filename: '' }
+			'progressive', ['boolean'], true, { dst: '' }
 		));
 
 		it('should fail when image has an invalid type', testSaveImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			save({ filename: 'yolo.jpg' }, {}, function(err) {
+			save({ dst: 'yolo.jpg' }, {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should fail when image is an empty image', function(done) {
-			save({ filename: 'yolo.jpg' }, new Image(), function(err) {
+			save({ dst: 'yolo.jpg' }, new Image(), function(err) {
 				helpers.checkError(err, 'empty image');
 				done();
 			});
