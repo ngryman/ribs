@@ -20,7 +20,7 @@ function operation() {
 	var spy = sinon.spy();
 	return {
 		spy: spy,
-		operation: function(params, hooks, next) {
+		operation: function testOperation(params, hooks, next) {
 			params.should.be.an('object');
 			next.should.be.a('function');
 			spy();
@@ -67,7 +67,7 @@ describe('Pipeline', function() {
 		this.pipeline = new Pipeline();
 	});
 
-	describe('constructor', function() {
+	xdescribe('constructor', function() {
 		it('should create an empty queue of operations', function() {
 			this.pipeline.should.be.instanceof(Pipeline);
 			this.pipeline.should.have.property('queue').and.be.instanceof(Array);
@@ -204,11 +204,25 @@ describe('Pipeline', function() {
 			});
 		});
 
+		it('should return the pipeline itself', function() {
+			var p = this.pipeline;
+			p.done().should.equal(p);
+		});
+
 		it('should clear the pipeline when an error occurred', function(done) {
 			var p = this.pipeline;
 			p.use('wtf').done(function(err) {
 				err.should.be.instanceof(Error);
 				should.not.exist(p.error);
+				done();
+			});
+		});
+
+		it('should invoke operations bound with the pipeline instance', function(done) {
+			var p = this.pipeline.use(function(params, hooks, next) {
+				this.should.equal(p);
+				next();
+			}).done(function() {
 				done();
 			});
 		});
@@ -235,6 +249,77 @@ describe('Pipeline', function() {
 			Pipeline.operations[op.name].should.equal(op.operation);
 			p[op.name].should.be.a('function');
 			this.pipeline[op.name]().done(checkOk(op, done));
+		});
+	});
+
+	describe('events', function() {
+		it('should emit a start event', function() {
+			var spy = sinon.spy();
+			this.pipeline.on('start', spy);
+			this.pipeline.done();
+			spy.should.have.been.calledOnce;
+		});
+
+		it('should emit an end event', function(done) {
+			this.pipeline.on('end', function() {
+				arguments.should.have.lengthOf(2);
+			});
+			this.pipeline.done(done);
+		});
+
+		it('should emit a success event', function(done) {
+			this.pipeline.on('success', function() {
+				arguments.should.have.lengthOf(1);
+			});
+			this.pipeline.done(done);
+		});
+
+		it('should emit an error event', function(done) {
+			this.pipeline.error = new Error('o()xxxx[{::::::::::::::::::::::::::>');
+			this.pipeline.on('error', function(err) {
+				err.should.be.instanceof(Error);
+				err.message.should.equal('o()xxxx[{::::::::::::::::::::::::::>');
+			});
+			this.pipeline.done(function() {
+				// indirection to avoid mocha to detect an error as `err` is defined
+				done();
+			});
+		});
+
+		it('should emit a warning event', function(done) {
+			this.pipeline.on('warning', function(warn) {
+				warn.should.equal('high voltage');
+			});
+			this.pipeline.use(function(params, hooks, next) {
+				this.emit('warning', 'high voltage');
+				next();
+			}).done(done);
+		});
+
+		it('should emit an operation:before event', function(done) {
+			var p = this.pipeline, op = add(), called = false;
+			p.on('operation:before', function(name) {
+				name.should.equal('testOperation');
+				op.spy.should.not.have.been.called;
+				called = true;
+			});
+			p.use(op.name).done(checkOk(op, function() {
+				called.should.be.true;
+				done();
+			}));
+		});
+
+		it('should emit an operation:after event', function(done) {
+			var p = this.pipeline, op = add(), called = false;
+			p.on('operation:after', function(name) {
+				name.should.equal('testOperation');
+				op.spy.should.have.been.called;
+				called = true;
+			});
+			p.use(op.name).done(checkOk(op, function() {
+				called.should.be.true;
+				done();
+			}));
 		});
 	});
 });
