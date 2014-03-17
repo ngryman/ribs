@@ -20,7 +20,7 @@ var ribs = require('../../..'),
  * Tests constants.
  */
 
-var SRC_IMAGE = path.resolve(__dirname + '/../../fixtures/0124.png'),
+var SRC_IMAGE = path.join(require('ribs-fixtures').path, '0124.png'),
 	W = 8, H = 8,
 	W_2 = W / 2, H_2 = H / 2,
 	W_3 = Math.round(W / 3), H_3 = Math.round(H / 3);

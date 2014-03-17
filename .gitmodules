@@ -1,3 +1,0 @@
-[submodule "test/fixtures"]
-	path = test/fixtures
-	url = https://github.com/ngryman/ribs-fixtures.git

@@ -1,10 +1,17 @@
+/*!
+ * ribs
+ * Copyright (c) 2013-2014 Nicolas Gryman <ngryman@gmail.com>
+ * LGPL Licensed
+ */
+
 'use strict';
 
 var fs = require('fs'),
-	path = require('path');
+	path = require('path'),
+	fixturesPath = require('ribs-fixtures').path;
 
 function fromPm(filename) {
-	filename = path.resolve(__dirname + '/fixtures/' + filename);
+	filename = path.join(fixturesPath, filename);
 
 	var data = fs.readFileSync(filename, 'utf8');
 	// header size

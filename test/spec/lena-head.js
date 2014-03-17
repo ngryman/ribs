@@ -18,7 +18,7 @@ var path = require('path'),
  * Tests constants.
  */
 
-var SRC_DIR = path.resolve(__dirname + '/../fixtures/'),
+var SRC_DIR = require('ribs-fixtures').path,
 	TMP_DIR = path.join(SRC_DIR, 'tmp/');
 
 /**

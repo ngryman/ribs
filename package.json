@@ -37,6 +37,7 @@
     "sinon": "~1.8.1",
     "optify": "~0.0.2",
     "time-grunt": "~0.2.9",
-    "curry": "~1.2.0"
+    "curry": "~1.2.0",
+	"ribs-fixtures": "https://github.com/ngryman/ribs-fixtures/tarball/master"
   }
 }

@@ -20,7 +20,7 @@ var ribs = require('../..'),
  * Tests constants.
  */
 
-var SRC_DIR = path.resolve(__dirname + '/../fixtures/'),
+var SRC_DIR = require('ribs-fixtures').path,
 	SRC_IMAGE = path.join(SRC_DIR, '0124.png'),
 	TMP_DIR = path.resolve(SRC_DIR, 'tmp'),
 	TMP_FILE = path.join(TMP_DIR, '0124-ribs.png'),
