@@ -1,4 +1,8 @@
-# ribs [![Version](http://img.shields.io/badge/version-0.0.1-brightgreen.svg)](https://github.com/ngryman/ribs/blob/master/CHANGELOG.md) [![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs) [![Build Status](http://img.shields.io/travis/ngryman/ribs.svg)](https://travis-ci.org/ngryman/ribs) [![Code Climate](http://img.shields.io/codeclimate/github/ngryman/ribs.svg)](https://codeclimate.com/github/ngryman/ribs) [![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs) [![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
+# ribs
+
+[![Version](http://img.shields.io/badge/version-0.0.1-brightgreen.svg)](https://github.com/ngryman/ribs/blob/master/CHANGELOG.md) [![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs) [![Build Status](http://img.shields.io/travis/ngryman/ribs.svg)](https://travis-ci.org/ngryman/ribs) [![Code Climate](http://img.shields.io/codeclimate/github/ngryman/ribs.svg)](https://codeclimate.com/github/ngryman/ribs) [![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs) [![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
+
+<br>
 
 **R**esponsive **I**mages **B**aked **S**erver-side, yummy!
 
