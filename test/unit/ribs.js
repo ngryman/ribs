@@ -53,7 +53,7 @@ describe('ribs', function() {
 		});
 	});
 
-	describe('(filename)', function() {
+	describe('(src)', function() {
 		it('should implicitly call open operation', function(done) {
 			ribs('NaNaNaN.jpg').done(function(err) {
 				err.message.should.equal("ENOENT, open 'NaNaNaN.jpg'");
@@ -62,7 +62,7 @@ describe('ribs', function() {
 		});
 	});
 
-	describe('(src, dst)', function() {
+	describe('(src, dst, [callback])', function() {
 		it('should implicitly call open & save operation', function(done) {
 			ribs(SRC_IMAGE, TMP_FILE).done(function() {
 				fs.existsSync(TMP_FILE).should.be.true;
@@ -88,6 +88,42 @@ describe('ribs', function() {
 					called.should.equal(true);
 					done();
 				});
+		});
+
+		it('should accept an optional callback', function(done) {
+			ribs(SRC_IMAGE, TMP_FILE, function() {
+				fs.existsSync(TMP_FILE).should.be.true;
+				fs.unlinkSync(TMP_FILE);
+				done();
+			});
+		});
+	});
+
+	describe('(src, dst, bulk, [callback])', function() {
+		it('should implicitly call open, save & bulk operations', function(done) {
+			var called = false;
+			ribs(SRC_IMAGE, TMP_FILE, [function(params, image, next) {
+				called = true;
+				next(null, image);
+			}]).done(function() {
+				fs.existsSync(TMP_FILE).should.be.true;
+				fs.unlinkSync(TMP_FILE);
+				called.should.be.true;
+				done();
+			});
+		});
+
+		it('should accept an optional callback', function(done) {
+			var called = false;
+			ribs(SRC_IMAGE, TMP_FILE, [function(params, image, next) {
+				called = true;
+				next(null, image);
+			}], function() {
+				fs.existsSync(TMP_FILE).should.be.true;
+				fs.unlinkSync(TMP_FILE);
+				called.should.be.true;
+				done();
+			});
 		});
 	});
 
