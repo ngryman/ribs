@@ -67,6 +67,15 @@ can leverage their images responsiveness.
 
 [art direction]: http://usecases.responsiveimages.org/#art-direction
 
+## Roadmap
+
+ - `✓` Basic *Node* module.<br>
+ - `✓` Command line interface.<br>
+ - `✕` Plugins for **Grunt**, **Gulp**, ...<br>
+ - `✕` *Express* middleware.<br>
+ - `✕` Client-side library.<br>
+ - `✕` New awesome features...
+
 ## Architecture
 
 *RIBS* will offer several independent layers, that work well together:
@@ -86,19 +95,9 @@ can leverage their images responsiveness.
 
 [OpenCV]: http://opencv.org
 
-## Roadmap
-
- - `✓` Basic *Node* module.<br>
- - `✓` Command line interface: [ribs-cli].<br>
- - `✕` Plugins for **Grunt**, **Gulp**, ...<br>
- - `✕` *Express* middleware.<br>
- - `✕` Client-side library.<br>
- - `✕` New awesome features...
-
-[ribs-cli]: https://github.com/ngryman/ribs-cli
-
 ## Documentation
 
+ - [CLI](https://github.com/ngryman/ribs/wiki/API-CLI)
  - [API REST](https://github.com/ngryman/ribs/wiki/API-REST)
  - Middleware
  - [Node module](https://github.com/ngryman/ribs/wiki/API-Node-module)
