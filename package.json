@@ -25,7 +25,9 @@
   "dependencies": {
     "lodash": "~2.4.1",
     "async": "~0.2.9",
-    "nan": "~0.8.0"
+    "nan": "~0.8.0",
+    "minimist": "~0.0.8",
+    "npmlog": "0.0.6"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
