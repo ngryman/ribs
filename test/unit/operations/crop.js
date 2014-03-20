@@ -25,8 +25,8 @@ var SRC_IMAGE = path.join(require('ribs-fixtures').path, '0124.png'),
 	H = 8,
 	W_2 = W / 2,
 	H_2 = H / 2,
-	LANDMARKS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l', [W / 3 | 0, H / 2]],
-	ANCHORS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l'],
+	ANCHORS = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l', [W / 3 | 0, H / 2]],
+	GRAVITY = ['tl', 't', 'tr', 'r', 'br', 'b', 'bl', 'l'],
 	SIZES = [[W_2, H_2], [W * 2, H * 2]],
 	EXPECT = require('./crop-expect');
 
@@ -135,8 +135,8 @@ describe('crop operation', function() {
 			'y', ['number', 'string'], true, {}
 		));
 
-		it('should fail when params.landmark has an invalid type', testCropParams(
-			'landmark', ['string'], true, {}
+		it('should fail when params.gravity has an invalid type', testCropParams(
+			'gravity', ['string'], true, {}
 		));
 
 		it('should fail when params.anchor has an invalid type', testCropParams(
@@ -171,27 +171,27 @@ describe('crop operation', function() {
 
 		SIZES.forEach(function(size) {
 			describe('for size "' + size + '"', function() {
-				LANDMARKS.forEach(function(landmark) {
-					it('should crop with landmark point "' + landmark + '" and each anchor', function(done) {
-						var seq = ANCHORS.map(function(anchor) {
+				ANCHORS.forEach(function(anchor) {
+					it('should crop with anchor point "' + anchor + '" for each gravity values', function(done) {
+						var seq = GRAVITY.map(function(gravity) {
 							return function(done) {
 								var params = {
 									width: size[0],
 									height: size[1],
-									anchor: anchor
-								}, landmarkKey;
+									gravity: gravity
+								}, anchorKey;
 
-								if ('string' == typeof landmark) {
-									params.landmark = landmark;
-									landmarkKey = landmark;
+								if ('string' == typeof anchor) {
+									params.anchor = anchor;
+									anchorKey = anchor;
 								}
 								else {
-									params.x = landmark[0];
-									params.y = landmark[1];
-									landmarkKey = landmark[0];
+									params.x = anchor[0];
+									params.y = anchor[1];
+									anchorKey = anchor[0];
 								}
 
-								testCrop(params, EXPECT[size[0]][landmarkKey][anchor], done);
+								testCrop(params, EXPECT[size[0]][anchorKey][gravity], done);
 							};
 						});
 						async.series(seq, done);

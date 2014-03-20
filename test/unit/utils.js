@@ -100,7 +100,15 @@ describe('utils', function() {
 
 		it('should round down a fixed scalar to a multiple of several scalars', testFormula('100r66r20', 60));
 
+		it('should return 0 when passing falsy values', helpers.withParams(
+			[0, false, null, undefined, ''],
+			function(param, done) {
+				testFormula(param, 0, done);
+			})
+		);
 		it('should return 0 when passing null', testFormula(null, 0));
+
+		it('should return 0 when passing empty string', testFormula('', 0));
 
 		it('should throw an error when passing an invalid value', testFormula('woot', 'invalid formula: woot'));
 	});
