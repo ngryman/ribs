@@ -14,7 +14,11 @@ using namespace ribs;
 
 OPERATION_PREPARE(Encode, {
 	image = ObjectWrap::Unwrap<Image>(args.This());
-	auto filename = FromV8String(args[0]);
+	string filename;
+	if (args[0]->IsString())
+		filename = FromV8String(args[0]);
+	else
+		filename = "." + image->InputFormat();
 
 	// store params for further processing
 	auto index = filename.find_last_of('.');
