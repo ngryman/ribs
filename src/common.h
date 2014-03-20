@@ -35,19 +35,6 @@ inline std::string FromV8String(v8::Local<v8::Value> v8Str) {
 	return cppstr;
 }
 
-/**
- * Utility macros
- */
-
-/**
- * Helps defining a simple accessor / getter.
- */
-
-#define RIBS_GETTER(type, getter)                    \
-	NanScope();                                      \
-	auto instance = Unwrap<type>(args.This());       \
-	NanReturnValue(Number::New(instance->getter()));
-
 }
 
 #endif

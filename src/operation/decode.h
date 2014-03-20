@@ -12,8 +12,9 @@
 namespace ribs {
 
 OPERATION(Decode,
-	cv::Mat inMat;
-	cv::Mat outMat;
+	cv::Mat     inMat;
+	std::string inFormat;
+	cv::Mat     outMat;
 );
 
 }

@@ -15,6 +15,22 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
+/**
+ * Helps defining a simple accessor / getter.
+ */
+
+#define IMAGE_GETTER_INSTANCE()                 \
+	NanScope();                                 \
+	auto instance = Unwrap<Image>(args.This());
+
+#define IMAGE_NUMBER_GETTER(getter)             \
+	IMAGE_GETTER_INSTANCE();                    \
+	NanReturnValue(Number::New(instance->getter()));
+
+#define IMAGE_STRING_GETTER(getter)             \
+	IMAGE_GETTER_INSTANCE();                    \
+	NanReturnValue(String::New(instance->getter().c_str()));
+
 Persistent<FunctionTemplate> Image::constructorTemplate;
 
 Image::Image(Handle<Object> wrapper) {
@@ -38,7 +54,7 @@ NAN_METHOD(Image::New) {
 	NanReturnValue(args.This());
 }
 
-Local<Object> Image::New(cv::Mat& mat) {
+Local<Object> Image::New(cv::Mat& mat, const std::string& format) {
 	NanScope();
 
 	// create a new instance an feed it
@@ -50,6 +66,9 @@ Local<Object> Image::New(cv::Mat& mat) {
 
 	// synchronize pixels data with the JavaScript object
 	image->Sync(instance);
+
+	// store input format
+	image->inputFormat = format;
 
 	// give a hint to GC about the amount of memory attached to this object
 	// this help GC to know exactly the amount of memory it will free if collecting this object
@@ -73,20 +92,24 @@ void Image::Sync(Handle<Object> instance) {
 }
 
 NAN_GETTER(Image::GetWidth) {
-	RIBS_GETTER(Image, Width);
+	IMAGE_NUMBER_GETTER(Width);
 }
 
 NAN_GETTER(Image::GetHeight) {
-	RIBS_GETTER(Image, Height);
+	IMAGE_NUMBER_GETTER(Height);
+}
+
+NAN_GETTER(Image::GetChannels) {
+	IMAGE_NUMBER_GETTER(Channels);
+}
+
+NAN_GETTER(Image::GetInputFormat) {
+	IMAGE_STRING_GETTER(InputFormat);
 }
 
 NAN_GETTER(Image::GetLength) {
 	NanScope();
 	NanReturnValue(Number::New(args.This()->GetIndexedPropertiesPixelDataLength()));
-}
-
-NAN_GETTER(Image::GetChannels) {
-	RIBS_GETTER(Image, Channels);
 }
 
 NAN_METHOD(Image::Decode) {
@@ -116,8 +139,9 @@ void Image::Initialize(Handle<Object> target) {
 	Local<ObjectTemplate> prototype = constructorTemplate->PrototypeTemplate();
 	prototype->SetAccessor(NanSymbol("width"), GetWidth);
 	prototype->SetAccessor(NanSymbol("height"), GetHeight);
-	prototype->SetAccessor(NanSymbol("length"), GetLength);
 	prototype->SetAccessor(NanSymbol("channels"), GetChannels);
+	prototype->SetAccessor(NanSymbol("inputFormat"), GetInputFormat);
+	prototype->SetAccessor(NanSymbol("length"), GetLength);
 	NODE_SET_PROTOTYPE_METHOD(constructorTemplate, "encode", Encode);
 	NODE_SET_PROTOTYPE_METHOD(constructorTemplate, "resize", Resize);
 	NODE_SET_PROTOTYPE_METHOD(constructorTemplate, "crop", Crop);

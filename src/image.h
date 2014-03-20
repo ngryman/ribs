@@ -15,16 +15,17 @@ class Image : public node::ObjectWrap {
 public:
 	static void Initialize(v8::Handle<v8::Object> target);
 	static NAN_METHOD(New);
-	static v8::Local<v8::Object> New(cv::Mat& mat);
+	static v8::Local<v8::Object> New(cv::Mat& mat, const std::string& format);
 
-	inline pixel_t* Pixels()   const { return mat.data; }
-	inline uint32_t Width()    const { return mat.size().width; }
-	inline uint32_t Height()   const { return mat.size().height; }
-	inline int      Length()   const { return mat.total() * Channels(); }
-	inline int      Channels() const { return mat.channels(); }
-	inline cv::Mat& Matrix()         { return mat; }
-	void            Matrix(cv::Mat newMat);
-	void            Sync(v8::Handle<v8::Object> instance);
+	inline pixel_t*    Pixels()      const { return mat.data; }
+	inline uint32_t    Width()       const { return mat.size().width; }
+	inline uint32_t    Height()      const { return mat.size().height; }
+	inline int         Length()      const { return mat.total() * Channels(); }
+	inline int         Channels()    const { return mat.channels(); }
+	inline std::string InputFormat() const { return inputFormat; }
+	inline cv::Mat&    Matrix()            { return mat; }
+	void               Matrix(cv::Mat newMat);
+	void               Sync(v8::Handle<v8::Object> instance);
 
 private:
 	Image(v8::Handle<v8::Object> wrapper);
@@ -35,6 +36,7 @@ private:
 	static NAN_GETTER(GetWidth);
 	static NAN_GETTER(GetHeight);
 	static NAN_GETTER(GetChannels);
+	static NAN_GETTER(GetInputFormat);
 	static NAN_GETTER(GetLength);
 
 	static NAN_METHOD(Decode);
@@ -43,6 +45,7 @@ private:
 	static NAN_METHOD(Crop);
 
 	cv::Mat mat;
+	std::string inputFormat;
 };
 
 }
