@@ -14,6 +14,7 @@ var open = require('../../../lib/operations/open'),
 	save = require('../../../lib/operations/save'),
 	Image = require('../../..').Image,
 	fs = require('fs'),
+	http = require('http'),
 	path = require('path');
 
 /**
@@ -95,8 +96,35 @@ describe('save operation', function() {
 		));
 
 		it('should accept a writable stream', testSave(
-			fs.createWriteStream.bind(null, path.join(TMP_DIR, '0124-save.png')), 0, true
+			fs.createWriteStream.bind(null, path.join(TMP_DIR, '0124-save.png')), 0, false
 		));
+
+		it('should accept a server response', function(done) {
+			var srcImage;
+
+			var server = http.createServer(function(req, res) {
+				open(path.join(SRC_DIR, '0124.png'), function(err, image) {
+					srcImage = image;
+					save({ dst: res }, image, function() {});
+				});
+			});
+			server.listen(1337);
+
+			http.get({ port: 1337, agent: false }, function(res) {
+				var buffer;
+
+				res.on('data', function(data) {
+					buffer = data;
+				});
+				res.on('end', function() {
+					open(buffer, function(err, image) {
+						helpers.similarity(srcImage, image).should.be.true;
+						done();
+					});
+				});
+			});
+		});
+
 
 		it('should fail when params.dst does not have an extension', function(done) {
 			save({ dst: '/dev/null' }, new Image(), function(err) {
