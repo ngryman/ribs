@@ -21,7 +21,9 @@
     "resize",
     "crop",
     "optimize",
-    "canvas"
+    "canvas",
+    "express",
+    "express image"
   ],
   "author": "Nicolas Gryman <ngryman@gmail.com> (http://ngryman.sh)",
   "license": "LGPL",
@@ -30,7 +32,8 @@
     "async": "~0.2.9",
     "nan": "~0.8.0",
     "minimist": "~0.0.8",
-    "npmlog": "0.0.6"
+    "npmlog": "0.0.6",
+    "express": "~3.5.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
@@ -43,6 +46,7 @@
     "optify": "~0.0.2",
     "time-grunt": "~0.2.9",
     "curry": "~1.2.0",
-    "ribs-fixtures": "https://github.com/ngryman/ribs-fixtures/tarball/master"
+    "ribs-fixtures": "https://github.com/ngryman/ribs-fixtures/tarball/master",
+    "supertest": "~0.10.0"
   }
 }

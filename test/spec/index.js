@@ -6,4 +6,5 @@
 
 'use strict';
 
-require('./lena-head');
+//require('./lena-head');
+require('./middleware');

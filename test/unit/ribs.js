@@ -127,6 +127,32 @@ describe('ribs', function() {
 		});
 	});
 
+	describe('(bulk, [callback])', function() {
+
+		it('should implicitly call bulk operations', function(done) {
+			var called = false;
+			ribs([function(params, next) {
+				called = true;
+				next(null, null);
+			}]).done(function() {
+				called.should.be.true;
+				done();
+			});
+		});
+
+		it('should accept an optional callback', function(done) {
+			var called = false;
+			ribs([function(params, next) {
+				called = true;
+				next(null, null);
+			}], function() {
+				called.should.be.true;
+				done();
+			});
+		});
+
+	});
+
 	describe('#from', function() {
 		it('should return a new instance of Pipeline', function() {
 			ribs.from().should.be.instanceof(Pipeline);
