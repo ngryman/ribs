@@ -71,6 +71,16 @@ describe('open operation', function() {
 			'filename', ['string', 'object'], false
 		));
 
+		it('should accept a buffer', testOpen(
+			function() {
+				var filename = path.join(SRC_DIR, '0124.png');
+				var buffer = fs.readFileSync(filename);
+				// cheat
+				buffer.path = filename;
+				return buffer;
+			}, null, false
+		));
+
 		it('should accept a readable stream', testOpen(
 			fs.createReadStream.bind(null, path.join(SRC_DIR, '0124.png')), null, false
 		));
