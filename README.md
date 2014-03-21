@@ -97,7 +97,7 @@ can leverage their images responsiveness.
 
 ## Documentation
 
- - [CLI](https://github.com/ngryman/ribs/wiki/API-CLI)
+ - [CLI](https://github.com/ngryman/ribs/wiki/CLI)
  - [API REST](https://github.com/ngryman/ribs/wiki/API-REST)
  - Middleware
  - [Node module](https://github.com/ngryman/ribs/wiki/API-Node-module)
