@@ -15,6 +15,8 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
+void print_trace(FILE *out, const char *file, int line);
+
 /**
  * Helps defining a simple accessor / getter.
  */
@@ -69,6 +71,7 @@ Local<Object> Image::New(cv::Mat& mat, const std::string& format) {
 
 	// store input format
 	image->inputFormat = format;
+//	print_trace(stdout, "image.cc", 74);
 
 	// give a hint to GC about the amount of memory attached to this object
 	// this help GC to know exactly the amount of memory it will free if collecting this object
@@ -151,4 +154,24 @@ void Image::Initialize(Handle<Object> target) {
 
 	// export
 	target->Set(NanSymbol("Image"), constructorTemplate->GetFunction());
+}
+
+#include <execinfo.h>
+void print_trace(FILE *out, const char *file, int line)
+{
+    const size_t max_depth = 100;
+    size_t stack_depth;
+    void *stack_addrs[max_depth];
+    char **stack_strings;
+
+    stack_depth = backtrace(stack_addrs, max_depth);
+    stack_strings = backtrace_symbols(stack_addrs, stack_depth);
+
+    fprintf(out, "Call stack from %s:%d:\n", file, line);
+
+    for (size_t i = 1; i < stack_depth; i++) {
+        fprintf(out, "    %s\n", stack_strings[i]);
+    }
+    free(stack_strings); // malloc()ed by backtrace_symbols
+    fflush(out);
 }
