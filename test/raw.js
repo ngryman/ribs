@@ -19,14 +19,16 @@ function fromPm(filename) {
 	// remove header & convert to array of pixels
 	data = data.split('\n').slice(headerSize);
 	// remove last empty pixel (trailing whitespace)
-	if ('' == data[data.length - 1]) data.pop();
+	if ('' === data[data.length - 1]) data.pop();
 
 	return data;
 }
 
 function raw(filename, alpha) {
+	if (Array.isArray(filename))
+		filename = filename[0];
 	// filename can be a stream
-	if ('object' == typeof filename)
+	else if ('object' == typeof filename)
 		filename = filename.path;
 
 	var basename = path.basename(filename, path.extname(filename)),

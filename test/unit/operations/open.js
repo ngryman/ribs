@@ -35,6 +35,9 @@ var testOpen = curry(function(filename, expectedErr, alpha, done) {
 	else if ('function' == typeof filename) {
 		filename = filename();
 	}
+	else if (Array.isArray(filename)) {
+		filename = path.join(SRC_DIR, filename[0]);
+	}
 
 	open(filename, checkPixels(filename, expectedErr, alpha, done));
 });
@@ -68,8 +71,10 @@ var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, imag
 describe('open operation', function() {
 	describe('(params, image, next)', function() {
 		it('should fail when filename has an invalid type', testOpenFilename(
-			'filename', ['string', 'object'], false
+			'filename', ['string', 'object', 'array'], false
 		));
+
+		it('should accept params as an array', testOpen(['0124.png'], null, false));
 
 		it('should accept a buffer', testOpen(
 			function() {

@@ -49,6 +49,13 @@ var testSave = curry(function(dst, quality, progressive, done) {
 			.replace('-save', '');
 		dstFilename = stream.path;
 	}
+	else if (Array.isArray(dst)) {
+		dst = path.join(SRC_DIR, dst[0]);
+
+		// append `-save` to filename in order to avoid conflicts
+		dstFilename = path.join(TMP_DIR, dst);
+		dstFilename = dst.replace(/\.(jpg|png|gif)$/, '-save.$1');
+	}
 
 	open(dst, function(err, image) {
 		var params = {
@@ -88,8 +95,12 @@ describe('save operation', function() {
 
 	describe('(params, image, next)', function() {
 		it('should fail when params has an invalid type', testSaveParams(
-			'', ['string', 'object'], false, null
+			'', ['string', 'object', 'array'], false, null
 		));
+
+		it('should accept params as a string', testSave('0124.png', 0, false));
+
+		it('should accept params as an array', testSave(['0124.png'], 0, false));
 
 		it('should fail when params.dst has an invalid type', testSaveParams(
 			'dst', ['string', 'object'], true, {}
