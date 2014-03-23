@@ -8,6 +8,7 @@
 
 require('./pipeline');
 require('./ribs');
+require('./stream');
 require('./utils');
 require('./operations/from');
 require('./operations/to');

@@ -10,7 +10,11 @@
  * Module dependencies.
  */
 
-var Pipeline = require('../../lib/pipeline');
+var ribs = require('../..'),
+	Pipeline = ribs.Pipeline,
+	Stream = ribs.Stream,
+	fs = require('fs'),
+	path = require('path');
 
 /**
  * Tests helper functions.
@@ -242,6 +246,14 @@ describe('Pipeline', function() {
 		});
 	});
 
+	describe('#stream', function() {
+
+		it ('should return a stream', function() {
+			this.pipeline.stream().should.be.instanceof(Stream);
+		});
+
+	});
+
 	describe('add', function() {
 		it('should add an operation', function(done) {
 			var p = this.pipeline, op = add();
@@ -322,4 +334,5 @@ describe('Pipeline', function() {
 			}));
 		});
 	});
+
 });
