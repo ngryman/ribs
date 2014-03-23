@@ -14,20 +14,11 @@ using namespace ribs;
 
 OPERATION_PREPARE(Encode, {
 	image = ObjectWrap::Unwrap<Image>(args.This());
-	string filename;
-	if (args[0]->IsString())
-		filename = FromV8String(args[0]);
-	else
-		filename = "." + image->InputFormat();
-
-	// store params for further processing
-	auto index = filename.find_last_of('.');
-	if (string::npos == index) throw invalid_argument("invalid filename: " + filename);
 
 	// check if image is empty
 	if (image->Matrix().empty()) throw invalid_argument("empty image");
 
-	ext     = filename.substr(index);
+	format  = FromV8String(args[0]);
 	quality = args[1]->Uint32Value();
 })
 
@@ -39,19 +30,18 @@ OPERATION_PROCESS(Encode, {
 
 		// quality
 		if (quality > 0) {
-			params.push_back(".jpg" == ext ? CV_IMWRITE_JPEG_QUALITY : CV_IMWRITE_PNG_COMPRESSION);
+			params.push_back("jpg" == format ? CV_IMWRITE_JPEG_QUALITY : CV_IMWRITE_PNG_COMPRESSION);
 
 			// normalize png quality for OCV.
 			// RIBS takes a [0,100] value, OCV takes a [0,9] value.
-			if (".png" == ext) {
+			if ("png" == format)
 				quality = quality * 90 / 1000;
-			}
 
 			params.push_back(quality);
 		}
 
 		// encode
-		cv::imencode(ext, image->Matrix(), outVec);
+		cv::imencode("." + format, image->Matrix(), outVec);
 	}
 	catch (...) {
 		// OCV uses assertion to handle errors, thus the message is not very explicit.

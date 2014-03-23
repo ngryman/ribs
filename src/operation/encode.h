@@ -14,7 +14,7 @@ namespace ribs {
 OPERATION(Encode,
 	Image*             image;
 	std::vector<uchar> outVec;
-	std::string        ext;
+	std::string        format;
 	uint32_t           quality;
 );
 

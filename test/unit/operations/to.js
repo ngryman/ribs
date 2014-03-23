@@ -33,44 +33,38 @@ var testParams = helpers.testOperationParams(to);
 var testImage = helpers.testOperationImage(to, { dst: '' });
 var testNext = helpers.testOperationNext(to, { dst: '' });
 
-var test = curry(function(dst, quality, progressive, done) {
-	var stream, dstFilename;
+var test = curry(function(src, quality, progressive, done) {
+	var dst;
 
-	if ('string' == typeof dst) {
-		dst = path.join(SRC_DIR, dst);
+	if ('string' == typeof src || Array.isArray(src)) {
+		if (Array.isArray(src))
+			src = src[0];
 
-		// append `-to` to filename in order to avoid conflicts
-		dstFilename = path.join(TMP_DIR, dst);
-		dstFilename = dst.replace(/\.(jpg|png|gif)$/, '-to.$1');
+		// append `-to` to dst in order to avoid conflicts
+		dst = path.join(TMP_DIR, src).replace(/\.(jpg|png|gif)$/, '-to.$1');
+		src = path.join(SRC_DIR, src);
 	}
-	else if ('function' == typeof dst) {
-		stream = dst();
-		dst = stream.path
-			.replace('tmp/', '')
-			.replace('-to', '');
-		dstFilename = stream.path;
-	}
-	else if (Array.isArray(dst)) {
-		dst = path.join(SRC_DIR, dst[0]);
-
-		// append `-to` to filename in order to avoid conflicts
-		dstFilename = path.join(TMP_DIR, dst);
-		dstFilename = dst.replace(/\.(jpg|png|gif)$/, '-to.$1');
+	else if ('function' == typeof src) {
+		// get the stream
+		dst = src(path.join(TMP_DIR, '0124-to.png'));
+		src = path.join(SRC_DIR, '0124.png');
 	}
 
-	from(dst, function(err, image) {
+	from(src, function(err, image) {
 		var params = {
 			quality: quality,
 			progressive: progressive
 		};
 
-		params.dst = stream || dstFilename;
-
-		to(params, image, function(err, image) {
+		to(dst, image, function(err, image) {
 			should.not.exist(err);
 
-			fs.existsSync(dstFilename).should.be.true;
+			var dstFilename = dst.path || dst;
+			fs.existsSync(dst.path || dst).should.be.true;
+
 			from(dstFilename, function(err, savedImage) {
+				should.not.exist(err);
+
 				helpers.similarity(savedImage, image).should.be.true;
 				fs.unlinkSync(dstFilename);
 				done();
@@ -95,20 +89,20 @@ describe('to operation', function() {
 	});
 
 	describe('(params, image, next)', function() {
-		xit('should fail when params has an invalid type', testParams(
+		it('should fail when params has an invalid type', testParams(
 			'', ['string', 'object', 'array'], false, null
 		));
 
-		xit('should accept params as a string', test('0124.png', 0, false));
+		it('should accept params as a string', test('0124.png', 0, false));
 
-		xit('should accept params as an array', test(['0124.png'], 0, false));
+		it('should accept params as an array', test(['0124.png'], 0, false));
 
-		xit('should fail when params.dst has an invalid type', testParams(
+		it('should fail when params.dst has an invalid type', testParams(
 			'dst', ['string', 'object'], true, {}
 		));
 
 		it('should accept a writable stream', test(
-			fs.createWriteStream.bind(null, path.join(TMP_DIR, '0124-to.png')), 0, false
+			fs.createWriteStream, 0, false
 		));
 
 		it('should accept a server response', function(done) {
@@ -134,14 +128,6 @@ describe('to operation', function() {
 						done();
 					});
 				});
-			});
-		});
-
-
-		it('should fail when params.dst does not have an extension', function(done) {
-			to({ dst: '/dev/null' }, new Image(), function(err) {
-				helpers.checkError(err, 'invalid filename: /dev/null');
-				done();
 			});
 		});
 
