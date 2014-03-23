@@ -71,7 +71,6 @@ Local<Object> Image::New(cv::Mat& mat, const std::string& format) {
 
 	// store input format
 	image->inputFormat = format;
-	Debug::PrintStackTrace("image new");
 
 	// give a hint to GC about the amount of memory attached to this object
 	// this help GC to know exactly the amount of memory it will free if collecting this object

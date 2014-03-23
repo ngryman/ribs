@@ -12,7 +12,7 @@
 
 var ribs = require('../../..'),
 	Image = ribs.Image,
-	open = ribs.operations.open,
+	from = ribs.operations.from,
 	resize = ribs.operations.resize,
 	path = require('path');
 
@@ -34,7 +34,7 @@ var testResizeImage = helpers.testOperationImage(resize, {});
 var testResizeNext = helpers.testOperationNext(resize, {});
 
 var testResize = curry(function(params, expect, done) {
-	open(SRC_IMAGE, function(err, image) {
+	from(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
 		var finalParams = resize(params, image, function(err, image) {

@@ -10,8 +10,9 @@
  * Module dependencies.
  */
 
-var open = require('../../../lib/operations/open'),
-	Image = require('../../..').Image,
+var ribs = require('../../..'),
+	Image = ribs.Image,
+	from = ribs.operations.from,
 	raw = require('../../raw'),
 	path = require('path'),
 	fs = require('fs');
@@ -26,9 +27,9 @@ var SRC_DIR = require('ribs-fixtures').path;
  * Tests helper functions.
  */
 
-var testOpenFilename = helpers.testOperationArg(open, [null], 0);
+var testFromParams = helpers.testOperationArg(from, [null], 0);
 
-var testOpen = curry(function(filename, expectedErr, alpha, done) {
+var testFrom = curry(function(filename, expectedErr, alpha, done) {
 	if ('string' == typeof filename && filename && '/' != filename[0]) {
 		filename = path.join(SRC_DIR, filename);
 	}
@@ -39,7 +40,7 @@ var testOpen = curry(function(filename, expectedErr, alpha, done) {
 		filename = path.join(SRC_DIR, filename[0]);
 	}
 
-	open(filename, checkPixels(filename, expectedErr, alpha, done));
+	from(filename, checkPixels(filename, expectedErr, alpha, done));
 });
 
 var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, image) {
@@ -68,15 +69,15 @@ var checkPixels = _.curry(function(filename, expectedErr, alpha, done, err, imag
  * Test suite.
  */
 
-describe('open operation', function() {
+describe('from operation', function() {
 	describe('(params, image, next)', function() {
-		it('should fail when filename has an invalid type', testOpenFilename(
+		it('should fail when filename has an invalid type', testFromParams(
 			'filename', ['string', 'object', 'array'], false
 		));
 
-		it('should accept params as an array', testOpen(['0124.png'], null, false));
+		it('should accept params as an array', testFrom(['0124.png'], null, false));
 
-		it('should accept a buffer', testOpen(
+		it('should accept a buffer', testFrom(
 			function() {
 				var filename = path.join(SRC_DIR, '0124.png');
 				var buffer = fs.readFileSync(filename);
@@ -86,18 +87,18 @@ describe('open operation', function() {
 			}, null, false
 		));
 
-		it('should accept a readable stream', testOpen(
+		it('should accept a readable stream', testFrom(
 			fs.createReadStream.bind(null, path.join(SRC_DIR, '0124.png')), null, false
 		));
 
-		it('should fail when filename does not exists', testOpen(
+		it('should fail when filename does not exists', testFrom(
 			'vaynerox',
 			"ENOENT, open '"  + path.join(SRC_DIR, 'vaynerox') + "'",
 			false
 		));
 
 		it('should fail when filename is a path to an invalid image', function(done) {
-			open('/dev/null', function(err) {
+			from('/dev/null', function(err) {
 				helpers.checkError(err, 'empty file: /dev/null');
 				done();
 			});
@@ -106,7 +107,7 @@ describe('open operation', function() {
 		it('should fail when next has an invalid type', function(done) {
 			helpers.invalidTypes(['function'], false, function(arg, done) {
 				try {
-					open('/dev/null', arg);
+					from('/dev/null', arg);
 				}
 				catch (err) {
 					helpers.checkTypeError(err, ['function'], 'next', arg);
@@ -117,60 +118,49 @@ describe('open operation', function() {
 	});
 
 	describe('with jpg files', function() {
-		it('should open when quality is 100%', testOpen('01100.jpg', null, false));
+		it('should work when quality is 100%', testFrom('01100.jpg', null, false));
 
-		it('should open when quality is 50%', testOpen('0150.jpg', null, false));
+		it('should work when quality is 50%', testFrom('0150.jpg', null, false));
 
-		it('should open when quality is 0%', testOpen('010.jpg', null, false));
+		it('should work when quality is 0%', testFrom('010.jpg', null, false));
 
-		it('should open when progressive and quality is 100%', testOpen('01100p.jpg', null, false));
+		it('should work when progressive and quality is 100%', testFrom('01100p.jpg', null, false));
 
-		it('should open when progressive and quality is 50%', testOpen('0150p.jpg', null, false));
+		it('should work when progressive and quality is 50%', testFrom('0150p.jpg', null, false));
 
-		it('should open when progressive and quality is 0%', testOpen('010p.jpg', null, false));
+		it('should work when progressive and quality is 0%', testFrom('010p.jpg', null, false));
 
-		it('should open when optimized and quality is 100%', testOpen('01100o.jpg', null, false));
+		it('should work when optimized and quality is 100%', testFrom('01100o.jpg', null, false));
 
-		it('should open when optimized and quality is 50%', testOpen('0150o.jpg', null, false));
+		it('should work when optimized and quality is 50%', testFrom('0150o.jpg', null, false));
 
-		it('should open when optimized and quality is 0%', testOpen('010o.jpg', null, false));
+		it('should work when optimized and quality is 0%', testFrom('010o.jpg', null, false));
 	});
 
 	describe('with png files', function() {
-		it('should open 8-bit', testOpen('018.png', null, false));
+		it('should work with 8-bit', testFrom('018.png', null, false));
 
 		// seems buggy for 8-bit PNG with alpha channel, posted a question here:
 		//   http://answers.opencv.org/question/28220/alpha-channel-for-8-bit-png/
-		xit('should open 8-bit with alpha channel', testOpen('018a.png', null, true));
-		xit('should open interlaced 8-bit with alpha channel', testOpen('018-ai.png', null, true));
+		xit('should work with 8-bit with alpha channel', testFrom('018a.png', null, true));
+		xit('should work with interlaced 8-bit with alpha channel', testFrom('018-ai.png', null, true));
 
-		it('should open 24-bit', testOpen('0124.png', null, false));
+		it('should work with 24-bit', testFrom('0124.png', null, false));
 
-		it('should open 24-bit with alpha channel', testOpen('0124a.png', null, true));
+		it('should work with 24-bit with alpha channel', testFrom('0124a.png', null, true));
 
-		it('should open interlaced 24-bit with alpha channel', testOpen('0124ai.png', null, true));
+		it('should work with interlaced 24-bit with alpha channel', testFrom('0124ai.png', null, true));
 	});
 
 	// gif are not supported by OCV
 	//   http://stackoverflow.com/questions/11494119/error-in-opencv-2-4-2-opencv-error-bad-flag
 	xdescribe('with gif files', function() {
-		it('should open standard', testOpen('01.gif', null, false));
+		it('should work with standard', testFrom('01.gif', null, false));
 
-		it('should open interlaced', testOpen('01i.gif', null, false));
+		it('should work with interlaced', testFrom('01i.gif', null, false));
 
-		it('should open with alpha channel', testOpen('01a.gif', null, true));
+		it('should work with with alpha channel', testFrom('01a.gif', null, true));
 
-		it('should open interlaced with alpha channel', testOpen('01ai.gif', null, true));
+		it('should work with interlaced with alpha channel', testFrom('01ai.gif', null, true));
 	});
-//	it('should throw an error when next is not valid', function() {
-//		(function() {
-//			open(path.resolve(__dirname + '/../../fixtures/in.gif'), 'lolilol');
-//		}).should.throw('next should be a function');
-//	});
-//
-//	it('should pass an error when file is not found', testOpen(
-//		'dev/null',
-//		"ENOENT, open '"  + path.join(__dirname, '..', '..', 'fixtures', '/dev/null') + "'",
-//		false
-//	));
 });

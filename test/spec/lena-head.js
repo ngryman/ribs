@@ -44,7 +44,7 @@ describe('lena\'s head', function() {
 		.crop({ width: 300, height: 300, x: 312, y: 267 })
 		.resize({ width: 32, height: 32 })
 		.done(function(err, savedImage) {
-			ribs.open(path.join(SRC_DIR, 'lena-head.png')).done(function(err, image) {
+			ribs(path.join(SRC_DIR, 'lena-head.png')).done(function(err, image) {
 				helpers.similarity(savedImage, image).should.be.true;
 				fs.unlinkSync(path.join(TMP_DIR, 'lena-head.png'));
 				done();

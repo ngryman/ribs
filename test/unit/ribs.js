@@ -54,7 +54,7 @@ describe('ribs', function() {
 	});
 
 	describe('(src)', function() {
-		it('should implicitly call open operation', function(done) {
+		it('should implicitly call from operation', function(done) {
 			ribs('NaNaNaN.jpg').done(function(err) {
 				err.message.should.equal("ENOENT, open 'NaNaNaN.jpg'");
 				done();
@@ -63,7 +63,7 @@ describe('ribs', function() {
 	});
 
 	describe('(src, dst, [callback])', function() {
-		it('should implicitly call open & save operation', function(done) {
+		it('should implicitly call from & to operation', function(done) {
 			ribs(SRC_IMAGE, TMP_FILE).done(function() {
 				fs.existsSync(TMP_FILE).should.be.true;
 				fs.unlinkSync(TMP_FILE);
@@ -71,7 +71,7 @@ describe('ribs', function() {
 			});
 		});
 
-		it('should call open first and save last', function(done) {
+		it('should call from first and to last', function(done) {
 			var called = false;
 			ribs(SRC_IMAGE, TMP_FILE)
 				.use(function(params, image, next) {
@@ -100,7 +100,7 @@ describe('ribs', function() {
 	});
 
 	describe('(src, dst, bulk, [callback])', function() {
-		it('should implicitly call open, save & bulk operations', function(done) {
+		it('should implicitly call from, to & bulk operations', function(done) {
 			var called = false;
 			ribs(SRC_IMAGE, TMP_FILE, [function(params, image, next) {
 				called = true;
@@ -127,28 +127,28 @@ describe('ribs', function() {
 		});
 	});
 
-	describe('#open', function() {
+	describe('#from', function() {
 		it('should return a new instance of Pipeline', function() {
-			ribs.open().should.be.instanceof(Pipeline);
-			ribs.open().should.not.equal(ribs.open());
+			ribs.from().should.be.instanceof(Pipeline);
+			ribs.from().should.not.equal(ribs.from());
 		});
 
-		it('should call open operation', function(done) {
-			ribs.open('NaNaNaN.jpg').done(function(err) {
+		it('should call from operation', function(done) {
+			ribs.from('NaNaNaN.jpg').done(function(err) {
 				err.message.should.equal("ENOENT, open 'NaNaNaN.jpg'");
 				done();
 			});
 		});
 	});
 
-	describe('#save', function() {
+	describe('#to', function() {
 		it('should return an instance of Pipeline', function() {
-			ribs.open().save().should.be.instanceof(Pipeline);
-			ribs.open().save().should.not.equal(ribs.open());
+			ribs.from().to().should.be.instanceof(Pipeline);
+			ribs.from().to().should.not.equal(ribs.from());
 		});
 
-		it('should call save operation', function(done) {
-			ribs.open(SRC_IMAGE).save(TMP_FILE).done(function() {
+		it('should call to operation', function(done) {
+			ribs.from(SRC_IMAGE).to(TMP_FILE).done(function() {
 				fs.existsSync(TMP_FILE).should.be.true;
 				fs.unlinkSync(TMP_FILE);
 				done();
@@ -158,7 +158,7 @@ describe('ribs', function() {
 
 	describe('#done', function() {
 		it('should have a reference to the image', function(done) {
-			ribs.open(SRC_IMAGE).save(TMP_FILE).done(function(err, image) {
+			ribs.from(SRC_IMAGE).to(TMP_FILE).done(function(err, image) {
 				image.should.be.instanceof(Image);
 				fs.unlinkSync(TMP_FILE);
 				done();

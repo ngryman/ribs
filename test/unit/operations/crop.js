@@ -12,7 +12,7 @@
 
 var ribs = require('../../..'),
 	Image = ribs.Image,
-	open = ribs.operations.open,
+	from = ribs.operations.from,
 	crop = ribs.operations.crop,
 	path = require('path');
 
@@ -39,7 +39,7 @@ var testCropImage = helpers.testOperationImage(crop, {});
 var testCropNext = helpers.testOperationNext(crop, {});
 
 var testCrop = curry(function(params, expect, done) {
-	open(SRC_IMAGE, function(err, image) {
+	from(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
 		var finalParams = crop(params, image, function(err, image) {
