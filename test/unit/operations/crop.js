@@ -34,11 +34,11 @@ var SRC_IMAGE = path.join(require('ribs-fixtures').path, '0124.png'),
  * Tests helper functions.
  */
 
-var testCropParams = helpers.testOperationParams(crop);
-var testCropImage = helpers.testOperationImage(crop, {});
-var testCropNext = helpers.testOperationNext(crop, {});
+var testParams = helpers.testOperationParams(crop);
+var testImage = helpers.testOperationImage(crop, {});
+var testNext = helpers.testOperationNext(crop, {});
 
-var testCrop = curry(function(params, expect, done) {
+var test = curry(function(params, expect, done) {
 	from(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
@@ -85,7 +85,7 @@ var testMatrix = curry(function(params, expect, done) {
 	expect.push({ width: W, height: H });
 
 	optify(params, function(opts, i, done) {
-		testCrop(opts, expect[i], done);
+		test(opts, expect[i], done);
 	}, function() {
 		// indirection here because optify passes the resulting matrix as argument.
 		// mocha then thinks it's an error.
@@ -99,51 +99,51 @@ var testMatrix = curry(function(params, expect, done) {
 
 describe('crop operation', function() {
 	describe('(params, hooks, image, next)', function() {
-		it('should fail when params has an invalid type', testCropParams(
+		it('should fail when params has an invalid type', testParams(
 			'', ['string', 'number', 'object', 'array'], true, null
 		));
 
-		it('should accept params as a scalar', testCrop(W_2, {
+		it('should accept params as a scalar', test(W_2, {
 			width: W_2, height: H, x: 2, y: 0
 		}));
 
-		it('should accept params as a string', testCrop(W_2.toString(), {
+		it('should accept params as a string', test(W_2.toString(), {
 			width: W_2, height: H, x: 2, y: 0
 		}));
 
-		it('should accept params as an array', testCrop([W_2, H_2], {
+		it('should accept params as an array', test([W_2, H_2], {
 			width: W_2, height: H_2, x: 2, y: 2
 		}));
 
-		it('should do nothing when params is null', testCrop(null, {
+		it('should do nothing when params is null', test(null, {
 			width: W, height: H, x: 0, y: 0
 		}));
 
-		it('should fail when params.width has an invalid type', testCropParams(
+		it('should fail when params.width has an invalid type', testParams(
 			'width', ['number', 'string'], true, {}
 		));
 
-		it('should fail when params.height has an invalid type', testCropParams(
+		it('should fail when params.height has an invalid type', testParams(
 			'height', ['number', 'string'], true, {}
 		));
 
-		it('should fail when params.x has an invalid type', testCropParams(
+		it('should fail when params.x has an invalid type', testParams(
 			'x', ['number', 'string'], true, {}
 		));
 
-		it('should fail when params.y has an invalid type', testCropParams(
+		it('should fail when params.y has an invalid type', testParams(
 			'y', ['number', 'string'], true, {}
 		));
 
-		it('should fail when params.gravity has an invalid type', testCropParams(
+		it('should fail when params.gravity has an invalid type', testParams(
 			'gravity', ['string'], true, {}
 		));
 
-		it('should fail when params.anchor has an invalid type', testCropParams(
+		it('should fail when params.anchor has an invalid type', testParams(
 			'anchor', ['string'], true, {}
 		));
 
-		it('should fail when image has an invalid type', testCropImage());
+		it('should fail when image has an invalid type', testImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
 			crop({ width: W_2 }, {}, function(err) {
@@ -161,11 +161,11 @@ describe('crop operation', function() {
 			});
 		});
 
-		it('should fail when next has an invalid type', testCropNext());
+		it('should fail when next has an invalid type', testNext());
 	});
 
 	describe('with scalar params', function() {
-		it('should crop to given size from center', testCrop({ width: W_2, height: H_2 }, {
+		it('should crop to given size from center', test({ width: W_2, height: H_2 }, {
 			width: W_2, height: H_2, x: 2, y: 2
 		}));
 
@@ -191,7 +191,7 @@ describe('crop operation', function() {
 									anchorKey = anchor[0];
 								}
 
-								testCrop(params, EXPECT[size[0]][anchorKey][gravity], done);
+								test(params, EXPECT[size[0]][anchorKey][gravity], done);
 							};
 						});
 						async.series(seq, done);
@@ -202,7 +202,7 @@ describe('crop operation', function() {
 	});
 
 	describe('with formulas params', function() {
-		it('should crop to given size from center', testCrop({
+		it('should crop to given size from center', test({
 			width: W_2.toString(), height: H_2.toString()
 		}, {
 			width: W_2, height: H_2, x: 2, y: 2

@@ -29,11 +29,11 @@ var SRC_IMAGE = path.join(require('ribs-fixtures').path, '0124.png'),
  * Tests helper functions.
  */
 
-var testResizeParams = helpers.testOperationParams(resize);
-var testResizeImage = helpers.testOperationImage(resize, {});
-var testResizeNext = helpers.testOperationNext(resize, {});
+var testParams = helpers.testOperationParams(resize);
+var testImage = helpers.testOperationImage(resize, {});
+var testNext = helpers.testOperationNext(resize, {});
 
-var testResize = curry(function(params, expect, done) {
+var test = curry(function(params, expect, done) {
 	from(SRC_IMAGE, function(err, image) {
 		should.not.exist(err);
 
@@ -78,7 +78,7 @@ var testMatrix = curry(function(params, expect, done) {
 	expect.push({ width: W, height: H });
 
 	optify(params, function(opts, i, done) {
-		testResize(opts, expect[i], done);
+		test(opts, expect[i], done);
 	}, function() {
 		// indirection here because optify passes the resulting matrix as argument.
 		// mocha then thinks it's an error.
@@ -94,35 +94,35 @@ var testMatrix = curry(function(params, expect, done) {
 
 describe('resize operation', function() {
 	describe('(params, image, next)', function() {
-		it('should fail when params has an invalid type', testResizeParams(
+		it('should fail when params has an invalid type', testParams(
 			'', ['string', 'number', 'object', 'array'], true, null
 		));
 
-		it('should accept params as a scalar', testResize(W_2, {
+		it('should accept params as a scalar', test(W_2, {
 			width: W_2, height: H_2
 		}));
 
-		it('should accept params as a string', testResize(W_2.toString(), {
+		it('should accept params as a string', test(W_2.toString(), {
 			width: W_2, height: H_2
 		}));
 
-		it('should accept params as an array', testResize([W_2, H_2], {
+		it('should accept params as an array', test([W_2, H_2], {
 			width: W_2, height: H_2
 		}));
 
-		it('should do nothing when params is null', testResize(null, {
+		it('should do nothing when params is null', test(null, {
 			width: W, height: H
 		}));
 
-		it('should fail when params.width has an invalid type', testResizeParams(
+		it('should fail when params.width has an invalid type', testParams(
 			'width', ['number', 'string'], true, {}
 		));
 
-		it('should fail when params.height has an invalid type', testResizeParams(
+		it('should fail when params.height has an invalid type', testParams(
 			'height', ['number', 'string'], true, {}
 		));
 
-		it('should fail when image has an invalid type', testResizeImage());
+		it('should fail when image has an invalid type', testImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
 			resize({ width: W_2 }, {}, function(err) {
@@ -140,11 +140,11 @@ describe('resize operation', function() {
 			});
 		});
 
-		it('should fail when next has an invalid type', testResizeNext());
+		it('should fail when next has an invalid type', testNext());
 	});
 
 	describe('with scalar params', function() {
-		it('should resize to given size', testResize({ width: W_2, height: H_2 }, {
+		it('should resize to given size', test({ width: W_2, height: H_2 }, {
 			width: W_2, height: H_2
 		}));
 
@@ -198,7 +198,7 @@ describe('resize operation', function() {
 	});
 
 	describe('with formulas params', function() {
-		it('should resize to given size', testResize({
+		it('should resize to given size', test({
 			width: W_2.toString(), height: H_2.toString()
 		}, {
 			width: W_2.toString(), height: H_2.toString()

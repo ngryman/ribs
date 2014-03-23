@@ -95,15 +95,15 @@ describe('to operation', function() {
 	});
 
 	describe('(params, image, next)', function() {
-		it('should fail when params has an invalid type', testParams(
+		xit('should fail when params has an invalid type', testParams(
 			'', ['string', 'object', 'array'], false, null
 		));
 
-		it('should accept params as a string', test('0124.png', 0, false));
+		xit('should accept params as a string', test('0124.png', 0, false));
 
-		it('should accept params as an array', test(['0124.png'], 0, false));
+		xit('should accept params as an array', test(['0124.png'], 0, false));
 
-		it('should fail when params.dst has an invalid type', testParams(
+		xit('should fail when params.dst has an invalid type', testParams(
 			'dst', ['string', 'object'], true, {}
 		));
 
