@@ -142,14 +142,16 @@ describe('to operation', function() {
 		it('should fail when image has an invalid type', testImage());
 
 		it('should fail when image is not an instance of Image', function(done) {
-			to({ dst: 'yolo.jpg' }, {}, function(err) {
+			to('yolo.jpg', {}, function(err) {
 				helpers.checkError(err, 'invalid type: image should be an instance of Image');
 				done();
 			});
 		});
 
 		it('should fail when image is an empty image', function(done) {
-			to({ dst: 'yolo.jpg' }, new Image(), function(err) {
+			var dst = path.join(TMP_DIR, 'yolo.jpg');
+			to(dst, new Image(), function(err) {
+				fs.unlinkSync(dst);
 				helpers.checkError(err, 'empty image');
 				done();
 			});
