@@ -9,6 +9,7 @@
 			'src/operation/encode.cc',
 			'src/operation/resize.cc',
 			'src/operation/crop.cc',
+			'src/debug.cc',
 			'src/init.cc'
 		],
 

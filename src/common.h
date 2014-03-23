@@ -20,6 +20,8 @@
 #include <cv.h>
 #include <highgui.h>
 
+#include "debug.h"
+
 namespace ribs {
 
 typedef uint8_t pixel_t;

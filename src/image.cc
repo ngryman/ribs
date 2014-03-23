@@ -15,7 +15,7 @@ using namespace v8;
 using namespace node;
 using namespace ribs;
 
-void print_trace(FILE *out, const char *file, int line);
+static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63);
 
 /**
  * Helps defining a simple accessor / getter.
@@ -71,7 +71,7 @@ Local<Object> Image::New(cv::Mat& mat, const std::string& format) {
 
 	// store input format
 	image->inputFormat = format;
-//	print_trace(stdout, "image.cc", 74);
+	Debug::PrintStackTrace("image new");
 
 	// give a hint to GC about the amount of memory attached to this object
 	// this help GC to know exactly the amount of memory it will free if collecting this object
@@ -157,21 +157,85 @@ void Image::Initialize(Handle<Object> target) {
 }
 
 #include <execinfo.h>
-void print_trace(FILE *out, const char *file, int line)
+#include <cxxabi.h>
+
+/** Print a demangled stack backtrace of the caller function to FILE* out. */
+void print_stacktrace(FILE *out, unsigned int max_frames)
 {
-    const size_t max_depth = 100;
-    size_t stack_depth;
-    void *stack_addrs[max_depth];
-    char **stack_strings;
+    fprintf(out, "stack trace:\n");
 
-    stack_depth = backtrace(stack_addrs, max_depth);
-    stack_strings = backtrace_symbols(stack_addrs, stack_depth);
+    // storage array for stack trace address data
+    void* addrlist[max_frames+1];
 
-    fprintf(out, "Call stack from %s:%d:\n", file, line);
+    // retrieve current stack addresses
+    int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
 
-    for (size_t i = 1; i < stack_depth; i++) {
-        fprintf(out, "    %s\n", stack_strings[i]);
+    if (addrlen == 0) {
+	fprintf(out, "  <empty, possibly corrupt>\n");
+	return;
     }
-    free(stack_strings); // malloc()ed by backtrace_symbols
-    fflush(out);
+
+    // resolve addresses into strings containing "filename(function+address)",
+    // this array must be free()-ed
+    char** symbollist = backtrace_symbols(addrlist, addrlen);
+
+    // allocate string which will be filled with the demangled function name
+    size_t funcnamesize = 256;
+    char* funcname = (char*)malloc(funcnamesize);
+
+    // iterate over the returned symbol lines. skip the first, it is the
+    // address of this function.
+    for (int i = 1; i < addrlen; i++)
+    {
+	char *begin_name = 0, *begin_offset = 0, *end_offset = 0;
+
+	// find parentheses and +address offset surrounding the mangled name:
+	// ./module(function+0x15c) [0x8048a6d]
+	for (char *p = symbollist[i]; *p; ++p)
+	{
+	    if (*p == '(')
+		begin_name = p;
+	    else if (*p == '+')
+		begin_offset = p;
+	    else if (*p == ')' && begin_offset) {
+		end_offset = p;
+		break;
+	    }
+	}
+
+	if (begin_name && begin_offset && end_offset
+	    && begin_name < begin_offset)
+	{
+	    *begin_name++ = '\0';
+	    *begin_offset++ = '\0';
+	    *end_offset = '\0';
+
+	    // mangled name is now in [begin_name, begin_offset) and caller
+	    // offset in [begin_offset, end_offset). now apply
+	    // __cxa_demangle():
+
+	    int status;
+	    char* ret = abi::__cxa_demangle(begin_name,
+					    funcname, &funcnamesize, &status);
+	    if (status == 0) {
+		funcname = ret; // use possibly realloc()-ed string
+		fprintf(out, "  %s : %s+%s\n",
+			symbollist[i], funcname, begin_offset);
+	    }
+	    else {
+		// demangling failed. Output function name as a C function with
+		// no arguments.
+		fprintf(out, "  %s : %s()+%s\n",
+			symbollist[i], begin_name, begin_offset);
+	    }
+	}
+	else
+	{
+	    // couldn't parse the line? print the whole line.
+	    fprintf(out, "  %s\n", symbollist[i]);
+	}
+    }
+
+    free(funcname);
+    free(symbollist);
 }
