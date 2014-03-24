@@ -119,6 +119,7 @@ describe('from operation', function() {
 
 	describe('with jpg files', function() {
 		it('should work when quality is 100%', test('01100.jpg', null, false));
+		it('should work when quality is 100%', test('01100.jpg', null, false));
 
 		it('should work when quality is 50%', test('0150.jpg', null, false));
 

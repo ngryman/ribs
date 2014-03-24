@@ -6,14 +6,14 @@
 
 #include "debug.h"
 
+using namespace std;
+using namespace ribs;
+
 #ifdef DEBUG
 
 #include <execinfo.h>
 #include <cxxabi.h>
 #include <iostream>
-
-using namespace std;
-using namespace ribs;
 
 static inline string parseBinary(string& symbol);
 static inline string parseFunction(string& symbol);
@@ -103,6 +103,6 @@ static inline string parseFunction(string& symbol) {
 
 #else
 
-vector<string> Debug::StackTrace(int maxFrames) { return vector<string>(); }
+vector<string> Debug::StackTrace(int start, int maxFrames) { return vector<string>(); }
 
 #endif

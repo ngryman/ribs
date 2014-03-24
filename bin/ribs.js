@@ -21,29 +21,52 @@ log.heading = 'ribs';
  * Modules dependencies.
  */
 
-var ribs = require('ribs'),
-	options = require('../lib/cli').options;
+var ribs = require('..'),
+	inspect = ribs.utils.inspect,
+	options = require('../lib/cli').options,
+	_ = require('lodash');
 
 // verbose mode?
 var verbose = 'verbose' == log.level;
 
-log.info('args', '<', options.src);
-log.info('args', '>', options.dst);
+log.verbose('process');
 
-// enqueue each operation
-options.operations.forEach(function(operation) {
-	log.info('args', operation.operation + ':', '[' + operation.params + ']');
-});
+/**
+ * Process!
+ */
 
-// open file
-var pipeline = ribs(options.src, options.dst);
+var current,
+	checkpoint,
+	start = Date.now();
 
-log.info('run');
+ribs(options.src, options.dst, options.operations, function(err) {
 
-// enqueue operations & go!
-pipeline.use(options.operations, function(err) {
+	var delta = Date.now() - start;
+
 	if (err)
-		log.error('run', err.message, verbose ? '\n' + err.stack.split('\n').slice(1).join('\n') : '');
+		log.error(current, err.message, verbose ? '\n' + err.stack.split('\n').slice(1).join('\n') : '');
 	else
-		log.info('run ok');
+		log.info('ok', delta + 'ms');
+
+})
+.on('operation:before', function(name, params) {
+
+	log.verbose(name, inspect(params));
+
+	current = name;
+	checkpoint = Date.now();
+
+})
+.on('operation:after', function(name, params) {
+
+	var delta = Date.now() - checkpoint;
+
+	// simplified output
+	if ('from' == name)
+		params = params.path;
+	else if ('to' == name)
+		params = params.dst;
+
+	log.info(name, delta + 'ms', inspect(params));
+
 });
