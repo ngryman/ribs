@@ -36,7 +36,7 @@ describe('lena\'s head', function() {
 		catch(err) { /* let cry */ }
 	});
 
-	it('should be resize and crop', function(done) {
+	it('should be resized and cropped', function(done) {
 		ribs(
 			path.join(SRC_DIR, 'lena.bmp'),
 			path.join(TMP_DIR, 'lena-head.png')

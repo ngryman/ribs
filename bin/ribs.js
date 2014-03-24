@@ -40,25 +40,22 @@ var current,
 	start = Date.now();
 
 ribs(options.src, options.dst, options.operations, function(err) {
-
 	var delta = Date.now() - start;
 
 	if (err)
 		log.error(current, err.message, verbose ? '\n' + err.stack.split('\n').slice(1).join('\n') : '');
 	else
 		log.info('ok', delta + 'ms');
-
 })
-.on('operation:before', function(name, params) {
 
+.on('operation:before', function(name, params) {
 	log.verbose(name, inspect(params));
 
 	current = name;
 	checkpoint = Date.now();
-
 })
-.on('operation:after', function(name, params) {
 
+.on('operation:after', function(name, params) {
 	var delta = Date.now() - checkpoint;
 
 	// simplified output
@@ -68,5 +65,4 @@ ribs(options.src, options.dst, options.operations, function(err) {
 		params = params.dst;
 
 	log.info(name, delta + 'ms', inspect(params));
-
 });
