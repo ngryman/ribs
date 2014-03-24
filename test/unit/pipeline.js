@@ -67,7 +67,7 @@ describe('Pipeline', function() {
 		this.pipeline = new Pipeline();
 	});
 
-	xdescribe('constructor', function() {
+	describe('constructor', function() {
 		it('should create an empty queue of operations', function() {
 			this.pipeline.should.be.instanceof(Pipeline);
 			this.pipeline.should.have.property('queue').and.be.instanceof(Array);

@@ -201,7 +201,7 @@ describe('resize operation', function() {
 		it('should resize to given size', test({
 			width: W_2.toString(), height: H_2.toString()
 		}, {
-			width: W_2.toString(), height: H_2.toString()
+			width: W_2, height: H_2
 		}));
 
 		it('should add a padding to source size given a negative value', testMatrix({
@@ -223,9 +223,9 @@ describe('resize operation', function() {
 		it('should resize to the given percentage of source size', testMatrix({
 			width: 'x50', height: 'x50'
 		}, [
-			{ width: 2, height: 2 },
-			{ width: 2, height: 2 },
-			{ width: 4, height: 4 }
+			{ width: W_2, height: H_2 },
+			{ width: W_2, height: H_2 },
+			{ width: W_2, height: H_2 }
 		]));
 
 		it('should resize to a given percentage of a constant', testMatrix({

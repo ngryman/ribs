@@ -227,8 +227,8 @@ describe('crop operation', function() {
 		it('should crop to the given percentage of source size', testMatrix({
 			width: 'x50', height: 'x50'
 		}, [
-			{ width: W_2, height: 2 },
-			{ width: W, height: 2 },
+			{ width: W_2, height: H_2 },
+			{ width: W, height: H_2 },
 			{ width: W_2, height: H }
 		]));
 
@@ -261,9 +261,9 @@ describe('crop operation', function() {
 		it('should round down source size to a given multiple', testMatrix({
 			width: '6-1', height: '6-1'
 		}, [
-			{ width: 5, height: 5 },
-			{ width: W, height: 5 },
-			{ width: 5, height: H }
+			{ width: 4, height: 4 },
+			{ width: W, height: 4 },
+			{ width: 4, height: H }
 		]));
 
 		it('should not resize if source size is a multiple', testMatrix({
