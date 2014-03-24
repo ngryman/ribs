@@ -54,7 +54,7 @@ var checkPixels = _.curry(function(src, expectedErr, alpha, done, err, image) {
 		image.should.have.property('width', 8);
 		image.should.have.property('height', 8);
 		image.should.have.property('channels', alpha ? 4 : 3);
-		image.should.have.property('inputFormat', path.extname(src.path || src).slice(1));
+		image.should.have.property('originalFormat', path.extname(src.path || src).slice(1));
 		image.should.have.lengthOf(image.width * image.height * image.channels);
 
 		var pixels = raw(src, alpha);

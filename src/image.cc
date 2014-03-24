@@ -69,8 +69,8 @@ Local<Object> Image::New(cv::Mat& mat, const std::string& format) {
 	// synchronize pixels data with the JavaScript object
 	image->Sync(instance);
 
-	// store input format
-	image->inputFormat = format;
+	// store original format
+	image->originalFormat = format;
 
 	// give a hint to GC about the amount of memory attached to this object
 	// this help GC to know exactly the amount of memory it will free if collecting this object
@@ -105,8 +105,8 @@ NAN_GETTER(Image::GetChannels) {
 	IMAGE_NUMBER_GETTER(Channels);
 }
 
-NAN_GETTER(Image::GetInputFormat) {
-	IMAGE_STRING_GETTER(InputFormat);
+NAN_GETTER(Image::GetOriginalFormat) {
+	IMAGE_STRING_GETTER(OriginalFormat);
 }
 
 NAN_GETTER(Image::GetLength) {
@@ -142,7 +142,7 @@ void Image::Initialize(Handle<Object> target) {
 	prototype->SetAccessor(NanSymbol("width"), GetWidth);
 	prototype->SetAccessor(NanSymbol("height"), GetHeight);
 	prototype->SetAccessor(NanSymbol("channels"), GetChannels);
-	prototype->SetAccessor(NanSymbol("inputFormat"), GetInputFormat);
+	prototype->SetAccessor(NanSymbol("originalFormat"), GetOriginalFormat);
 	prototype->SetAccessor(NanSymbol("length"), GetLength);
 	NODE_SET_PROTOTYPE_METHOD(constructorTemplate, "encode", Encode);
 	NODE_SET_PROTOTYPE_METHOD(constructorTemplate, "resize", Resize);
