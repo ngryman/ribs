@@ -194,10 +194,10 @@ describe('Pipeline', function() {
 	});
 	
 	describe('#done([callback])', function() {
-		it('should call back immediately if no operation was used', function() {
+		it('should call back asynchronously if no operation was used', function() {
 			var spy = sinon.spy();
 			this.pipeline.done(spy);
-			spy.should.have.been.calledOnce;
+			spy.should.not.have.been.called;
 		});
 
 		it('should automatically clear the pipeline', function(done) {
@@ -267,9 +267,9 @@ describe('Pipeline', function() {
 	describe('events', function() {
 		it('should emit a start event', function() {
 			var spy = sinon.spy();
-			this.pipeline.on('start', spy);
-			this.pipeline.done();
-			spy.should.have.been.calledOnce;
+			this.pipeline.on('start', spy).done(function() {
+				spy.should.have.been.calledOnce;
+			});
 		});
 
 		it('should emit an end event', function(done) {
@@ -333,6 +333,20 @@ describe('Pipeline', function() {
 				done();
 			}));
 		});
+	});
+
+	describe('order', function() {
+
+		it('should be applied for from and to', function(done) {
+			var p = this.pipeline;
+			p.to().resize().from().done().on('start', function() {
+				p.queue[0].should.have.property('_name', 'from');
+				p.queue[1].should.have.property('_name', 'resize');
+				p.queue[2].should.have.property('_name', 'to');
+				done();
+			});
+		});
+
 	});
 
 });
