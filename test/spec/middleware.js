@@ -11,9 +11,11 @@
  */
 
 var request = require('supertest'),
+	Test = request.Test,
 	express = require('express'),
 	path = require('path'),
-	ribs = require('../..');
+	ribs = require('../..'),
+	fs = require('fs');
 
 /**
  * Tests constants.
@@ -22,30 +24,151 @@ var request = require('supertest'),
 var ROOT_DIR = require('ribs-fixtures').path;
 
 /**
- * Server init.
+ * Test suite.
  */
 
-var app = express();
-app.use(ribs.middleware(ROOT_DIR));
-app.use(express.static(ROOT_DIR));
-app.use(express.errorHandler());
+describe('express middleware', function() {
+
+	after(function() {
+		// xxx: i'm so dirty and i like it
+		// remove all cache directories with 2 characters
+		(function rmdir(dir) {
+			dir = dir || ROOT_DIR;
+
+			var list = fs.readdirSync(dir);
+			for (var i = 0; i < list.length; i++) {
+				var filename = path.join(dir, list[i]);
+				var stat = fs.statSync(filename);
+
+				// rmdir recursively
+				if (stat.isDirectory() && 2 == list[i].length)
+					rmdir(filename);
+				// rm filename
+				else if (dir != ROOT_DIR)
+					fs.unlinkSync(filename);
+			}
+
+			if (dir != ROOT_DIR)
+				fs.rmdirSync(dir);
+		})();
+	});
+
+	it('should serve an existing image', function(done) {
+		server(ROOT_DIR).get('/lena.bmp')
+			.expect('content-type', 'image/bmp')
+			.expect(200, done);
+	});
+
+	it('should send 404 for an unknown image', function(done) {
+		server(ROOT_DIR).get('/kahzix.pwn')
+			.expect(404, done);
+	});
+
+	it('should send 404 for an unknown operation', function(done) {
+		server(ROOT_DIR).get('/rresize/100/lena.bmp')
+			.expect(404, done);
+	});
+
+	it('should send a 400 for invalid parameters', function(done) {
+		server(ROOT_DIR).get('/resize/xxx/lena.bmp')
+			.expect(400, done);
+	});
+
+	describe('resizing', function() {
+
+		it('should accept short version', function(done) {
+			server(ROOT_DIR).get('/r/100/100/lena.bmp').expectImage({
+				width: 100,
+				height: 100
+			}, done);
+		});
+
+		it('should handle no parameters', function(done) {
+			server(ROOT_DIR).get('/resize/lena.bmp').expectImage({
+				width: 512,
+				height: 512
+			}, done);
+		});
+
+		it('should handle width', function(done) {
+			server(ROOT_DIR).get('/resize/100/lena.bmp').expectImage({
+				width: 100,
+				height: 100
+			}, done);
+		});
+
+		it('should handle height', function(done) {
+			server(ROOT_DIR).get('/resize/0/100/lena.bmp').expectImage({
+				width: 100,
+				height: 100
+			}, done);
+		});
+
+		it('should handle width & height', function(done) {
+			server(ROOT_DIR).get('/resize/200/100/lena.bmp').expectImage({
+				width: 100,
+				height: 100
+			}, done);
+		});
+
+	});
+
+	describe('cropping', function() {
+
+		it('should accept short version', function(done) {
+			server(ROOT_DIR).get('/c/100/100/lena.bmp').expectImage({
+				width: 100,
+				height: 100
+			}, done);
+		});
+
+		it('should handle no parameters', function(done) {
+			server(ROOT_DIR).get('/crop/lena.bmp').expectImage({
+				width: 512,
+				height: 512
+			}, done);
+		});
+
+	});
+
+	describe('transcoding', function() {
+
+		it('should transcode to jpg', function(done) {
+			server(ROOT_DIR).get('/format/jpg/lena.bmp').expectImage({
+				width: 512,
+				height: 512,
+				type: 'jpeg'
+			}, done);
+		});
+
+	});
+
+	describe('order', function() {
+
+		it('should call operations in order', function(done) {
+			server(ROOT_DIR).get('/resize/-10/resize/x10/lena.bmp').expectImage({
+				width: Math.round((512 - 20) / 10),
+				height: Math.round((512 - 20) / 10)
+			}, done);
+		});
+
+		it('should allow format not to be the last', function(done) {
+			server(ROOT_DIR).get('/format/jpg/resize/100/100/lena.bmp').expectImage({
+				width: 100,
+				height: 100,
+				type: 'jpeg'
+			}, done);
+		});
+
+	});
+
+});
 
 /**
  * Tests helpers.
  */
 
-function binaryParser(res, callback) {
-	res.setEncoding('binary');
-	res.data = '';
-	res.on('data', function (chunk) {
-		res.data += chunk;
-	});
-	res.on('end', function () {
-		callback(null, new Buffer(res.data, 'binary'));
-	});
-}
-
-request.Test.prototype.expectImage = function(expect, done) {
+Test.prototype.expectImage = function(expect, done) {
 	// default values
 	expect.type = expect.type || 'bmp';
 	expect.channels = expect.channels || 3;
@@ -72,124 +195,30 @@ request.Test.prototype.expectImage = function(expect, done) {
 				image.should.have.property('channels', expect.channels);
 				image.should.have.property('originalFormat', expect.type);
 				image.should.have.lengthOf(expect.width * expect.height * expect.channels);
+
+				this.app.close();
+
 				done();
-			});
+			}.bind(this));
 		});
 };
 
-/**
- * Test suite.
- */
+function server(options) {
+	var app = express();
+	app.use(ribs.middleware(options));
+	app.use(express.static(ROOT_DIR));
+	app.use(express.errorHandler());
 
-describe('express middleware', function() {
+	return request(app);
+}
 
-	it('should serve an existing image', function(done) {
-		request(app).get('/lena.bmp')
-			.expect('content-type', 'image/bmp')
-			.expect(200, done);
+function binaryParser(res, callback) {
+	res.setEncoding('binary');
+	res.data = '';
+	res.on('data', function (chunk) {
+		res.data += chunk;
 	});
-
-	it('should send 404 for an unknown image', function(done) {
-		request(app).get('/kahzix.pwn')
-			.expect(404, done);
+	res.on('end', function () {
+		callback(null, new Buffer(res.data, 'binary'));
 	});
-
-	it('should send 404 for an unknown operation', function(done) {
-		request(app).get('/rresize/100/lena.bmp')
-			.expect(404, done);
-	});
-
-	it('should send a 400 for invalid parameters', function(done) {
-		request(app).get('/resize/xxx/lena.bmp')
-			.expect(400, done);
-	});
-
-	describe('resizing', function() {
-
-		it('should accept short version', function(done) {
-			request(app).get('/r/100/100/lena.bmp').expectImage({
-				width: 100,
-				height: 100
-			}, done);
-		});
-
-		it('should handle no parameters', function(done) {
-			request(app).get('/resize/lena.bmp').expectImage({
-				width: 512,
-				height: 512
-			}, done);
-		});
-
-		it('should handle width', function(done) {
-			request(app).get('/resize/100/lena.bmp').expectImage({
-				width: 100,
-				height: 100
-			}, done);
-		});
-
-		it('should handle height', function(done) {
-			request(app).get('/resize/0/100/lena.bmp').expectImage({
-				width: 100,
-				height: 100
-			}, done);
-		});
-
-		it('should handle width & height', function(done) {
-			request(app).get('/resize/200/100/lena.bmp').expectImage({
-				width: 100,
-				height: 100
-			}, done);
-		});
-
-	});
-
-	describe('cropping', function() {
-
-		it('should accept short version', function(done) {
-			request(app).get('/c/100/100/lena.bmp').expectImage({
-				width: 100,
-				height: 100
-			}, done);
-		});
-
-		it('should handle no parameters', function(done) {
-			request(app).get('/crop/lena.bmp').expectImage({
-				width: 512,
-				height: 512
-			}, done);
-		});
-
-	});
-
-	describe('transcoding', function() {
-
-		it('should transcode to jpg', function(done) {
-			request(app).get('/format/jpg/lena.bmp').expectImage({
-				width: 512,
-				height: 512,
-				type: 'jpeg'
-			}, done);
-		});
-
-	});
-
-	describe('order', function() {
-
-		it('should call operations in order', function(done) {
-			request(app).get('/resize/-10/resize/x10/lena.bmp').expectImage({
-				width: Math.round((512 - 20) / 10),
-				height: Math.round((512 - 20) / 10)
-			}, done);
-		});
-
-		it('should allow format not to be the last', function(done) {
-			request(app).get('/format/jpg/resize/100/100/lena.bmp').expectImage({
-				width: 100,
-				height: 100,
-				type: 'jpeg'
-			}, done);
-		});
-
-	});
-
-});
+}

@@ -155,7 +155,7 @@ describe('to operation', function() {
 		it('should fail when image is an empty image', function(done) {
 			var dst = path.join(TMP_DIR, 'yolo.jpg');
 			to(dst, new Image(), function(err) {
-				fs.unlinkSync(dst);
+				if (fs.existsSync(dst)) fs.unlinkSync(dst);
 				helpers.checkError(err, 'empty image');
 				done();
 			});

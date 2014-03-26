@@ -4,7 +4,7 @@
   "description": "Responsive Images Backed Server-side.",
   "main": "index.js",
   "bin": {
-    "ribs": "bin/ribs"
+    "ribs": "bin/ribs.js"
   },
   "scripts": {
     "test": "grunt test"
@@ -33,7 +33,9 @@
     "nan": "~0.8.0",
     "minimist": "~0.0.8",
     "npmlog": "0.0.6",
-    "express": "~3.5.0"
+    "express": "~3.5.0",
+    "mkdirp": "^0.3.5",
+    "stores": "0.0.2"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
