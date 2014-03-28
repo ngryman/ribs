@@ -23,15 +23,15 @@ Responsive images is the next big challenge!
 Some [client-side patterns] already exist along with [build tasks] in order to **produce**, **optimize**, **manage** and
 **pick** the right image for the right screen size.
 
-This have several pitfalls.
+But they have several pitfalls.
 The biggest one is that you often **load more that you are going to show**, wasting bandwidth, load time, device memory and CPU.
 
-In the wild, this is not as much used as it should be. AFAIK this is probably because it asks a certain amount of time
+In the wild, this is not used as much as it should be. AFAIK this is probably because it asks a certain amount of time
 to choose and implement a solution. It often involves too much tools and management in the process.
 The fact is, developers don't take enough time for this and tend to neglect this part of a modern Web application.
 
-I believe in the *on-the-fly* way of thinking that the Web can offer. So, just ask the image you want,
-and you will receive it already processed, end of story.
+I believe in the *on-the-fly* way of thinking that the Web can offer. So, you just ask the image you want,
+and you receive it already processed, end of story.
 This also guaranties that you:
 
 - do not **load more than your are going to show**.
@@ -55,14 +55,14 @@ can leverage their images responsiveness.
 *RIBS* will:
 
 - Provide **on-the-fly** processed images (no build phase required).
-- Be **fast**!
+- Be **blazing fast**!
 - Be **super easy** to use and deploy.
 - **Proxy** existing servers so you can offload image processing.
 - **Optimize and transcode** images.
 - Support **SPDY**.
 - Fit **web apps** but also **native apps** needs.
-- Offer plugins to various existing platforms such as **WordPress**.
-- Propose **different ways to customize it** so you can achieve precisely what you want.
+- Offer plugins to various existing platforms such as **WordPress** or **Joomla**.
+- Allow **to extensively customize it** so you can achieve precisely what you want.
 - Support [art direction], automatically perhaps?.
 
 [art direction]: http://usecases.responsiveimages.org/#art-direction
@@ -72,7 +72,7 @@ can leverage their images responsiveness.
  - `✓` Basic *Node* module.<br>
  - `✓` Command line interface.<br>
  - `✕` Plugins for **Grunt**, **Gulp**, ...<br>
- - `✕` *Express* middleware.<br>
+ - `✕` *Express* middleware with an effecient caching system.<br>
  - `✕` Client-side library.<br>
  - `✕` New awesome features...
 
