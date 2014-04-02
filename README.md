@@ -1,6 +1,6 @@
 # ribs
 
-[![NPM](http://img.shields.io/npm/v/ribs.svg)](https://www.npmjs.org/package/ribs) [![Build Status](http://img.shields.io/travis/ngryman/ribs.svg)](https://travis-ci.org/ngryman/ribs) [![Code Climate](http://img.shields.io/codeclimate/github/ngryman/ribs.svg)](https://codeclimate.com/github/ngryman/ribs) [![Dependency Status](http://img.shields.io/gemnasium/ngryman/ribs.png)](https://gemnasium.com/ngryman/ribs) [![Gittip](http://img.shields.io/gittip/ngryman.svg)](https://www.gittip.com/ngryman/)
+[![NPM Version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Code Climate][codeclimate-image]][codeclimate-url] [![Dependency Status][gemnasium-image]][gemnasium-url] [![Gittip][gittip-image]][gittip-url]
 
 <br>
 
@@ -108,3 +108,14 @@ can leverage their images responsiveness.
  - Twitter: https://twitter.com/getribs
  - Mailing list: http://groups.google.com/group/getribs
  - Issues: https://github.com/ngryman/ribs/issues
+
+[npm-image]: http://img.shields.io/npm/v/ribs.svg
+[npm-url]: https://www.npmjs.org/package/ribs
+[travis-image]: http://img.shields.io/travis/ngryman/ribs.svg
+[travis-url]: https://travis-ci.org/ngryman/ribs
+[codeclimate-image]: http://img.shields.io/codeclimate/github/ngryman/ribs.svg
+[codeclimate-url]: https://codeclimate.com/github/ngryman/ribs
+[gemnasium-image]: http://img.shields.io/gemnasium/ngryman/ribs.png
+[gemnasium-url]: https://gemnasium.com/ngryman/ribs
+[gittip-image]: http://img.shields.io/gittip/ngryman.svg
+[gittip-url]: https://www.gittip.com/ngryman
