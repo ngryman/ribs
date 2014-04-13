@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.0.3
+
+- `core`: `open` → `from`, `save` → `to`.
+- `core`: `image#encode` now only needs output format.
+- `core`: image format automatic detection.
+- `core`: better support of streams, new `Pipeline#stream` function.
+- `net`: express middleware, #29.
+- `net`: caching system, #30.
+- `cli`: support pipes.
+
 ## v0.0.2
 
 - `test`: refactored and enhanced existing tests, #22.

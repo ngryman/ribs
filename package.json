@@ -1,6 +1,6 @@
 {
   "name": "ribs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Responsive Images Backed Server-side.",
   "main": "index.js",
   "bin": {
