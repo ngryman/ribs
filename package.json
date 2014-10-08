@@ -7,7 +7,7 @@
     "ribs": "bin/ribs.js"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
