@@ -16,6 +16,9 @@
 
 ***RIBS is still at an early development stage and is not ready for production yet!***.
 
+***Development will start again soon with a new modern, full JavaScript + OpenCL architecture.
+This version will still exist as RIBS Legacy.***
+
 ## Motivations
 
 Responsive images is the next big challenge!
