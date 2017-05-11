@@ -1,5 +1,7 @@
 # ribs
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/ngryman/ribs.svg)](https://greenkeeper.io/)
+
 [![NPM Version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Code Climate][codeclimate-image]][codeclimate-url] [![Dependency Status][gemnasium-image]][gemnasium-url] [![Gittip][gittip-image]][gittip-url]
 
 <br>
