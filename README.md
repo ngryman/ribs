@@ -74,7 +74,7 @@ can leverage their images responsiveness.
 
  - `✓` Basic *Node* module.<br>
  - `✓` Command line interface.<br>
- - `✓` *Express* middleware with an effecient caching system.<br>
+ - `✓` *Express* middleware with an efficient caching system.<br>
  - `✕` Plugins for **Grunt**, **Gulp**, ...<br>
  - `✕` Client-side library.<br>
  - `✕` New awesome features...
